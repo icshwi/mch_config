@@ -111,27 +111,9 @@ Target UDP Port
 Primary IP parameter	Current Configuration
 Primary IP	
 Primary IP Address	
-0
- .  
-0
- .  
-0
- . 
-0
+0 .  0 .  0 . 0
 Primary IP Netmask	
-0
- .  
-0
- .  
-0
- . 
-0
+0 .  0 .  0 . 0
 Primary IP Gateway	
-0
- .  
-0
- .  
-0
- . 
-0
+0 .  0 .  0 . 0
 
