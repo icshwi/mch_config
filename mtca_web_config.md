@@ -3,7 +3,7 @@
 ## Base configuraton
 MCH global paramter | Configuration
 ------|:-----:|
-**remote interfaces|
+**remote interfaces**|
 Management interface at GbE port | disabled
 RMCP access | enabled
 telnet access | enabled
