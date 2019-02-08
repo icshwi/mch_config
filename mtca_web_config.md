@@ -1,8 +1,8 @@
 # NAT MCH Web configuration
 
 ## Base configuraton
+------|:-----:
 MCH global paramter | Configuration
-------|:-----:|
 **remote interfaces**|
 Management interface at GbE port | disabled
 RMCP access | enabled
@@ -16,45 +16,41 @@ RMCP session activity timeout minutes | 0
 RMCP session activity timeout seconds | 60
 Telnet session activity timeout seconds | 300
 default fan level | 40
-
-## MCH configuration flags
-
-------|-----:
+**MCH configuration flags**|
 enable watch dog timer | no
 Enable alternative cooling scheme | no
 PM Assignment strategy | strict
 Use BM (MCH-RTM) as PM for eRTM15 | no
 IPMI Compatibility Mode | enable (will ask this an expert)
 
-
-Shelf manager parameter
-
+------|:-----:
+Shelf manager parameter | Configuration
+**configuration flags**|
 allow shelf FRU invalid | yes
 temperature management	| enabled
 emergency shutdown | disabled
 Send SEND_MSG confirmation to SMS | disabled
 use external shelf manager | no
 
-Carrier manager parameter
-
+------|:-----:
+Carrier manager parameter | Configuration
 carrier number default | 0
 quiesced event timeout | 30
-
+**configuration flags**|
 allow carrier FRU invalid | yes
 overrule carrier FRU | no
 shutdown system if MCH goes down | no (requirement is necessary for yes)
 enable Clock E-keying | no 
-
-
-IPMI diabled	
-FRU	
-E-keying	
-sensor	
-event	
-power module	
-cooling unit	
-CM/ShM interface	
-FRU communication to debug (0=all)	 0
+**debug flags**|
+IPMI | diabled	
+FRU	| disabled 
+E-keying	| disabled 
+sensor	| disabled 
+event	| disabled 
+power module | disabled 	 
+cooling unit	| disabled 
+CM/ShM interface	| disabled  
+FRU communication to debug (0=all) |	 0
 
 keep on read	| disabled
 allocate SEL in non-volatile RAM | no	
