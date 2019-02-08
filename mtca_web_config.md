@@ -1,14 +1,17 @@
-remote interfaces:
+# MCH global parameter 
 
-Management interface at GbE port : disabled
-RMCP access : enabled
-telnet access : enabled
-ssh access : disabled (find out how to enable it)
-WEB access : enabled 
-IP address source for management port : 
-* board configuration (LAB)
-* DHCP (SITE)
+## remote interfaces:
 
+Management interface at GbE port | disabled
+------|-----:
+RMCP access | enabled
+telnet access | enabled
+ssh access | disabled (find out how to enable it)
+WEB access | enabled 
+IP address source for management port | board configuration (LAB)
+| DHCP (SITE)
+
+```
 IP address source for GbE port : no IP address
 RMCP session activity timeout minutes : 0
 RMCP session activity timeout seconds : 60
@@ -117,3 +120,4 @@ Primary IP Netmask
 Primary IP Gateway	
 0 .  0 .  0 . 0
 
+```
