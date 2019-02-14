@@ -9,5 +9,9 @@ This script is used for the MCH configuration through MOXA serial server. And it
 expect (master)$ expect mchconf.exp 10.4.8.102 4001
 ```
 
+# MOXA address for testing
+```
+telnet 10.4.8.102 4001
+```
 
 ## pexpect : Python
