@@ -1,5 +1,5 @@
 Expect for automation configuration for MCH
-
+=====
 
 ## Pure expect script
 
@@ -34,6 +34,8 @@ This script is used for the MCH configuration through MOXA serial server. And it
 ```
 ip                     - IP configuration setup
 ```
+
+### Command
 
 ```
 expect (master)$ expect mchconf.exp 10.4.8.102 4001
