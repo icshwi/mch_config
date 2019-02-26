@@ -37,6 +37,14 @@ ip                     - IP configuration setup
 
 ### Command
 
+* In case, we don't have the fixed ip address, we have to enable DHCP via
+
+```
+expect (master)$ expect dhcp.exp 10.0.5.173 4016
+```
+
+* 
+
 ```
 expect (master)$ expect mchconf.exp 10.4.8.102 4001
 ```

@@ -1,0 +1,134 @@
+#!/usr/bin/expect --
+#
+#  Copyright (c) 2019           European Spallation Source ERIC
+#
+#  The program is free software: you can redistribute
+#  it and/or modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation, either version 2 of the
+#  License, or any newer version.
+#
+#  This program is distributed in the hope that it will be useful, but WITHOUT
+#  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+#  more details.
+#
+#  You should have received a copy of the GNU General Public License along with
+#  this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
+#
+#   author  : Jeong Han Lee
+#   email   : jeonghan.lee@gmail.com
+#   date    : 
+#   version : 0.0.1
+
+
+set DATE [exec date +%y%m%d%H%M]
+set timeout 5
+
+set prompt "nat> ";
+set mchcfgprompt "Enter configuration mode (RET=\*): ";
+
+
+# MCH is slow not to understand the machine send command
+# So, we have to put some delay between characters.
+# 
+# Send strings with .1 second in between each 1 characters sent
+#
+set send_slow {1 .1}
+
+#
+# MOXA Server IP
+#
+set ip [lindex $argv 0]
+#
+# MOXA Server PORT
+#
+set port [lindex $argv 1]
+#
+# MCH Configuration Commands File
+#
+#set commands_file [lindex $argv 0]
+
+log_file MCH_DHCP_CONF_$ip\_$port\_$DATE.log
+
+
+proc dialog {expstring send } {
+    expect {
+	$expstring {
+	    sleep .1;
+	    exp_send -s "$send\r"
+	    sleep 1;
+	}
+	-gl "timeout" {
+	    expect *
+	    error "Timed out" \
+		"Expected: $expstring. Saw: $expect_out(buffer)"
+	}
+	eof {
+	    expect *
+	    error "Connection Closed" \
+		"Expected: $expstring. Saw: $expect_out(buffer)"
+	}
+    }
+}
+      
+
+# Connect the MOXA serial port
+exp_spawn telnet $ip $port
+
+dialog "Escape character is '^\]'.\r" ""
+
+# foreach line $lines {
+#     dialog "$prompt" "$line"
+# }
+
+
+expect  {
+    "$prompt"       { exp_send -s "\r" }
+    "$mchcfgprompt" { exp_send -s "0\r"}
+    "(RET=\*): "    { exp_send -s "\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r"}
+    -gl "timeout" {
+	expect *
+	error "Timed out" \
+	    "Expected: $expstring. Saw: $expect_out(buffer)"
+    }
+}
+
+
+
+dialog "$prompt" "mchcfg"
+
+# [ 3] modify MCH global configuration
+# MCH IP address source:
+#  no IP address:            0
+#  board configuration:      1
+#  DHCP:                     2
+#  ShM IP link record:       3
+#  CM IP link record:        4
+
+dialog "$mchcfgprompt" "3"
+dialog "Enable RMCP access (y/n) (RET=\*): " ""
+dialog "Enable telnet access (y/n) (RET=\*): " ""
+dialog "Enable WEB access (y/n) (RET=\*): " ""
+dialog "Enable ssh access (y/n) (RET=\*): " ""
+dialog "Enter IP address source Mgmt (dec) (RET=\*): " "2"
+dialog "Enter session activity timeout (dec, minutes) (RET=\*): " ""
+dialog "Enter session activity timeout (dec, seconds) (RET=\*): " ""
+dialog "Enter default fan level (dec, percent) (RET=\*): " ""
+dialog "Enable watch dog timer                     (y/n) (RET=\*): " ""
+dialog "Enable alternative cooling scheme          (y/n) (RET=\*): " ""
+dialog "Telnet inactivity timeout (0: disabled or seconds) (RET=\*): " ""
+dialog "Enable PM relaxed assignment               (y/n) (RET=\*): " ""
+
+# [ q] quit and save configuration
+dialog "$mchcfgprompt" "q"
+#
+# Sleep is needed for MCH processing time
+#
+sleep 6;
+
+
+dialog "$prompt" "reboot"
+
+
+expect eof
+

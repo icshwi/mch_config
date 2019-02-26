@@ -226,7 +226,7 @@ dialog "$sourceprompt" "0"
 
 #[ 9] modify PCIe configuration
 dialog "$mchcfgprompt" "9"
-dialog "Enter PCIe upstream port power up delay (dec, sec) (RET=\*): " "15"
+dialog "Enter PCIe upstream port power up delay (dec, sec) (RET=\*): " "30"
 dialog "Enter PCIe hot plug delay for AMCs (dec, sec) (RET=\*): " "0"
 dialog "Enable 100 MHz spread spectrum (y/n) (RET=\*): " "n"
 dialog "Enable hot plug support (y/n) (RET=\*): " "n"
