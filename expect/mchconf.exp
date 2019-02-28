@@ -224,7 +224,7 @@ dialog "$sourceprompt" "0"
 
 #[ 8] modify CLK module configuration
 dialog "$mchcfgprompt" "8"
-dialog "$sourceprompt" "0"
+dialog "$sourceprompt" "1"
 
 
 #[ 9] modify PCIe configuration
@@ -236,7 +236,7 @@ dialog "Enable hot plug support (y/n) (RET=\*): " "n"
 dialog "Enable PCIe early ekey (before payload) (y/n) (RET=\*): " "n"
 dialog "Disable ekeying for PCIe Gen3 (y/n) (RET=\*): " "n"
 dialog "Use PCIe on MCH-RTM(disable AMC12) (y/n) (RET=\*): " "n"
-dialog "$sourceprompt" "0"
+dialog "$sourceprompt" "1"
 
 
 
@@ -265,9 +265,11 @@ dialog "$mchcfgprompt" "q"
 sleep 6;
 dialog "$prompt" "ntpdate $ntpserver"
 
+
 expect "$prompt"
 send -- "\r"
 
+dialog "$prompt" "reboot"
 
 expect eof
 

@@ -43,11 +43,24 @@ ip                     - IP configuration setup
 expect (master)$ expect dhcp.exp 10.0.5.173 4016
 ```
 
-* 
+* Update the firmware
+```
+expect (master)$ expect fwupdate.exp 10.0.5.173 4016
+```
+
+* Update the MCH configuration
 
 ```
-expect (master)$ expect mchconf.exp 10.4.8.102 4001
+expect (master)$ expect mchconf.exp 10.0.5.173 4016
 ```
+
+
+* Update the MCH Clock configuration
+
+```
+expect (master)$ expect clock_update_3u.exp 10.0.5.173 4016
+```
+
 
 # MOXA address for testing
 ```
