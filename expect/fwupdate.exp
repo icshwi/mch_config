@@ -17,16 +17,18 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : 
-#   version : 0.0.1
+#   date    : Monday, February 18 23:32:20 CET 2019
+#   version : 0.0.3
 
 
 set DATE [exec date +%y%m%d%H%M]
 set timeout 5
+set tftp_server "10.0.4.134"
+set fw_path_filename "latest_mch_fw.bin"
+
 
 set prompt "nat> ";
 set mchcfgprompt "Enter configuration mode (RET=\*): ";
-
 
 # MCH is slow not to understand the machine send command
 # So, we have to put some delay between characters.
@@ -47,11 +49,21 @@ set port [lindex $argv 1]
 # MCH Configuration Commands File
 #
 #set commands_file [lindex $argv 0]
+
 set logfile_path "log_path"
 file mkdir $logfile_path
 
-log_file $logfile_path/MCH_DHCP_CONF_$ip\_$port\_$DATE.log
+log_file $logfile_path/MCH_FWUPDATE_CONF_$ip\_$port\_$DATE.log
 
+# #
+
+# # Read all command sequence from a file to save them into
+# #
+# set input [open "$commands_file" r]
+# set lines [split [read -nonewline $input] "\n"]
+# foreach line $lines {
+#     puts $line
+# }
 
 proc dialog {expstring send } {
     expect {
@@ -97,38 +109,9 @@ expect  {
 
 
 
-dialog "$prompt" "mchcfg"
-
-# [ 3] modify MCH global configuration
-# MCH IP address source:
-#  no IP address:            0
-#  board configuration:      1
-#  DHCP:                     2
-#  ShM IP link record:       3
-#  CM IP link record:        4
-
-dialog "$mchcfgprompt" "3"
-dialog "Enable RMCP access (y/n) (RET=\*): " ""
-dialog "Enable telnet access (y/n) (RET=\*): " ""
-dialog "Enable WEB access (y/n) (RET=\*): " ""
-dialog "Enable ssh access (y/n) (RET=\*): " ""
-dialog "Enter IP address source Mgmt (dec) (RET=\*): " "2"
-dialog "Enter session activity timeout (dec, minutes) (RET=\*): " ""
-dialog "Enter session activity timeout (dec, seconds) (RET=\*): " ""
-dialog "Enter default fan level (dec, percent) (RET=\*): " ""
-dialog "Enable watch dog timer                     (y/n) (RET=\*): " ""
-dialog "Enable alternative cooling scheme          (y/n) (RET=\*): " ""
-dialog "Telnet inactivity timeout (0: disabled or seconds) (RET=\*): " ""
-dialog "Enable PM relaxed assignment               (y/n) (RET=\*): " ""
-
-# [ q] quit and save configuration
-dialog "$mchcfgprompt" "q"
-#
-# Sleep is needed for MCH processing time
-#
+dialog "$prompt" "update_firmware"
+dialog "firmware> " "$tftp_server:$fw_path_filename"
 sleep 6;
-
-
 dialog "$prompt" "reboot"
 
 

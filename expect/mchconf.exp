@@ -17,8 +17,8 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Monday, February 18 23:32:20 CET 2019
-#   version : 0.0.3
+#   date    : Thursday, February 28 13:42:19 CET 2019
+#   version : 0.0.4
 
 
 set DATE [exec date +%y%m%d%H%M]
@@ -78,12 +78,15 @@ set port [lindex $argv 1]
 #
 #set commands_file [lindex $argv 0]
 
-log_file MCH_CONF_$ip\_$port\_$DATE.log
+set logfile_path "log_path"
+file mkdir $logfile_path
 
-set mch_ip_address "10.4.8.123"
-set mch_ip_netmask "255.255.240.0"
-set mch_ip_broadcast "10.4.15.255"
-set mch_ip_gateway "10.4.8.1" 
+log_file $logfile_path/MCH_BASIC_CONF_$ip\_$port\_$DATE.log
+
+# set mch_ip_address "10.4.8.123"
+# set mch_ip_netmask "255.255.240.0"
+# set mch_ip_broadcast "10.4.15.255"
+# set mch_ip_gateway "10.4.8.1" 
 set mch_hostname ""
 # #
 
@@ -145,17 +148,17 @@ foreach cmd $debugcmds {
 }
 
 
-# - IP configuration setup
-dialog "$prompt" "ip"
-dialog "IP Address           : " "$clearipaddr$mch_ip_address"
-dialog "IP Net Mask          : " "$clearipaddr$mch_ip_netmask"
-dialog "IP Broadcast Addr    : " "$clearipaddr$mch_ip_broadcast"
-dialog "IP Gateway Addr      : " "$clearipaddr$mch_ip_gateway"
-dialog "Are you really sure ?" "y"
-#
-# Sleep is needed for MCH processing time
-#
-sleep 5;
+# # - IP configuration setup
+# dialog "$prompt" "ip"
+# dialog "IP Address           : " "$clearipaddr$mch_ip_address"
+# dialog "IP Net Mask          : " "$clearipaddr$mch_ip_netmask"
+# dialog "IP Broadcast Addr    : " "$clearipaddr$mch_ip_broadcast"
+# dialog "IP Gateway Addr      : " "$clearipaddr$mch_ip_gateway"
+# dialog "Are you really sure ?" "y"
+# #
+# # Sleep is needed for MCH processing time
+# #
+# sleep 5;
 
 
 dialog "$prompt" "mchcfg"
@@ -166,7 +169,7 @@ dialog "Enable RMCP access (y/n) (RET=\*): " "y"
 dialog "Enable telnet access (y/n) (RET=\*): " "y"
 dialog "Enable WEB access (y/n) (RET=\*): " "y"
 dialog "Enable ssh access (y/n) (RET=\*): " "n"
-dialog "Enter IP address source Mgmt (dec) (RET=\*): " "1"
+dialog "Enter IP address source Mgmt (dec) (RET=\*): " "2"
 dialog "Enter session activity timeout (dec, minutes) (RET=\*): " "0"
 dialog "Enter session activity timeout (dec, seconds) (RET=\*): " "60"
 dialog "Enter default fan level (dec, percent) (RET=\*): " "30"

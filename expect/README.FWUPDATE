@@ -1,0 +1,19 @@
+NAT MCH Firmware Update
+
+
+
+```
+iocuser@icslab-mtca-conf00: tftp$ tree -L 2
+.
+├── [iocuser  4.0K]  2.20.4
+│   └── [iocuser  3.8M]  mch_fw_2_20_4.bin
+└── [iocuser    24]  latest_mch_fw.bin -> 2.20.4/mch_fw_2_20_4.bin
+
+1 directory, 2 files
+iocuser@icslab-mtca-conf00: tftp$ 
+```
+
+
+```
+expect (master)$ expect fwupdate.exp 10.0.5.173 4016
+```
