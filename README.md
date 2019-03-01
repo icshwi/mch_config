@@ -52,5 +52,5 @@ $ tree -L 3
 
 |![MOXA1](images/moxa_config_02.png)|
 | :---: |
-|**Figure 1** The screenshot for MOXA NPORT Configuration : Communication Paremeters. |
+|**Figure 2** The screenshot for MOXA NPORT Configuration : Communication Paremeters. |
 
