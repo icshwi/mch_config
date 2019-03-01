@@ -18,11 +18,11 @@
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
 #   date    : Thursday, February 28 13:42:19 CET 2019
-#   version : 0.0.4
+#   version : 0.0.5
 
 
 set DATE [exec date +%y%m%d%H%M]
-set timeout 5
+set timeout 10
 #set ntpserver "174.16.6.38"
 set ntpserver "194.58.204.20"
 
@@ -161,9 +161,10 @@ foreach cmd $debugcmds {
 # sleep 5;
 
 
-dialog "$prompt" "mchcfg"
+
 
 # [ 3] modify MCH global configuration
+dialog "$prompt" "mchcfg"
 dialog "$mchcfgprompt" "3"
 dialog "Enable RMCP access (y/n) (RET=\*): " "y"
 dialog "Enable telnet access (y/n) (RET=\*): " "y"
@@ -177,18 +178,28 @@ dialog "Enable watch dog timer                     (y/n) (RET=\*): " "n"
 dialog "Enable alternative cooling scheme          (y/n) (RET=\*): " "n"
 dialog "Telnet inactivity timeout (0: disabled or seconds) (RET=\*): " "120"
 dialog "Enable PM relaxed assignment               (y/n) (RET=\*): " "n"
+# [ q] quit and save configuration
+dialog "$mchcfgprompt" "q"
+#
+# Sleep is needed for MCH processing time
+#
+sleep 2;
 
-
-# [ 4] modify ShM configuration 
+# [ 4] modify ShM configuration
+dialog "$prompt" "mchcfg"
 dialog "$mchcfgprompt" "4"
 dialog "Allow shelf FRU invalid (y/n) (RET=\*): " "y"
 dialog "Enable temperature management (y/n) (RET=\*): " "y"
 dialog "Enter emergency shutdown mode (dec) (RET=\*): " "0"
 dialog "Send SEND_MSG confirmation to SMS (y/n) (RET=\*): " "n"
 dialog "Use external shelf manager (y/n) (RET=\*): " "n"
+# [ q] quit and save configuration
+dialog "$mchcfgprompt" "q"
+sleep 2;
 
 
 # [ 5] modify CM configuration
+dialog "$prompt" "mchcfg"
 dialog "$mchcfgprompt" "5"
 dialog "Enter CM carrier number default (dec) (RET=\*): " "0"
 dialog "Enter CM quiesced event timeout (dec, seconds) (RET=\*): " "30"
@@ -205,29 +216,43 @@ dialog "Enable CM power module debug (y/n) (RET=\*): " "n"
 dialog "Enable CM cooling unit debug (y/n) (RET=\*): " "n"
 dialog "Enable CM CM/ShM interface debug (y/n) (RET=\*): " "n"
 dialog "Enter FRU communication to debug (0=all) (RET=\*): " "0"
+# [ q] quit and save configuration
+dialog "$mchcfgprompt" "q"
+sleep 2;
 
 
 # [ 6] modify SEL configuration
-
+dialog "$prompt" "mchcfg"
 dialog "$mchcfgprompt" "6"
 dialog "Enter configuration mode (RET=\*): " "6"
 dialog "Enable 'keep on read' (y/n) (RET=\*): " "n"
-dialog "Allocate SEL in non-volatile RAM (y/n) (RET=\*): " "n"
-dialog "Ignore 'version change' sensor (y/n) (RET=\*): " "n"
+dialog "Allocate SEL in non-volatile RAM (y/n) (RET=\*): " "y"
+dialog "Ignore 'version change' sensor (y/n) (RET=\*): " "y"
+# [ q] quit and save configuration
+dialog "$mchcfgprompt" "q"
+sleep 2;
 
 # [ 7] modify GbE switch configuration
-set sourceprompt "Enter source (RET=\*): " 
+
+set sourceprompt "Enter source (RET=\*): "
+dialog "$prompt" "mchcfg"
 dialog "$mchcfgprompt" "7"
 dialog "$sourceprompt" "0"
 dialog "$sourceprompt" "0"
-
+# [ q] quit and save configuration
+dialog "$mchcfgprompt" "q"
+sleep 2;
 
 #[ 8] modify CLK module configuration
+dialog "$prompt" "mchcfg"
 dialog "$mchcfgprompt" "8"
 dialog "$sourceprompt" "1"
-
+# [ q] quit and save configuration
+dialog "$mchcfgprompt" "q"
+sleep 2;
 
 #[ 9] modify PCIe configuration
+dialog "$prompt" "mchcfg"
 dialog "$mchcfgprompt" "9"
 dialog "Enter PCIe upstream port power up delay (dec, sec) (RET=\*): " "30"
 dialog "Enter PCIe hot plug delay for AMCs (dec, sec) (RET=\*): " "0"
@@ -237,7 +262,9 @@ dialog "Enable PCIe early ekey (before payload) (y/n) (RET=\*): " "n"
 dialog "Disable ekeying for PCIe Gen3 (y/n) (RET=\*): " "n"
 dialog "Use PCIe on MCH-RTM(disable AMC12) (y/n) (RET=\*): " "n"
 dialog "$sourceprompt" "1"
-
+# [ q] quit and save configuration
+dialog "$mchcfgprompt" "q"
+sleep 2;
 
 
 # [10] modify NTP configuration
@@ -249,25 +276,27 @@ dialog "$ntpprompt3" "$clearipaddr $ntpserver"
 dialog "$ntpprompt4" "0"
 dialog "$ntpprompt5" "0"
 dialog "$ntpprompt6" "0"
-
+# [ q] quit and save configuration
+dialog "$mchcfgprompt" "q"
+sleep 2;
 
 #[11] modify DHCP configuration
 dialog "$mchcfgprompt" "11"
 dialog "Enter host name: " "$mch_hostname"
-
-
-
 # [ q] quit and save configuration
 dialog "$mchcfgprompt" "q"
-#
-# Sleep is needed for MCH processing time
-#
-sleep 6;
+sleep 2;
+
+
 dialog "$prompt" "ntpdate $ntpserver"
 
+#interact
 
 expect "$prompt"
 send -- "\r"
+
+
+
 
 dialog "$prompt" "reboot"
 

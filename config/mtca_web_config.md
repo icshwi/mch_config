@@ -12,13 +12,12 @@ RMCP access | enabled
 telnet access | enabled
 ssh access | disabled | find out how to enable it
 WEB access | enabled 
-IP address source for management port | board configuration |LAB
 IP address source for management port | DHCP | SITE
 IP address source for GbE port | no IP address
 RMCP session activity timeout minutes | 0
 RMCP session activity timeout seconds | 60
-Telnet session activity timeout seconds | 300
-default fan level | 40
+Telnet session activity timeout seconds | 120
+default fan level | 30
 | **MCH configuration flags** |                       | |
 enable watch dog timer | no
 Enable alternative cooling scheme | no
@@ -65,8 +64,8 @@ FRU communication to debug (0=all) |	 0
 | ---------------------- | :-------------------: | ------:|
 **configuration flags**|
 keep on read	| disabled
-allocate SEL in non-volatile RAM | no	
-ignore 'version change' sensor | no
+allocate SEL in non-volatile RAM | yes	
+ignore 'version change' sensor | yes
 
 
 ###
@@ -84,14 +83,14 @@ configuration source | load from FLASH
 | **PCIe parameter**      | **Current Configuration**         | comment|
 | ---------------------- | :-------------------: | ------:|
 **configuration flags**|
-upstream slot power up delay |	15 
+upstream slot power up delay |	30
 PCIe hot plug delay for AMCs |	0 
 100 MHz spread spectrum	 | disabled
 hot plug support	| disabled 
 PCIe early ekey (before payload) | disabled	
 'no ekey' for PCIe	 | disabled 
 Use PCIe on MCH-RTM(disable AMC12) | no
-configuration source | no configuration | load from FLASH
+configuration source | load from FLASH
 
 
 ###
@@ -104,7 +103,7 @@ Time server IP	| 172.16.6.38
 local time offset | 0
 **configuration flags**|
 SNTP or Time Protocol	| Time protocol
-Time client | diabled
+Time client | enabled
 
 
 ###

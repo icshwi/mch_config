@@ -17,14 +17,14 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Monday, February 18 23:32:20 CET 2019
-#   version : 0.0.3
+#   date    : Friday, March  1 15:08:01 CET 2019
+#   version : 0.0.1
 
 
 set DATE [exec date +%y%m%d%H%M]
 set timeout 5
 set tftp_server "10.0.4.134"
-set fw_path_filename "latest_mch_fw.bin"
+set conf_path_filename "latest_mch_conf_9u_cfg.txt"
 
 
 set prompt "nat> ";
@@ -45,25 +45,12 @@ set ip [lindex $argv 0]
 # MOXA Server PORT
 #
 set port [lindex $argv 1]
-#
-# MCH Configuration Commands File
-#
-#set commands_file [lindex $argv 0]
+
 
 set logfile_path "log_path"
 file mkdir $logfile_path
+log_file $logfile_path/MCH_CLOCKUPDATE_CONF_$ip\_$port\_$DATE.log
 
-log_file $logfile_path/MCH_FWUPDATE_CONF_$ip\_$port\_$DATE.log
-
-# #
-
-# # Read all command sequence from a file to save them into
-# #
-# set input [open "$commands_file" r]
-# set lines [split [read -nonewline $input] "\n"]
-# foreach line $lines {
-#     puts $line
-# }
 
 proc dialog {expstring send } {
     expect {
@@ -84,17 +71,12 @@ proc dialog {expstring send } {
 	}
     }
 }
-      
+   
 
 # Connect the MOXA serial port
 exp_spawn telnet $ip $port
 
 dialog "Escape character is '^\]'.\r" ""
-
-# foreach line $lines {
-#     dialog "$prompt" "$line"
-# }
-
 
 expect  {
     "$prompt"       { exp_send -s "\r" }
@@ -108,12 +90,19 @@ expect  {
 }
 
 
-set timeout -1
-dialog "$prompt" "update_firmware"
-dialog "firmware> " "$tftp_server:$fw_path_filename"
+dialog "$prompt" "upload_cfg"
+dialog "\[IP:FILENAME\*" "$tftp_server:$conf_path_filename"
+dialog "Set configuration from file?  (RET=\*): " "y"
+dialog "Save configuration to FLASH memory?  (RET=\*): " "y"
 
-dialog "$prompt" "reboot"
+sleep 5;
 
+expect "$prompt"
+send -- "\r"
 
 expect eof
+
+
+
+
 
