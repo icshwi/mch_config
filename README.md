@@ -19,7 +19,7 @@ configuration.
 * Expect 
 * Configuration of TFTP according to the directory structure, shown in `Current TFTP Server Configuration at ESS`
 * MOXA Serial Server NPort 6650-16
-* In-house Serial Cable between MCH and MOXA 
+* In-house Serial Cable between MCH and MOXA (One has to understand MOXA pinout and NAT MCH pinout properly. Note that one can find few discrepency among NAT MCH manuals. )
 
 ### Expect
 We use the expect to configure the MCH within four steps. Please look at
