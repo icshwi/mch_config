@@ -102,7 +102,7 @@ Time server IP	| 172.16.6.38
 'Check for Time' delay hours | 0
 local time offset | 0
 **configuration flags**|
-SNTP or Time Protocol	| Time protocol
+SNTP or Time Protocol	| SNTP
 Time client | enabled
 
 

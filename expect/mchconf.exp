@@ -17,8 +17,8 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Thursday, February 28 13:42:19 CET 2019
-#   version : 0.0.5
+#   date    : Monday, March  4 17:58:16 CET 2019
+#   version : 0.0.6
 
 
 set DATE [exec date +%y%m%d%H%M]
@@ -28,12 +28,12 @@ set ntpserver "194.58.204.20"
 
 set prompt "nat> ";
 set mchcfgprompt "Enter configuration mode (RET=\*): ";
-set ntpprompt1   "Enable Time client (y/n) (RET=\*): ";
-set ntpprompt2   "SNTP (y) or Time Protocol (n) (RET=\*): ";
-set ntpprompt3   "Enter Time server IP (dot notation): \*.\*.\*.\*";
-set ntpprompt4   "Enter 'Check for Time' delay (dec, minutes) (RET=\*): "
-set ntpprompt5   "Enter 'Check for Time' delay (dec, hours) (RET=\*): " 
-set ntpprompt6   "Enter local time offset (dec, hours) (RET=\*): "
+# set ntpprompt1   "Enable Time client (y/n) (RET=\*): ";
+# set ntpprompt2   "SNTP (y) or Time Protocol (n) (RET=\*): ";
+# set ntpprompt3   "Enter Time server IP (dot notation): \*.\*.\*.\*";
+# set ntpprompt4   "Enter 'Check for Time' delay (dec, minutes) (RET=\*): "
+# set ntpprompt5   "Enter 'Check for Time' delay (dec, hours) (RET=\*): " 
+# set ntpprompt6   "Enter local time offset (dec, hours) (RET=\*): "
 
 # Debug Level
 # - configure CM/ShM interface debug
@@ -270,12 +270,12 @@ sleep 2;
 # [10] modify NTP configuration
 dialog "$prompt" "mchcfg"
 dialog "$mchcfgprompt" "10"
-dialog "$ntpprompt1" "y"
-dialog "$ntpprompt2" "n"
-dialog "$ntpprompt3" "$clearipaddr $ntpserver"
-dialog "$ntpprompt4" "0"
-dialog "$ntpprompt5" "0"
-dialog "$ntpprompt6" "0"
+dialog "Enable Time client (y/n) (RET=\*): " "y"
+dialog "SNTP (y) or Time Protocol (n) (RET=\*): " "y"
+dialog "Enter Time server IP (dot notation): \*.\*.\*.\*" "$clearipaddr $ntpserver"
+dialog "Enter 'Check for Time' delay (dec, minutes) (RET=\*): " "0"
+dialog "Enter 'Check for Time' delay (dec, hours) (RET=\*): " "0"
+dialog "Enter local time offset (dec, hours) (RET=\*): " "0"
 # [ q] quit and save configuration
 dialog "$mchcfgprompt" "q"
 sleep 2;
@@ -296,9 +296,9 @@ expect "$prompt"
 send -- "\r"
 
 
-
-
 dialog "$prompt" "reboot"
+
+
 
 expect eof
 

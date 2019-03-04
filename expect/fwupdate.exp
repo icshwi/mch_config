@@ -108,12 +108,9 @@ expect  {
 }
 
 
-set timeout -1
 dialog "$prompt" "update_firmware"
 dialog "firmware> " "$tftp_server:$fw_path_filename"
-
 dialog "$prompt" "reboot"
-
 
 expect eof
 

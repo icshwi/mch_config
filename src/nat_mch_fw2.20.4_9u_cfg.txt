@@ -678,11 +678,32 @@ clk_pcb_min  =  2
 #
 #  --------------------------------------------------------------------------------
 #  The Clock Distribution Configuration is only valid with MRF MTCA EVR 300, which
-#  is located in AMC2_4 (AMC2) in MTCA Standard 9U Configuration.
+#  is located in AMC2_4 (AMC2) in MTCA Standard 9U Configuration. And Our default
+#  MCH has the HCSL buffer PCIe Clock Gen Assembly Option, which can be found in
+#  Maintenance/Board Information. 
 #
+#  ESS MTCA 9U Chassis, we DO NOT need to enable the following in order to
+# get PCIe clocks properly in all AMCs: 
+#
+#  clk_phys_out = 33,  1
+#  clk_phys_out = 34,  1
+#  clk_phys_out = 35,  1
+#  clk_phys_out = 36,  1
+#  clk_phys_out = 37,  1
+#  clk_phys_out = 38,  1
+#  clk_phys_out = 39,  1
+#  clk_phys_out = 40,  1
+#  clk_phys_out = 41,  1
+#  clk_phys_out = 42,  1
+#  clk_phys_out = 43,  1
+#  clk_phys_out = 44,  1
+#
+#  However, it is ok to leave as it is. HOWEVER, I would like to disable all
+#  Zero in case "something is going to crazy"
+# 
 #  Thank Simone and Javier for this configuration.
 #
-#  Friday, March  1 15:37:19 CET 2019, hanlee@esss.se
+#  Monday, March  4 16:22:48 CET 2019
 #  --------------------------------------------------------------------------------
 
 clk_phys_out =  1, 18
@@ -717,18 +738,18 @@ clk_phys_out = 29,  0
 clk_phys_out = 30,  0
 clk_phys_out = 31,  0
 clk_phys_out = 32,  0
-clk_phys_out = 33,  41
-clk_phys_out = 34,  41
-clk_phys_out = 35,  41
-clk_phys_out = 36,  41
-clk_phys_out = 37,  41
-clk_phys_out = 38,  41
-clk_phys_out = 39,  41
-clk_phys_out = 40,  41
+clk_phys_out = 33,  0
+clk_phys_out = 34,  0
+clk_phys_out = 35,  0
+clk_phys_out = 36,  0
+clk_phys_out = 37,  0
+clk_phys_out = 38,  0
+clk_phys_out = 39,  0
+clk_phys_out = 40,  0
 clk_phys_out = 41,  0
-clk_phys_out = 42,  41
-clk_phys_out = 43,  41
-clk_phys_out = 44,  41
+clk_phys_out = 42,  0
+clk_phys_out = 43,  0
+clk_phys_out = 44,  0
 clk_phys_out = 48,  0
 clk_phys_out = 50,  0
 
@@ -992,7 +1013,7 @@ pcie_vs_cfg = VS_0, AMC1_4, NONE, AMC2_4, AMC3_4, AMC4_4, AMC5_4, AMC6_4, AMC7_4
 #
 
 pcie_lnk_speed_max = AMC1_4,  LS_8_0GTs
-pcie_lnk_speed_max = AMC2_4,  LS_8_0GTs
+pcie_lnk_speed_max = AMC2_4,  LS_2_5GTs
 pcie_lnk_speed_max = AMC3_4,  LS_8_0GTs
 pcie_lnk_speed_max = AMC4_4,  LS_8_0GTs
 pcie_lnk_speed_max = AMC5_4,  LS_8_0GTs
@@ -1013,7 +1034,7 @@ pcie_lnk_speed_max = AMC12_4, LS_8_0GTs
 # Params: value: upstream slot power up delay time in seconds (min. 5sec)
 #
 
-pcie_up_delay = 30
+# pcie_up_delay = 30
 
 #
 # Item <<pcie_amc_up_delay>>: set <PCIe hot plug delay for AMCs>

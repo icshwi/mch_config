@@ -679,7 +679,26 @@ clk_pcb_min  =  2
 #  --------------------------------------------------------------------------------
 #  The Clock Distribution Configuration is only valid with MRF MTCA EVR 300, which
 #  is located in AMC6_4 and AMC6_8 (AMC6) in MTCA Standard 3U Configuration.
+#  And Our default MCH has the HCSL buffer PCIe Clock Gen Assembly Option, which
+#  can be found in Maintenance/Board Information.
 #
+#  ESS MTCA 3U Chassis, we need to enable the following in order to get PCIe clocks properly
+#  in all AMCs: 
+#
+#  clk_phys_out = 33,  1
+#  clk_phys_out = 34,  1
+#  clk_phys_out = 35,  1
+#  clk_phys_out = 36,  1
+#  clk_phys_out = 37,  1
+#  clk_phys_out = 38,  1
+#  clk_phys_out = 39,  1
+#  clk_phys_out = 40,  1
+#  clk_phys_out = 41,  1
+#  clk_phys_out = 42,  1
+#  clk_phys_out = 43,  1
+#  clk_phys_out = 44,  1
+#
+#  
 #  Thank Simone and Javier for this configuration.
 #
 #  Friday, March  1 15:37:19 CET 2019, hanlee@esss.se
@@ -717,18 +736,18 @@ clk_phys_out = 29,  0
 clk_phys_out = 30,  0
 clk_phys_out = 31,  0
 clk_phys_out = 32,  0
-clk_phys_out = 33,  41
-clk_phys_out = 34,  41
-clk_phys_out = 35,  41
-clk_phys_out = 36,  41
-clk_phys_out = 37,  41
-clk_phys_out = 38,  41
-clk_phys_out = 39,  41
-clk_phys_out = 40,  41
-clk_phys_out = 41,  0
-clk_phys_out = 42,  41
-clk_phys_out = 43,  41
-clk_phys_out = 44,  41
+clk_phys_out = 33,  1
+clk_phys_out = 34,  1
+clk_phys_out = 35,  1
+clk_phys_out = 36,  1
+clk_phys_out = 37,  1
+clk_phys_out = 38,  1
+clk_phys_out = 39,  1
+clk_phys_out = 40,  1
+clk_phys_out = 41,  1
+clk_phys_out = 42,  1
+clk_phys_out = 43,  1
+clk_phys_out = 44,  1
 clk_phys_out = 48,  0
 clk_phys_out = 50,  0
 
@@ -923,6 +942,7 @@ pcie_pcb_min  =  6
 #                       AMC12_8 - AMC12, port 8..11
 #
 #           
+
 pcie_vs_cfg = VS_0, AMC2_4, NONE, AMC1_4, AMC1_8, AMC2_8, AMC3_4, AMC3_8, AMC4_4, AMC4_8, AMC5_4, AMC5_8, AMC6_4, AMC6_8
 
 
@@ -1011,7 +1031,7 @@ pcie_lnk_speed_max = AMC6_8, LS_8_0GTs
 # Params: value: upstream slot power up delay time in seconds (min. 5sec)
 #
 
-pcie_up_delay = 30
+# pcie_up_delay = 30
 
 #
 # Item <<pcie_amc_up_delay>>: set <PCIe hot plug delay for AMCs>

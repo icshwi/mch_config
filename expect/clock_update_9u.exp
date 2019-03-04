@@ -17,8 +17,8 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
-#   date    : Friday, March  1 15:08:01 CET 2019
-#   version : 0.0.1
+#   date    : Monday, March  4 17:58:40 CET 2019
+#   version : 0.0.2
 
 
 set DATE [exec date +%y%m%d%H%M]
@@ -99,6 +99,9 @@ sleep 5;
 
 expect "$prompt"
 send -- "\r"
+
+dialog "$prompt" "reboot"
+
 
 expect eof
 
