@@ -85,35 +85,11 @@ proc dialog {expstring send } {
     }
 }
 
-
 # Connect the MOXA serial port
 exp_spawn telnet $ip $port
 
 dialog "Escape character is '^\]'.\r" ""
 
-# foreach line $lines {
-#     dialog "$prompt" "$line"
-# }
-
-
-expect  {
-    "$prompt"       { exp_send -s "\r" }
-    "$mchcfgprompt" { exp_send -s "0\r"}
-    "(RET=\*): "    { exp_send -s "\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r"}
-    -gl "timeout" {
-	expect *
-	error "Timed out" \
-	    "Expected: $expstring. Saw: $expect_out(buffer)"
-    }
-}
-
-
-set timeout -1
-dialog "$prompt" "update_firmware"
-dialog "firmware> " "$tftp_server:$fw_path_filename"
-
-dialog "$prompt" "reboot"
-
-set timeout 10
-
+# MCH is placed by default in slot 3
+dialog "$prompt" "show_fruinfo 3"
 expect eof
