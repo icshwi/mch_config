@@ -34,6 +34,9 @@ CURRENT_VERSION=(2 20 4)
 # Port numbers in the MOXA are 40XX
 PORT_PREFIX=40
 
+LOG_PREFIX="./log"
+LOG_FILE=$LOG_PREFIX/"mch_config_"
+
 
 
 function help {
@@ -69,11 +72,11 @@ function run_script {
 # (2)  : Failed to retrieve FW version string
 
 function errecho {
-  echo -e "\033[1;31m$1\033[0m"
+  echo -e "\033[101;30m$1\033[0m"
 }
 
 function fancyecho {
-  echo -e "\033[1m$1\033[0m"
+  echo -e "\033[107;34m$1\033[0m"
 }
 
 function print_error {
@@ -95,6 +98,9 @@ function update_fw {
 
   fancyecho "40$1::Checking FW version"
   run_script $FWCHECK $PORT_PREFIX$1 >  $TEMPFILE
+  # Add all outputs to log file
+  cat $TEMPFILE
+  echo ""
   fw_version=$(grep "MCH FW" $TEMPFILE | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}")
   rm $TEMPFILE
 
@@ -115,10 +121,11 @@ function update_fw {
   fi
 
   if [[ $UPDATE -eq 1 ]]; then
-    fancyecho "40$1::Writing new FW ($CURRENT_VERSION)...."
-    run_script $FWUPDATE $PORT_PREFIX$1
+    fancyecho "40$1::Writing new FW (Old=$fw_version)...."
+    #run_script $FWUPDATE $PORT_PREFIX$1 &
     # Usually it takes around 3 minutes
-    sleep 240
+    #sleep 240
+    fancyecho "40$1::FW updated (New=${CURRENT_VERSION[*]})...."
   else
     fancyecho "40$1::FW up to date"
   fi
@@ -153,10 +160,13 @@ while [ $# -gt 0 ]; do
   shift
 done
 
+mkdir -p $LOG_PREFIX
+logfile="${LOG_FILE}`date "+%y%m%d_%H:%M:%S"`.log"
+
 # Run the expect scripts
 if [[ $mode -eq 1 ]]; then      # Sequence mode
   while [ $fp -le $ep ]; do
-    runner $fp &
+    runner $fp 2&> $logfile &
     # Retrieve the pid of the process in order to wait for it later
     pids[${i}]=$!
     portn[${i}]=$fp
@@ -166,12 +176,13 @@ if [[ $mode -eq 1 ]]; then      # Sequence mode
 else
   k=0
   for i in ${PORTS[*]}; do    # List mode
-    runner $i &
+    runner $i 2&> $logfile &
     # Retrieve the pid of the process in order to wait for it later
     pids[${k}]=$!
     portn[${k}]=$i
     k=$(($k+1))
   done
+
 fi
 
 # Wait for all pids
@@ -180,7 +191,7 @@ for pid in ${pids[*]}; do
     wait $pid
     err=$?
     if [[ $err -ne 0 ]]; then
-      print_error $err ${portn[$i]}
+      print_error $err ${portn[$i]} 2&>> $logfile
     fi
     i=$(($i+1))
 done
