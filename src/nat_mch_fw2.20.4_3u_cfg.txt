@@ -1,6 +1,6 @@
 #  --------------------------------------------------------------------------------
 #
-#  This configuration is only valid for the ESS MTCA Standard System for 9U.
+#  This configuration is only valid for the ESS MTCA Standard System for 3U.
 #  Please don't apply it to other MTCA Systems at all
 #
 #  Friday, March  1 15:35:17 CET 2019, han.lee@esss.se
