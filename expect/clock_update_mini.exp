@@ -1,0 +1,112 @@
+#!/usr/bin/expect --
+#
+#  Copyright (c) 2019           European Spallation Source ERIC
+#
+#  The program is free software: you can redistribute
+#  it and/or modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation, either version 2 of the
+#  License, or any newer version.
+#
+#  This program is distributed in the hope that it will be useful, but WITHOUT
+#  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+#  more details.
+#
+#  You should have received a copy of the GNU General Public License along with
+#  this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
+#
+#   author  : Jeong Han Lee
+#   email   : jeonghan.lee@gmail.com
+#   date    : Monday, March 11 10:42:07 CET 2019
+#   version : 0.0.1
+
+
+set DATE [exec date +%y%m%d%H%M]
+set timeout 5
+set tftp_server "10.0.4.134"
+set conf_path_filename "latest_mch_conf_mini_cfg.txt"
+
+
+set prompt "nat> ";
+set mchcfgprompt "Enter configuration mode (RET=\*): ";
+
+# MCH is slow not to understand the machine send command
+# So, we have to put some delay between characters.
+# 
+# Send strings with .1 second in between each 1 characters sent
+#
+set send_slow {1 .1}
+
+#
+# MOXA Server IP
+#
+set ip [lindex $argv 0]
+#
+# MOXA Server PORT
+#
+set port [lindex $argv 1]
+
+
+set logfile_path "log_path"
+file mkdir $logfile_path
+log_file $logfile_path/MCH_CLOCKUPDATE_CONF_$ip\_$port\_$DATE.log
+
+
+proc dialog {expstring send } {
+    expect {
+	$expstring {
+	    sleep .1;
+	    exp_send -s "$send\r"
+	    sleep 1;
+	}
+	-gl "timeout" {
+	    expect *
+	    error "Timed out" \
+		"Expected: $expstring. Saw: $expect_out(buffer)"
+	}
+	eof {
+	    expect *
+	    error "Connection Closed" \
+		"Expected: $expstring. Saw: $expect_out(buffer)"
+	}
+    }
+}
+   
+
+# Connect the MOXA serial port
+exp_spawn telnet $ip $port
+
+dialog "Escape character is '^\]'.\r" ""
+
+expect  {
+    "$prompt"       { exp_send -s "\r" }
+    "$mchcfgprompt" { exp_send -s "0\r"}
+    "(RET=\*): "    { exp_send -s "\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r"}
+    -gl "timeout" {
+	expect *
+	error "Timed out" \
+	    "Expected: $expstring. Saw: $expect_out(buffer)"
+    }
+}
+
+
+dialog "$prompt" "upload_cfg"
+dialog "\[IP:FILENAME\*" "$tftp_server:$conf_path_filename"
+dialog "Set configuration from file?  (RET=\*): " "y"
+dialog "Save configuration to FLASH memory?  (RET=\*): " "y"
+
+sleep 5;
+
+expect "$prompt"
+send -- "\r"
+
+
+dialog "$prompt" "reboot"
+
+
+expect eof
+
+
+
+
+

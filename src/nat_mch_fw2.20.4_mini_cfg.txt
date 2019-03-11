@@ -1,13 +1,3 @@
-#  --------------------------------------------------------------------------------
-#
-#  This configuration is only valid for the ESS MTCA Standard System for 9U.
-#  Please don't apply it to other MTCA Systems at all
-#
-#  Friday, March  1 15:35:17 CET 2019, han.lee@esss.se
-#
-#  --------------------------------------------------------------------------------
-#
-#
 # ===   Firmware version   ===
 #The version item has been automatically generated assigned actually
 #firmware version.
@@ -200,14 +190,14 @@ eth_802.1x_ini  = 0
 #            par_3: - Egress Queue(0-3)
 #
 
-eth_qos_cm      =   AMC1/0,  00,  0
-eth_qos_cm      =   AMC1/0,  01,  0
-eth_qos_cm      =   AMC1/0,  02,  0
-eth_qos_cm      =   AMC1/0,  03,  0
-eth_qos_cm      =   AMC1/0,  04,  0
-eth_qos_cm      =   AMC1/0,  05,  0
-eth_qos_cm      =   AMC1/0,  06,  0
-eth_qos_cm      =   AMC1/0,  07,  0
+eth_qos_cm      =   AMC1/0,  00,  3
+eth_qos_cm      =   AMC1/0,  01,  3
+eth_qos_cm      =   AMC1/0,  02,  3
+eth_qos_cm      =   AMC1/0,  03,  3
+eth_qos_cm      =   AMC1/0,  04,  3
+eth_qos_cm      =   AMC1/0,  05,  3
+eth_qos_cm      =   AMC1/0,  06,  3
+eth_qos_cm      =   AMC1/0,  07,  3
 eth_qos_cm      =   AMC2/0,  00,  0
 eth_qos_cm      =   AMC2/0,  01,  0
 eth_qos_cm      =   AMC2/0,  02,  0
@@ -216,30 +206,62 @@ eth_qos_cm      =   AMC2/0,  04,  0
 eth_qos_cm      =   AMC2/0,  05,  0
 eth_qos_cm      =   AMC2/0,  06,  0
 eth_qos_cm      =   AMC2/0,  07,  0
-eth_qos_cm      =   AMC3/0,  00,  3
-eth_qos_cm      =   AMC3/0,  01,  3
-eth_qos_cm      =   AMC3/0,  02,  3
-eth_qos_cm      =   AMC3/0,  03,  3
-eth_qos_cm      =   AMC3/0,  04,  3
-eth_qos_cm      =   AMC3/0,  05,  3
-eth_qos_cm      =   AMC3/0,  06,  3
-eth_qos_cm      =   AMC3/0,  07,  3
-eth_qos_cm      =   AMC4/0,  00,  0
-eth_qos_cm      =   AMC4/0,  01,  0
-eth_qos_cm      =   AMC4/0,  02,  0
-eth_qos_cm      =   AMC4/0,  03,  0
-eth_qos_cm      =   AMC4/0,  04,  0
-eth_qos_cm      =   AMC4/0,  05,  0
-eth_qos_cm      =   AMC4/0,  06,  0
-eth_qos_cm      =   AMC4/0,  07,  0
-eth_qos_cm      =   AMC5/0,  00,  3
-eth_qos_cm      =   AMC5/0,  01,  3
-eth_qos_cm      =   AMC5/0,  02,  3
-eth_qos_cm      =   AMC5/0,  03,  3
-eth_qos_cm      =   AMC5/0,  04,  3
-eth_qos_cm      =   AMC5/0,  05,  3
-eth_qos_cm      =   AMC5/0,  06,  3
-eth_qos_cm      =   AMC5/0,  07,  3
+eth_qos_cm      =   AMC2/1,  00,  3
+eth_qos_cm      =   AMC2/1,  01,  3
+eth_qos_cm      =   AMC2/1,  02,  3
+eth_qos_cm      =   AMC2/1,  03,  3
+eth_qos_cm      =   AMC2/1,  04,  3
+eth_qos_cm      =   AMC2/1,  05,  3
+eth_qos_cm      =   AMC2/1,  06,  3
+eth_qos_cm      =   AMC2/1,  07,  3
+eth_qos_cm      =   AMC3/0,  00,  0
+eth_qos_cm      =   AMC3/0,  01,  0
+eth_qos_cm      =   AMC3/0,  02,  0
+eth_qos_cm      =   AMC3/0,  03,  0
+eth_qos_cm      =   AMC3/0,  04,  0
+eth_qos_cm      =   AMC3/0,  05,  0
+eth_qos_cm      =   AMC3/0,  06,  0
+eth_qos_cm      =   AMC3/0,  07,  0
+eth_qos_cm      =   AMC3/1,  00,  3
+eth_qos_cm      =   AMC3/1,  01,  3
+eth_qos_cm      =   AMC3/1,  02,  3
+eth_qos_cm      =   AMC3/1,  03,  3
+eth_qos_cm      =   AMC3/1,  04,  3
+eth_qos_cm      =   AMC3/1,  05,  3
+eth_qos_cm      =   AMC3/1,  06,  3
+eth_qos_cm      =   AMC3/1,  07,  3
+eth_qos_cm      =   AMC4/0,  00,  3
+eth_qos_cm      =   AMC4/0,  01,  3
+eth_qos_cm      =   AMC4/0,  02,  3
+eth_qos_cm      =   AMC4/0,  03,  3
+eth_qos_cm      =   AMC4/0,  04,  3
+eth_qos_cm      =   AMC4/0,  05,  3
+eth_qos_cm      =   AMC4/0,  06,  3
+eth_qos_cm      =   AMC4/0,  07,  3
+eth_qos_cm      =   AMC4/1,  00,  3
+eth_qos_cm      =   AMC4/1,  01,  3
+eth_qos_cm      =   AMC4/1,  02,  3
+eth_qos_cm      =   AMC4/1,  03,  3
+eth_qos_cm      =   AMC4/1,  04,  3
+eth_qos_cm      =   AMC4/1,  05,  3
+eth_qos_cm      =   AMC4/1,  06,  3
+eth_qos_cm      =   AMC4/1,  07,  3
+eth_qos_cm      =   AMC5/0,  00,  0
+eth_qos_cm      =   AMC5/0,  01,  0
+eth_qos_cm      =   AMC5/0,  02,  0
+eth_qos_cm      =   AMC5/0,  03,  0
+eth_qos_cm      =   AMC5/0,  04,  0
+eth_qos_cm      =   AMC5/0,  05,  0
+eth_qos_cm      =   AMC5/0,  06,  0
+eth_qos_cm      =   AMC5/0,  07,  0
+eth_qos_cm      =   AMC5/1,  00,  3
+eth_qos_cm      =   AMC5/1,  01,  3
+eth_qos_cm      =   AMC5/1,  02,  3
+eth_qos_cm      =   AMC5/1,  03,  3
+eth_qos_cm      =   AMC5/1,  04,  3
+eth_qos_cm      =   AMC5/1,  05,  3
+eth_qos_cm      =   AMC5/1,  06,  3
+eth_qos_cm      =   AMC5/1,  07,  3
 eth_qos_cm      =   AMC6/0,  00,  3
 eth_qos_cm      =   AMC6/0,  01,  3
 eth_qos_cm      =   AMC6/0,  02,  3
@@ -256,46 +278,14 @@ eth_qos_cm      =   AMC7/0,  04,  3
 eth_qos_cm      =   AMC7/0,  05,  3
 eth_qos_cm      =   AMC7/0,  06,  3
 eth_qos_cm      =   AMC7/0,  07,  3
-eth_qos_cm      =   AMC8/0,  00,  3
-eth_qos_cm      =   AMC8/0,  01,  3
-eth_qos_cm      =   AMC8/0,  02,  3
-eth_qos_cm      =   AMC8/0,  03,  3
-eth_qos_cm      =   AMC8/0,  04,  3
-eth_qos_cm      =   AMC8/0,  05,  3
-eth_qos_cm      =   AMC8/0,  06,  3
-eth_qos_cm      =   AMC8/0,  07,  3
-eth_qos_cm      =   AMC9/0,  00,  3
-eth_qos_cm      =   AMC9/0,  01,  3
-eth_qos_cm      =   AMC9/0,  02,  3
-eth_qos_cm      =   AMC9/0,  03,  3
-eth_qos_cm      =   AMC9/0,  04,  3
-eth_qos_cm      =   AMC9/0,  05,  3
-eth_qos_cm      =   AMC9/0,  06,  3
-eth_qos_cm      =   AMC9/0,  07,  3
-eth_qos_cm      =   AMC10/0,  00,  3
-eth_qos_cm      =   AMC10/0,  01,  3
-eth_qos_cm      =   AMC10/0,  02,  3
-eth_qos_cm      =   AMC10/0,  03,  3
-eth_qos_cm      =   AMC10/0,  04,  3
-eth_qos_cm      =   AMC10/0,  05,  3
-eth_qos_cm      =   AMC10/0,  06,  3
-eth_qos_cm      =   AMC10/0,  07,  3
-eth_qos_cm      =   AMC11/0,  00,  3
-eth_qos_cm      =   AMC11/0,  01,  3
-eth_qos_cm      =   AMC11/0,  02,  3
-eth_qos_cm      =   AMC11/0,  03,  3
-eth_qos_cm      =   AMC11/0,  04,  3
-eth_qos_cm      =   AMC11/0,  05,  3
-eth_qos_cm      =   AMC11/0,  06,  3
-eth_qos_cm      =   AMC11/0,  07,  3
-eth_qos_cm      =   AMC12/0,  00,  0
-eth_qos_cm      =   AMC12/0,  01,  0
-eth_qos_cm      =   AMC12/0,  02,  0
-eth_qos_cm      =   AMC12/0,  03,  0
-eth_qos_cm      =   AMC12/0,  04,  0
-eth_qos_cm      =   AMC12/0,  05,  0
-eth_qos_cm      =   AMC12/0,  06,  0
-eth_qos_cm      =   AMC12/0,  07,  0
+eth_qos_cm      =   AMC7/1,  00,  0
+eth_qos_cm      =   AMC7/1,  01,  0
+eth_qos_cm      =   AMC7/1,  02,  0
+eth_qos_cm      =   AMC7/1,  03,  0
+eth_qos_cm      =   AMC7/1,  04,  0
+eth_qos_cm      =   AMC7/1,  05,  0
+eth_qos_cm      =   AMC7/1,  06,  0
+eth_qos_cm      =   AMC7/1,  07,  0
 eth_qos_cm      =   FRT_1,  00,  0
 eth_qos_cm      =   FRT_1,  01,  0
 eth_qos_cm      =   FRT_1,  02,  0
@@ -466,16 +456,16 @@ eth_txfilt_ini  =    0
 
 eth_sgmii_imode =   AMC1/0, serdes
 eth_sgmii_imode =   AMC2/0, serdes
+eth_sgmii_imode =   AMC2/1, serdes
 eth_sgmii_imode =   AMC3/0, serdes
+eth_sgmii_imode =   AMC3/1, serdes
 eth_sgmii_imode =   AMC4/0, serdes
+eth_sgmii_imode =   AMC4/1, serdes
 eth_sgmii_imode =   AMC5/0, serdes
+eth_sgmii_imode =   AMC5/1, serdes
 eth_sgmii_imode =   AMC6/0, serdes
 eth_sgmii_imode =   AMC7/0, serdes
-eth_sgmii_imode =   AMC8/0, serdes
-eth_sgmii_imode =   AMC9/0, serdes
-eth_sgmii_imode =   AMC10/0, serdes
-eth_sgmii_imode =   AMC11/0, serdes
-eth_sgmii_imode =   AMC12/0, serdes
+eth_sgmii_imode =   AMC7/1, serdes
 
 
 
@@ -580,7 +570,7 @@ inst_id = 0
 #
 
 clk_pcb_maj  =  1
-clk_pcb_min  =  2
+clk_pcb_min  =  0
 
 
 #
@@ -639,8 +629,6 @@ clk_pcb_min  =  2
 #               42 -  CLK3 AMC 10
 #               43 -  CLK3 AMC 11
 #               44 -  CLK3 AMC 12
-#               48 -  EXT single ended 2 (OUTPUT SMA 1)
-#               50 -  EXT single ended 4 (OUTPUT SMA 2)
 #
 # Params: src: source clock identifier
 #                0 -  disabled
@@ -672,8 +660,6 @@ clk_pcb_min  =  2
 #               26 -  CLK2 AMC 10
 #               27 -  CLK2 AMC 11
 #               28 -  CLK2 AMC 12
-#               35 -  EXT single ended 1 (INPUT  SMA 1)
-#               37 -  EXT single ended 3 (INPUT  SMA 2)
 #               41 -  100MHz OSC (only with HCSL option)
 #
 #  --------------------------------------------------------------------------------
@@ -682,8 +668,9 @@ clk_pcb_min  =  2
 #  MCH has the HCSL buffer PCIe Clock Gen Assembly Option, which can be found in
 #  Maintenance/Board Information. 
 #
-#  ESS MTCA 9U Chassis, we DO NOT need to enable the following in order to
-# get PCIe clocks properly in all AMCs: 
+#  MTCA 5U Chassis (we can call it MINI), we DO NOT need to configure more than AMC7.
+#  Since they are ignored by MCH itself, we keep them as the same configuration as
+#  9U Chassis configuration. 
 #
 #  clk_phys_out = 33,  1
 #  clk_phys_out = 34,  1
@@ -699,23 +686,23 @@ clk_pcb_min  =  2
 #  clk_phys_out = 44,  1
 #
 # 
-#  Thank Simone and Javier for this configuration.
+#  Thank Simone for this configuration.
 #
-#  Monday, March  4 16:22:48 CET 2019
+#  Monday, March 11 11:48:21 CET 2019
 #  --------------------------------------------------------------------------------
 
-clk_phys_out =  1, 18
-clk_phys_out =  2, 0
-clk_phys_out =  3, 18
-clk_phys_out =  4, 18
-clk_phys_out =  5, 18
-clk_phys_out =  6, 18
-clk_phys_out =  7, 18
-clk_phys_out =  8, 18
-clk_phys_out =  9, 18
-clk_phys_out = 10, 18
-clk_phys_out = 11, 18
-clk_phys_out = 12, 18
+clk_phys_out =  1,  18
+clk_phys_out =  2,  0
+clk_phys_out =  3,  18
+clk_phys_out =  4,  18
+clk_phys_out =  5,  18
+clk_phys_out =  6,  18
+clk_phys_out =  7,  18
+clk_phys_out =  8,  18
+clk_phys_out =  9,  18
+clk_phys_out = 10,  18
+clk_phys_out = 11,  18
+clk_phys_out = 12,  18
 clk_phys_out = 13,  0
 clk_phys_out = 14,  0
 clk_phys_out = 15,  0
@@ -748,9 +735,6 @@ clk_phys_out = 41,  1
 clk_phys_out = 42,  1
 clk_phys_out = 43,  1
 clk_phys_out = 44,  1
-clk_phys_out = 48,  0
-clk_phys_out = 50,  0
-
 
 
 #
@@ -897,7 +881,7 @@ inst_id = 0
 #
 
 pcie_pcb_maj  =  2
-pcie_pcb_min  =  6
+pcie_pcb_min  =  3
 
 
 #
@@ -944,7 +928,8 @@ pcie_pcb_min  =  6
 #                       AMC12_8 - AMC12, port 8..11
 #
 
-pcie_vs_cfg = VS_0, AMC1_4, NONE, AMC2_4, AMC3_4, AMC4_4, AMC5_4, AMC6_4, AMC7_4, AMC8_4, AMC9_4, AMC10_4, AMC11_4, AMC12_4
+
+pcie_vs_cfg = VS_0, AMC1_4, NONE, AMC2_4, AMC3_4, AMC4_4, AMC5_4, AMC6_4, AMC7_4
 
 #
 # Item <<pcie_lnk_width>>: Sets PCIe link width of a switch station
@@ -1011,17 +996,13 @@ pcie_vs_cfg = VS_0, AMC1_4, NONE, AMC2_4, AMC3_4, AMC4_4, AMC5_4, AMC6_4, AMC7_4
 #
 
 pcie_lnk_speed_max = AMC1_4,  LS_8_0GTs
-pcie_lnk_speed_max = AMC2_4,  LS_2_5GTs
+pcie_lnk_speed_max = AMC2_4,  LS_8_0GTs
 pcie_lnk_speed_max = AMC3_4,  LS_8_0GTs
 pcie_lnk_speed_max = AMC4_4,  LS_8_0GTs
 pcie_lnk_speed_max = AMC5_4,  LS_8_0GTs
 pcie_lnk_speed_max = AMC6_4,  LS_8_0GTs
 pcie_lnk_speed_max = AMC7_4,  LS_8_0GTs
-pcie_lnk_speed_max = AMC8_4,  LS_8_0GTs
-pcie_lnk_speed_max = AMC9_4,  LS_8_0GTs
-pcie_lnk_speed_max = AMC10_4, LS_8_0GTs
-pcie_lnk_speed_max = AMC11_4, LS_8_0GTs
-pcie_lnk_speed_max = AMC12_4, LS_8_0GTs
+
 
 
 #
@@ -1032,7 +1013,6 @@ pcie_lnk_speed_max = AMC12_4, LS_8_0GTs
 # Params: value: upstream slot power up delay time in seconds (min. 5sec)
 #
 
-# pcie_up_delay = 30
 
 #
 # Item <<pcie_amc_up_delay>>: set <PCIe hot plug delay for AMCs>
