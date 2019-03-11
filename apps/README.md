@@ -2,7 +2,6 @@
 Visualization, Configuration and Update tool for MicroTCA
 
 ## Updates
-The updates software can be downloaded from:
 * ftp://ftp.nateurope.com/
 * User: natmch; Password: natmch
 
