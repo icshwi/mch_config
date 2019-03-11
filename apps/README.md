@@ -3,7 +3,8 @@ Visualization, Configuration and Update tool for MicroTCA
 
 ## Updates
 * ftp://ftp.nateurope.com/
-* User: natmch; Password: natmch
+* Ftp_User: natmch; Ftp_Password: natmch
+* "MCH_firmware" password: LilyOfTheValley
 
 ## Usage
 * unzip natview_VX.XX.zip -d natview
