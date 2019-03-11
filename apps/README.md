@@ -15,7 +15,3 @@ Visualization, Configuration and Update tool for MicroTCA.
 * Java Runtime Environment
 * unzip
 * any OS platform
-
-# MCH_firmware
-MCH firmware package.
-* password: LilyOfTheValley
