@@ -252,9 +252,14 @@ function err_check {
   sed -i '1,33d' $TEMPFILE
   # Last 4 lines need to be removed
   sed -i "$(($(wc -l < $TEMPFILE)-3)),\$d" $TEMPFILE
-  diff --strip-trailing-cr $TEMPFILE ${GOLDEN_CFG[$FORMFACTOR]}
+  #BUG: Sometimes there's still one blank line in the begining of the file.
+  # I'm sorry but I don't know a clean way to do this:
+  awk '/^$/ && !f{f=1;next}1' $TEMPFILE > ${TEMPFILE}_2
+  diff --strip-trailing-cr ${TEMPFILE}_2 ${GOLDEN_CFG[$FORMFACTOR]}
   retvalue=$?
   rm $TEMPFILE
+  rm ${TEMPFILE}_2
+  #mv $TEMPFILE $SRC_PREFIX
   if [[ $retvalue -ne 0 ]]; then exit 4; fi
   fancyecho "\n40$1::The configuration of the MCH is OK"
 }
