@@ -271,14 +271,15 @@ function runner {
 # Start of the script magic
 # _________________________
 start=`date +%s`
-mkdir -p $LOG_PREFIX
-logfile="${LOG_FILE}`date "+%y%m%d_%H:%M:%S"`.log"
-fancyecho "MCH configuration script init (`date "+%Y%m%d %H:%M:%S"`)" >> $logfile
 
 if [[ $# -lt 1 ]]; then brief_help; exit 1;
 elif [[ $1 = "--help" ]] || [[ $1 = "-h" ]]; then help; exit 1;
 elif [[ $# -lt 3 ]]; then print_error 1; exit 1;
 fi
+
+mkdir -p $LOG_PREFIX
+logfile="${LOG_FILE}`date "+%y%m%d_%H:%M:%S"`.log"
+fancyecho "MCH configuration script init (`date "+%Y%m%d %H:%M:%S"`)" >> $logfile
 
 MOXAIP=$1
 PORTS=$2
