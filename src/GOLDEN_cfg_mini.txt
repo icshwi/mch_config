@@ -1,0 +1,508 @@
+#############################################################################
+###                           Switch configuration                        ###
+#############################################################################
+#
+#
+
+# Driver type: Broadcom 5396
+#
+
+# ===   Device Location Identifier ===
+#The following items point physical placing of some switch-device locating
+#on the NAT-MCH board.
+#
+#
+#WARNING: A mistaken change could lead to unpredictable results!
+#
+#Item <<mch_id>>: MAT-MCH ID (don't change)
+#            par1: [0|1]
+#
+#Item <<mez_id>>: Mezzanine level
+#            par1: [0|2]
+#
+#Item <<ins_id>>: Device ID of mezzanine level
+#            par1: [0-8]
+#
+
+
+mch_id = 0
+mez_id = 0
+ins_id = 0
+
+
+
+
+
+# ===   Port Based VLAN configuration   ===
+#
+#Item <<eth_pbvlan_ini>>:Port Based VLAN state
+#            par_1 [0|1]: initialization state
+#               [0] - disabled
+#               [1] - enabled
+#
+#Item <<eth_pbvlan_encm>>: list of connections that are enabled (administrative up)
+#     e.g eth_pbvlan_encm =AMC1/0, AMC1/1, AMC2/0, AMC2/1, AMC3/0
+#
+#
+#Item <<eth_pbvlan_fwcm>>: Forwarding Map
+#            par_1: source connections
+#            par_(2 ..): Forwarding Map (list of AMC Ports)
+#     e.g.: eth_pbvlan_fwcm =AMC1/0,	AMC1/1, AMC2/1, AMC3/1, AMC4/1
+#
+
+eth_pbvlan_ini  = 0
+
+
+
+
+
+
+# ===   802.1Q VLAN configuration   ===
+#
+#Item <<eth_802.1q_ini>>:  802.1Q VLAN state
+#            par_1 [0|1]: initialization state
+#               [0] - disabled
+#               [1] - enabled
+#
+#Item <<802.1q_lrn>>: Learning mode
+#            par_1 [0|1]:#               [0] - only use MAC for address learning
+#               [1] - use MAC and VLAN ID  for address learning
+#
+#Item <<eth_802.1q_m_cm>>: VLAN Membership Port Map
+#            par_1: VLAN ID
+#            par_(2 ..): [alias 1], .., [ alias n] -
+#               Membership Map(list of  AMC Ports)
+#     e.g.: eth_802.1q_m_cm = 0100,	AMC1/0, AMC2/0
+#
+#Item <<eth_802.1q_u_cm>>: VLAN Untagging Port Map
+#            par_1: VLAN ID
+#            par_(2 ..): Utagging Map(List of AMC Ports, where frame is to
+#               be untagged )
+#     e.g.: eth_802.1q_u_cm = 0100,      AMC1/0, AMC2/0
+#
+#Item <<eth_802.1q_dfl>>: 802.1Q Default Tag
+#            par_1: [alias]Connection ID
+#            par_2: 802.1Q Default VLAN ID
+#            par_3: 802.1Q Default Priority
+#     e.g.: eth_802.1q_dflt =   AMC1/0,  0001,  100
+#
+
+eth_802.1q_ini  = 0
+
+
+
+
+
+
+# ===  MAC-Table Configuration   ===
+#Item <<eth_mac_ageinit>>: Age Time of the MAC-Table
+#            par_1 [0|1]: initialization state
+#               [0] - disabled
+#               [1] - enabled
+#
+#Item <<eth_mac_agetime>>: Age Time of the MAC-Table in seconds
+#            par_1: - Time in seconds
+#     e.g: eth_mac_agetime =    300
+#
+#Item <<eth_mac_ent_con>>: MAC-Table static entries
+#            par_1: [xx:xx:xx:xx:xx:xx] - MAC Address
+#            par_2: [xxxx] - VLAN ID(1-4094)
+#            par_3: [xx] - Priority ID(0-7)
+#            par_4: [alias] - AMC Port
+#     e.g: eth_mac_ent_con =  00:13:22:33:44:55,  00100,  00, AMC3/0
+#
+
+eth_mac_ageinit =    1
+eth_mac_agetime =    300
+
+
+
+
+
+# ===  802.1x Configuration   ===
+#
+#Item <<eth_802.1x_ini>>: 802.1X Protocol state
+#            par_1 [0|1]: initialization state
+#               [0] - disabled
+#               [1] - enabled
+#
+#Item <<eth_802.1x_dm>>: Dropping mode
+#            par_1 [0|1]: flag of dropping mode#               [0] - drop frames if MAC SA misses,
+#                     and frames are not 802.1X special frames
+#               [1] - drop frames that are not 802.1X special frames
+#      e.g.: eth_802.1x_dm   = 0
+#
+#Item <<eth_802.1x_cm>>: The Port Map of 802.1X activated AMC Ports
+#            List of AMC Ports
+#            par_1: [alias] connection
+#            par_.. [alias] connection
+#     eth_802.1x_cm   =   AMC1/0, AMC2/0, AMC3/0, AMC4/0
+#
+
+eth_802.1x_ini  = 0
+
+
+
+
+
+# ===  Quality of Service Configuration   ===
+#
+#Item <<eth_qos_cm>> QoS mapping
+#         between: <port ID>-<VLAN Priority>-<Egress Queue>
+#            par_1: - [alias] AMC Port
+#            par_2: - Priority(0-7) at VLAN Tag of Ethernet Frame
+#            par_3: - Egress Queue(0-3)
+#
+
+eth_qos_cm      =   AMC1/0,  00,  3
+eth_qos_cm      =   AMC1/0,  01,  3
+eth_qos_cm      =   AMC1/0,  02,  3
+eth_qos_cm      =   AMC1/0,  03,  3
+eth_qos_cm      =   AMC1/0,  04,  3
+eth_qos_cm      =   AMC1/0,  05,  3
+eth_qos_cm      =   AMC1/0,  06,  3
+eth_qos_cm      =   AMC1/0,  07,  3
+eth_qos_cm      =   AMC2/0,  00,  0
+eth_qos_cm      =   AMC2/0,  01,  0
+eth_qos_cm      =   AMC2/0,  02,  0
+eth_qos_cm      =   AMC2/0,  03,  0
+eth_qos_cm      =   AMC2/0,  04,  0
+eth_qos_cm      =   AMC2/0,  05,  0
+eth_qos_cm      =   AMC2/0,  06,  0
+eth_qos_cm      =   AMC2/0,  07,  0
+eth_qos_cm      =   AMC2/1,  00,  3
+eth_qos_cm      =   AMC2/1,  01,  3
+eth_qos_cm      =   AMC2/1,  02,  3
+eth_qos_cm      =   AMC2/1,  03,  3
+eth_qos_cm      =   AMC2/1,  04,  3
+eth_qos_cm      =   AMC2/1,  05,  3
+eth_qos_cm      =   AMC2/1,  06,  3
+eth_qos_cm      =   AMC2/1,  07,  3
+eth_qos_cm      =   AMC3/0,  00,  0
+eth_qos_cm      =   AMC3/0,  01,  0
+eth_qos_cm      =   AMC3/0,  02,  0
+eth_qos_cm      =   AMC3/0,  03,  0
+eth_qos_cm      =   AMC3/0,  04,  0
+eth_qos_cm      =   AMC3/0,  05,  0
+eth_qos_cm      =   AMC3/0,  06,  0
+eth_qos_cm      =   AMC3/0,  07,  0
+eth_qos_cm      =   AMC3/1,  00,  3
+eth_qos_cm      =   AMC3/1,  01,  3
+eth_qos_cm      =   AMC3/1,  02,  3
+eth_qos_cm      =   AMC3/1,  03,  3
+eth_qos_cm      =   AMC3/1,  04,  3
+eth_qos_cm      =   AMC3/1,  05,  3
+eth_qos_cm      =   AMC3/1,  06,  3
+eth_qos_cm      =   AMC3/1,  07,  3
+eth_qos_cm      =   AMC4/0,  00,  3
+eth_qos_cm      =   AMC4/0,  01,  3
+eth_qos_cm      =   AMC4/0,  02,  3
+eth_qos_cm      =   AMC4/0,  03,  3
+eth_qos_cm      =   AMC4/0,  04,  3
+eth_qos_cm      =   AMC4/0,  05,  3
+eth_qos_cm      =   AMC4/0,  06,  3
+eth_qos_cm      =   AMC4/0,  07,  3
+eth_qos_cm      =   AMC4/1,  00,  3
+eth_qos_cm      =   AMC4/1,  01,  3
+eth_qos_cm      =   AMC4/1,  02,  3
+eth_qos_cm      =   AMC4/1,  03,  3
+eth_qos_cm      =   AMC4/1,  04,  3
+eth_qos_cm      =   AMC4/1,  05,  3
+eth_qos_cm      =   AMC4/1,  06,  3
+eth_qos_cm      =   AMC4/1,  07,  3
+eth_qos_cm      =   AMC5/0,  00,  0
+eth_qos_cm      =   AMC5/0,  01,  0
+eth_qos_cm      =   AMC5/0,  02,  0
+eth_qos_cm      =   AMC5/0,  03,  0
+eth_qos_cm      =   AMC5/0,  04,  0
+eth_qos_cm      =   AMC5/0,  05,  0
+eth_qos_cm      =   AMC5/0,  06,  0
+eth_qos_cm      =   AMC5/0,  07,  0
+eth_qos_cm      =   AMC5/1,  00,  3
+eth_qos_cm      =   AMC5/1,  01,  3
+eth_qos_cm      =   AMC5/1,  02,  3
+eth_qos_cm      =   AMC5/1,  03,  3
+eth_qos_cm      =   AMC5/1,  04,  3
+eth_qos_cm      =   AMC5/1,  05,  3
+eth_qos_cm      =   AMC5/1,  06,  3
+eth_qos_cm      =   AMC5/1,  07,  3
+eth_qos_cm      =   AMC6/0,  00,  3
+eth_qos_cm      =   AMC6/0,  01,  3
+eth_qos_cm      =   AMC6/0,  02,  3
+eth_qos_cm      =   AMC6/0,  03,  3
+eth_qos_cm      =   AMC6/0,  04,  3
+eth_qos_cm      =   AMC6/0,  05,  3
+eth_qos_cm      =   AMC6/0,  06,  3
+eth_qos_cm      =   AMC6/0,  07,  3
+eth_qos_cm      =   AMC7/0,  00,  3
+eth_qos_cm      =   AMC7/0,  01,  3
+eth_qos_cm      =   AMC7/0,  02,  3
+eth_qos_cm      =   AMC7/0,  03,  3
+eth_qos_cm      =   AMC7/0,  04,  3
+eth_qos_cm      =   AMC7/0,  05,  3
+eth_qos_cm      =   AMC7/0,  06,  3
+eth_qos_cm      =   AMC7/0,  07,  3
+eth_qos_cm      =   AMC7/1,  00,  0
+eth_qos_cm      =   AMC7/1,  01,  0
+eth_qos_cm      =   AMC7/1,  02,  0
+eth_qos_cm      =   AMC7/1,  03,  0
+eth_qos_cm      =   AMC7/1,  04,  0
+eth_qos_cm      =   AMC7/1,  05,  0
+eth_qos_cm      =   AMC7/1,  06,  0
+eth_qos_cm      =   AMC7/1,  07,  0
+eth_qos_cm      =   FRT_1,  00,  0
+eth_qos_cm      =   FRT_1,  01,  0
+eth_qos_cm      =   FRT_1,  02,  0
+eth_qos_cm      =   FRT_1,  03,  0
+eth_qos_cm      =   FRT_1,  04,  0
+eth_qos_cm      =   FRT_1,  05,  0
+eth_qos_cm      =   FRT_1,  06,  0
+eth_qos_cm      =   FRT_1,  07,  0
+eth_qos_cm      =   FRT_2,  00,  0
+eth_qos_cm      =   FRT_2,  01,  0
+eth_qos_cm      =   FRT_2,  02,  0
+eth_qos_cm      =   FRT_2,  03,  0
+eth_qos_cm      =   FRT_2,  04,  0
+eth_qos_cm      =   FRT_2,  05,  0
+eth_qos_cm      =   FRT_2,  06,  0
+eth_qos_cm      =   FRT_2,  07,  0
+eth_qos_cm      =   UPDC_B,  00,  0
+eth_qos_cm      =   UPDC_B,  01,  0
+eth_qos_cm      =   UPDC_B,  02,  0
+eth_qos_cm      =   UPDC_B,  03,  0
+eth_qos_cm      =   UPDC_B,  04,  0
+eth_qos_cm      =   UPDC_B,  05,  0
+eth_qos_cm      =   UPDC_B,  06,  0
+eth_qos_cm      =   UPDC_B,  07,  0
+eth_qos_cm      =   RTM,  00,  0
+eth_qos_cm      =   RTM,  01,  0
+eth_qos_cm      =   RTM,  02,  0
+eth_qos_cm      =   RTM,  03,  0
+eth_qos_cm      =   RTM,  04,  0
+eth_qos_cm      =   RTM,  05,  0
+eth_qos_cm      =   RTM,  06,  0
+eth_qos_cm      =   RTM,  07,  0
+eth_qos_cm      =   CPU_1,  00,  0
+eth_qos_cm      =   CPU_1,  01,  0
+eth_qos_cm      =   CPU_1,  02,  0
+eth_qos_cm      =   CPU_1,  03,  0
+eth_qos_cm      =   CPU_1,  04,  0
+eth_qos_cm      =   CPU_1,  05,  0
+eth_qos_cm      =   CPU_1,  06,  0
+eth_qos_cm      =   CPU_1,  07,  0
+
+
+
+
+
+# ===  802.1p Quality of Service Configuration   ===
+#
+#Item <<eth_802.1p_ini>>: 802.1p Protocol state
+#            par_1 [0|1]: initialization state
+#               [0] - disabled
+#               [1] - enabled
+#
+#Item <<eth_802.1p_cm>>: The Port Map of 802.1p activated Ports
+#            List of AMC Ports
+#            par_(1 ..n): [alias 1], .., [alias n]
+#     e.g.: eth_802.1p_cm   =   AMC1/0, AMC2/0
+#
+
+eth_802.1p_ini  = 0
+
+
+
+
+
+# ===   Port Mirroring Configuration   ===
+#
+#Item <<eth_mirr_ini>>:Port Mirroring state
+#            par_1 [0|1]: initialization state
+#               [0] - disabled
+#               [1] - enabled
+#
+#Item <<eth_mirr_capt>>: Capture Port
+#            par_1: [alias] - Capture Port
+#     e.g.: eth_mirr_capt   =   FRT_2
+#
+#Item <<eth_mirr_icm>>: Ingress Port Map of Port Mirroring
+#            par_(1-..) : Ingress Mirror Maps (List of AMC Ports)
+#            par_(1 ..n): [alias 1], .., [alias n]
+#     e.g: eth_mirr_icm    =   AMC1/0, AMC2/0
+#
+#Item <<eth_mirr_ecm>>: Egress Port Map of Port Mirroring
+#            par_(1-..): ): Egress Mirror Maps (List of AMC Ports)
+#            par_(1 ..n): [alias 1], .., [alias n]
+#     e.g: eth_mirr_ecm    =   AMC1/0, AMC4/0
+#
+
+eth_mirr_ini    = 0
+
+
+
+
+
+# ===   Jumbo Configuration   ===
+#
+#Item <<eth_jumbo_ini>>:Port Mirroring state
+#            par_1 [0|1]: initialization state
+#               [0] - disabled
+#               [1] - enabled
+#
+#Item <<eth_jumbo_fr_s>>: Egress Port Map of Port Mirroring
+#            par_1: [alias]    AMC Port
+#
+#            par_2: [0] - OFF (normal frame size)
+#               [9] -  9K Jumbo frames
+#     e.g.: eth_jumbo_fr_s  =   AMC2/0,  09
+#
+
+eth_jumbo_ini   = 0
+
+
+
+
+
+# ===   Link Aggregation Configuration   ===
+#
+#Item <<eth_lag_ini>>:Link Aggregation initialization state
+#            par_1 [0|1]: initialization state
+#               [0] - disabled
+#               [1] - enabled
+#
+#Item <<eth_lag_hash>>: hash function mode
+#            par_1 [0|1|2]: #               [0] - DA^SA
+#               [1] - DA
+#               [2] - SA
+#Item <<eth_lag_propag>> propagation mode
+#               [0] - Link Existing mode
+#               [1] - Full Link mode
+#Item <<eth_lag_gr_cm>>: MAP of AMC Ports assigned to the aggregation group
+#            par_1 [1-4]: Aggregation group ID
+#            par_(2-n)  : [alias 1], .., [alias n]   List of AMC Ports)
+#     e.g: eth_lag_gr_cm    =  0,  AMC1/0, AMC2/0
+#
+
+eth_lag_ini     =    0
+
+
+
+
+
+# ===   BPDU Traffic Filtering   ===
+#
+#Item <<eth_txfilt_ini>>:BPDU Traffic Filtering initialization state
+#            par_1 [0|1]: initialization state
+#               [0] - disabled
+#               [1] - enabled
+#
+#Item <<eth_txfilt_cm>>: BPDU Traffic Filtering Connection Map
+#            par_(1-..): BPDU Traffic Maps (List of AMC Ports)
+#            par_(1 ..n): [alias 1], .., [alias n]
+#     e.g: eth_txfilt_cm    =   AMC1/0, FRT_2
+#
+
+eth_txfilt_ini  =    0
+
+
+
+
+
+# ===   Interface mode SGMII/SerDes   ===
+#
+#Item <<eth_sgmii_imode>>: Interface mode on particular switch port
+#            par_1: [alias]      AMC Port
+#            par_2: [serdes|sgmii|auto] Interface mode  
+#               [serdes] - SerDes mode
+#               [sgmii]  - SGMII mode
+#               [auto]   - autodetection of mode
+#
+
+eth_sgmii_imode =   AMC1/0, serdes
+eth_sgmii_imode =   AMC2/0, serdes
+eth_sgmii_imode =   AMC2/1, serdes
+eth_sgmii_imode =   AMC3/0, serdes
+eth_sgmii_imode =   AMC3/1, serdes
+eth_sgmii_imode =   AMC4/0, serdes
+eth_sgmii_imode =   AMC4/1, serdes
+eth_sgmii_imode =   AMC5/0, serdes
+eth_sgmii_imode =   AMC5/1, serdes
+eth_sgmii_imode =   AMC6/0, serdes
+eth_sgmii_imode =   AMC7/0, serdes
+eth_sgmii_imode =   AMC7/1, serdes
+
+
+
+
+
+# ===   Connection Enable/Disable on Primary configuration   ===
+#
+#Item <<eth_enconn_prim>>: list of connections that are enabled
+# on primary MCH. This configuration overules item <<eth_enconn_prim>>
+# if MCH becomes primary role.
+#     e.g eth_enconn_prim = AMC1/0, AMC2/0, AMC3/0, AMC4/0, AMC5/0
+#
+#If the configuration items <<eth_enconn_prim>> and <<eth_enconn_map>> are
+# not present, the default port configuration has to applied automatically.
+#This default port configuration suppresses the Ethernet loop via front GbE ports
+#
+#NOTE: This configuration item requare presenting of item <<eth_enconn_map>>,
+#   otherwise the item will be ignored.
+
+
+
+
+# ===   Connection Enable/Disable configuration   ===
+#
+#Item <<eth_enconn_map>>: list of connections that are enabled (are set to "administrative up")
+#     e.g eth_enconn_map = AMC1/0, AMC2/0, AMC3/0, AMC4/0, AMC5/0
+#
+#If the configuration item is not present, the default port configuration has to applied
+#automatically. This default port configuration suppresses the Ethernet loop via front GbE ports
+#NOTE: This configuration item is requared, to use item <<eth_enconn_prim>>.
+#   If script configuration has been generate by MCH and <<eth_enconn_prim>> was not defined before,
+#   then the list contains all current enabled connections. If item <<eth_enconn_prim>> was defined
+#   before, then the list item <<eth_enconn_map>> will be copied to backup on script loading.
+#   In this case, to generate item <<eth_enconn_map>>, MCH uses connection list from backup, instead current
+#   enabled state of connections.
+
+
+
+
+
+
+
+# ===   Link Propagation Configuration   ===
+#
+#Item <<eth_propag>>: list of connections that are enabled (are set to "administrative up")
+#            par_1: link master port
+#            par_(2 ..): link propagation list of ports (slave ports)
+#
+#     e.g eth_propag = AMC1/0,  AMC3/0, AMC4/0, AMC5/0
+#            then AMC1/0 is link master port and AMC3/0, AMC4/0, AMC5/0 is propagation list.
+#            Therefore AMC3/0, AMC4/0, AMC5/0 become enable/disable state appropriating
+#            link state of AMC1/0
+#
+
+
+
+
+
+
+
+# ===   Pause Frame Configuration   ===
+#
+#Item <<eth_pframe_ini>>: Pause Frame Initializing State
+#            par_1 [0|1]: initialization state
+#               [0] - disabled
+#               [1] - enabled
+#
+#Item <<eth_pframe_conn>>: Pause Frame on port configuration
+#            par_1: [alias]     AMC Port
+#            par_2: [<on Limit>]   on limit
+#            par_3: [<off Limit>]  off limit
+#            par_4: [<off Limit>]  Pause Length
+#            par_5: [<off Limit>]  Resend Time
+#
+
+eth_pframe_ini  = 0

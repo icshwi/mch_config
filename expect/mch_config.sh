@@ -21,14 +21,32 @@
 #   version : 0.0.2
 
 SCRIPT_INTERPRETER=expect
+SRC_PREFIX=../src
 
-# Name of the source script (expect) to use for each step
-FWUPDATE_SRC=fwupdate.exp
+#
+# The real magic happens inside a set of script written in Expect language
+# Following variables store the name of the individual steps:
+#
+# Script to check & update the firmware of the MCH CPU
 FWCHECK_SRC=fwcheck.exp
-DHCPCFG_SRC=dhcp.exp
+FWUPDATE_SRC=fwupdate.exp
+
+# Script to write general configuration and check it
 MCHCFG_SRC=mchconf.exp
-CLK3U_SRC=clock_update_3u.exp
-CLK9U_SRC=clock_update_9u.exp
+CFGCHECK_SRC=cfgcheck.exp
+declare -A GOLDEN_CFG
+GOLDEN_CFG[3U]=$SRC_PREFIX/GOLDEN_cfg_3u.txt
+GOLDEN_CFG[9U]=$SRC_PREFIX/GOLDEN_cfg_9u.txt
+GOLDEN_CFG[5U]=$SRC_PREFIX/GOLDEN_cfg_mini.txt
+
+# Script to set DHCP configuration
+DHCPCFG_SRC=dhcp.exp
+
+# Scripts that load the clock configuration
+declare -A CLK_SRC
+CLK_SRC[3U]=clock_update_3u.exp
+CLK_SRC[5U]=clock_update_mini.exp
+CLK_SRC[9U]=clock_update_9u.exp
 
 # Current MCH firmware
 CURRENT_VERSION=(2 20 4)
@@ -44,12 +62,20 @@ LOG_FILE=$LOG_PREFIX/"mch_config_"
 FW_UPDATE=1
 DHCP_CFG=1
 MCH_CFG=1
-CLK_CFG_3U=0
-CLK_CFG_9U=0
+CLK_CFG=0
+CFG_CHECK=0
+
+function brief_help {
+  cat << EOF
+$(basename $0) MOXA_IP <port range> <form factor> [options]
+Use --help to get a detailed information about how to use the tool
+EOF
+  exit 0
+}
 
 function help {
   cat << EOF
-Usage: $(basename $0) MOXA_IP <port range> [options]
+Usage: $(basename $0) MOXA_IP <port range> <form factor> [options]
 Arguments:
   MOXA_IP        -> IP address of the MOXA
   <port range>   -> Port range to apply the configuration.
@@ -57,6 +83,7 @@ Arguments:
                     - Port range, from 1 to 16: 1-16
                     - Port list: 1,4,16
                     In order to run in only one port: 4, (don't forget ",")
+  <form factor>  -> Crate form factor. Valid options are: 3U, 5U or 9U.
 
 Options:
   -h|--help      -> Prints this help
@@ -64,9 +91,9 @@ Options:
                   1 -> FW update (default)
                   2 -> DHCP network configuration (default)
                   3 -> Standard MCH configuration (default)
-                  4 -> Clock configuration for 3U crate
-                  5 -> Clock configuration for 9U crate
-                  By default, the script is executed with options: 1,2,3
+                  4 -> Clock configuration
+                  5 -> Check the configuration
+                  By default, the script is executed with options: 1,2,3,5
 Examples:
 Run the script to update FW only in the port 4010:
     mch_config.sh 10.0.5.173 10, -s 1
@@ -80,8 +107,11 @@ EOF
 }
 
 # Just another wrapper function
+# Arguments:
+# $1 -> Port number (just last 2 digits).
+# $2 -> Source script (Expect) to run
 function run_script {
-  $SCRIPT_INTERPRETER $1 $MOXAIP $2
+  $SCRIPT_INTERPRETER $1 $MOXAIP $PORT_PREFIX$2
 }
 
 # Error information
@@ -91,8 +121,11 @@ function run_script {
 # $2 -> Port number in the MOXA
 #
 # Error codes:
-# (1)  : Insuficient arguments
+# (1)  : Generic error
 # (2)  : Failed to retrieve FW version string
+# (3)  : Insuficient arguments
+# (4)  : Error in the MCH configuration check
+
 
 function errecho {
   echo -e "\033[101;30m$1\033[0m"
@@ -100,8 +133,10 @@ function errecho {
 
 function print_error {
   case $1 in
-    1) errecho "Insuficient arguments passed to the script";;
+    1) errecho "40$2::Generic error, check the logs";;
     2) errecho "40$2::Couldn't retrieve a FW version, please manually check this port.";;
+    3) errecho "40$2::Insuficient arguments passed to the script";;
+    4) errecho "40$2::MCH configuration is not properly setup";;
     *) errecho "Unrecognized error code";;
   esac
 }
@@ -116,16 +151,15 @@ function step_parser {
   FW_UPDATE=0
   DHCP_CFG=0
   MCH_CFG=0
-  CLK_CFG_3U=0
-  CLK_CFG_9U=0
+  CLK_CFG=0
   arg_list=$(echo $1 | tr "," "\n")
   for arg in ${arg_list[*]}; do
     case "$arg" in
       1) FW_UPDATE=1;;
       2) DHCP_CFG=1;;
       3) MCH_CFG=1;;
-      4) CLK_CFG_3U=1;;
-      5) CLK_CFG_9U=1;;
+      4) CLK_CFG=1;;
+      5) CFG_CHECK=1;;
       *) print_error "Unknow step number $arg"
     esac
   done
@@ -140,7 +174,7 @@ function update_fw {
   TEMPFILE=`mktemp`
 
   fancyecho "40$1::Checking FW version"
-  run_script $FWCHECK_SRC $PORT_PREFIX$1 >  $TEMPFILE
+  run_script $FWCHECK_SRC $1 > $TEMPFILE
   # Add all outputs to log file
   cat $TEMPFILE
   echo ""
@@ -165,7 +199,7 @@ function update_fw {
 
   if [[ $UPDATE -eq 1 ]]; then
     fancyecho "40$1::Writing new FW (Old=$fw_version)...."
-    run_script $FWUPDATE_SRC $PORT_PREFIX$1 &
+    run_script $FWUPDATE_SRC $1 &
     # Usually it takes around 3 minutes
     sleep 240
     fancyecho "40$1::FW updated (New=${CURRENT_VERSION[*]})...."
@@ -181,7 +215,7 @@ function update_fw {
 
 function dhcp_conf {
   fancyecho "40$1::Setting up DCHP for the management port..."
-  #run_script $DHCPCFG_SRC $PORT_PREFIX$1
+  run_script $DHCPCFG_SRC $1
   fancyecho "\n40$1::DCHP configuration done"
 }
 
@@ -192,31 +226,46 @@ function dhcp_conf {
 
 function mch_conf {
   fancyecho "40$1::Setting up MCH configuration..."
-  #run_script $MCHCFG_SRC $PORT_PREFIX$1
+  run_script $MCHCFG_SRC $1
   fancyecho "\n40$1::MCH configuration done"
 }
 
-function clk3u_conf {
-  fancyecho "40$1::Setting up 3U clock configuration..."
-  # Not tested yet
-  #run_script $CLK3U_SRC $PORT_PREFIX$1
-  fancyecho "\n40$1::3U clock configuration done"
+# Write the clock configuration
+# _____________________________
+# Arguments:
+# $1 -> MOXA port index (1 to 16)
+function clk_conf {
+  fancyecho "40$1::Setting up ${FORMFACTOR}U clock configuration..."
+  run_script ${CLK_SRC[$FORMFACTOR]} $1
+  fancyecho "\n40$1::${FORMFACTOR}U clock configuration done"
 }
 
-function clk9u_conf {
-  fancyecho "40$1::Setting up 9U clock configuration..."
-  # Not tested yet
-  #run_script $CLK9U_SRC $PORT_PREFIX$1
-  fancyecho "\n40$1::9U clock configuration done"
+# Check the written configuration
+# _______________________________
+#
+#
+function err_check {
+  TEMPFILE=`mktemp`
+  # Retrieve the IP address
+  run_script $CFGCHECK_SRC $1  > $TEMPFILE
+  # Delete output from expect script. Leave the configuration file.
+  sed -i '1,33d' $TEMPFILE
+  # Last 4 lines need to be removed
+  sed -i "$(($(wc -l < $TEMPFILE)-3)),\$d" $TEMPFILE
+  diff --strip-trailing-cr $TEMPFILE ${GOLDEN_CFG[$FORMFACTOR]}
+  retvalue=$?
+  rm $TEMPFILE
+  if [[ $retvalue -ne 0 ]]; then exit 4; fi
+  fancyecho "\n40$1::The configuration of the MCH is OK"
 }
 
 # Check step flags and run the scripts on a specific port
 function runner {
-  if [[ $FW_UPDATE -eq 1 ]];    then update_fw  $1; fi
-  if [[ $DHCP_CFG -eq 1 ]];     then dhcp_conf  $1; fi
-  if [[ $MCH_CFG -eq 1 ]];      then mch_conf   $1; fi
-  if [[ $CLK_CFG_3U -eq 1 ]];   then clk3u_conf $1; fi
-  if [[ $CLK_CFG_9U -eq 1 ]];   then clk9u_conf $1; fi
+  if [[ $FW_UPDATE -eq 1 ]]; then update_fw  $1; fi
+  if [[ $DHCP_CFG -eq 1 ]];  then dhcp_conf  $1; fi
+  if [[ $MCH_CFG -eq 1 ]];   then mch_conf   $1; err_check $1; fi
+  if [[ $CLK_CFG -eq 1 ]];   then clk_conf   $1; fi
+  if [[ $CFG_CHECK -eq 1 ]];  then err_check  $1; fi
 }
 
 # Start of the script magic
@@ -226,9 +275,15 @@ mkdir -p $LOG_PREFIX
 logfile="${LOG_FILE}`date "+%y%m%d_%H:%M:%S"`.log"
 fancyecho "MCH configuration script init (`date "+%Y%m%d %H:%M:%S"`)" >> $logfile
 
-if [[ $# -lt 2 ]]; then help; exit 1; fi
-MOXAIP=$1;
-PORTS=$2;
+if [[ $# -lt 1 ]]; then brief_help; exit 1;
+elif [[ $1 = "--help" ]] || [[ $1 = "-h" ]]; then help; exit 1;
+elif [[ $# -lt 3 ]]; then print_error 1; exit 1;
+fi
+
+MOXAIP=$1
+PORTS=$2
+FORMFACTOR=$3
+
 # Detect mode: sequence (1) or list (0)
 x=$(echo $PORTS | grep ",")
 mode=$?
@@ -240,7 +295,7 @@ else
   PORTS=$(echo $PORTS | tr "," "\n")
 fi
 # Remove the first two positional arguments from the buffer
-shift 2
+shift 3
 
 # Argument parsing
 while [ $# -gt 0 ]; do

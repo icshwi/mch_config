@@ -1,0 +1,131 @@
+#!/usr/bin/expect --
+#
+#  Copyright (c) 2019           European Spallation Source ERIC
+#
+#  The program is free software: you can redistribute
+#  it and/or modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation, either version 2 of the
+#  License, or any newer version.
+#
+#  This program is distributed in the hope that it will be useful, but WITHOUT
+#  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+#  more details.
+#
+#  You should have received a copy of the GNU General Public License along with
+#  this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
+#
+#   author  : Jeong Han Lee
+#   email   : jeonghan.lee@gmail.com
+#   date    :
+#   version : 0.0.1
+
+
+set DATE [exec date +%y%m%d%H%M]
+set timeout 5
+
+set prompt "nat> ";
+set mchcfgprompt "Enter configuration mode (RET=\*): ";
+set mpprompt "SWITCH (RET=\*): ";
+
+
+# MCH is slow not to understand the machine send command
+# So, we have to put some delay between characters.
+#
+# Send strings with .1 second in between each 1 characters sent
+#
+set send_slow {1 .1}
+
+#
+# MOXA Server IP
+#
+set ip [lindex $argv 0]
+#
+# MOXA Server PORT
+#
+set port [lindex $argv 1]
+#
+# MCH Configuration Commands File
+#
+#set commands_file [lindex $argv 0]
+set logfile_path "log_path"
+file mkdir $logfile_path
+
+log_file $logfile_path/MCH_DHCP_CONF_$ip\_$port\_$DATE.log
+
+
+proc dialog {expstring send } {
+    expect {
+	$expstring {
+	    sleep .1;
+	    exp_send -s "$send\r"
+	    sleep 1;
+	}
+	-gl "timeout" {
+	    expect *
+	    error "Timed out" \
+		"Expected: $expstring. Saw: $expect_out(buffer)"
+	}
+	eof {
+	    expect *
+	    error "Connection Closed" \
+		"Expected: $expstring. Saw: $expect_out(buffer)"
+	}
+    }
+}
+
+
+# Connect the MOXA serial port
+exp_spawn telnet $ip $port
+
+dialog "Escape character is '^\]'.\r" ""
+
+# foreach line $lines {
+#     dialog "$prompt" "$line"
+# }
+
+
+expect  {
+    "$prompt"       { exp_send -s "\r" }
+    "$mchcfgprompt" { exp_send -s "0\r"}
+    "(RET=\*): "    { exp_send -s "\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r"}
+    -gl "timeout" {
+	expect *
+	error "Timed out" \
+	    "Expected: $expstring. Saw: $expect_out(buffer)"
+    }
+}
+
+
+
+dialog "$prompt" "sw_mp"
+
+# [ 0] : no action (unsupported)
+# [ 1] : (submenu) Port Enable/Disable
+# [ 2] : (submenu) Port Based VLAN
+# [ 3] : (submenu) 802.1Q VLAN
+# [ 4] : (submenu) 802.1X
+# [ 5] : (submenu) Quality of service
+# [ 6] : (submenu) 802.1p QoS
+# [ 7] : (submenu) MAC-Table management
+# [ 8] : (submenu) Port Mirroring
+# [ 9] : (submenu) Jumbo
+# [10] : (submenu) Link Aggregation
+# [11] : (submenu) Rapid Spanning Tree
+# [12] : (submenu)IGMP Snoopoing
+# [13] : (submenu) DEBUG LEVEL
+# [14] : save configuration
+# [15] : load configuration
+# [16] : get configuration
+# [17] : get device location
+# [18] : change device location
+# [19] : show link states
+# [ ?] : ?: help
+# [ h] : h: help
+# [ q] : q: quit
+
+dialog "$mpprompt" "16"
+sleep 10;
+dialog "$mpprompt" "q"
+
+expect eof
