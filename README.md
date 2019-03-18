@@ -25,6 +25,12 @@ configuration.
 We use the expect to configure the MCH within four steps. Please look at
 [How to use expect commands](expect/README.md). Expect scripts already know the following the TFTP directory structure and its corresponding files as well.
 
+### How to run the configuration tool (WIP)
+
+We'd like to offer an easy to use GUI for the configuration tool, but more work is still needed to achieve this aim.
+
+Meanwhile, there's a wrapper script written in Bash that any user can use in order to run in a easy way the configuration of the MCH. More information can be found inside the *expect* folder.
+
 ### Current TFTP Server Configuration at ESS
 
 ```
