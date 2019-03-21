@@ -22,18 +22,19 @@
 
 SCRIPT_INTERPRETER=expect
 SRC_PREFIX=../src
+EXPECT_PREFIX=../expect
 
 #
 # The real magic happens inside a set of script written in Expect language
 # Following variables store the name of the individual steps:
 #
 # Script to check & update the firmware of the MCH CPU
-FWCHECK_SRC=fwcheck.exp
-FWUPDATE_SRC=fwupdate.exp
+FWCHECK_SRC=$EXPECT_PREFIX/fwcheck.exp
+FWUPDATE_SRC=$EXPECT_PREFIX/fwupdate.exp
 
 # Script to write general configuration and check it
-MCHCFG_SRC=mchconf.exp
-CFGCHECK_SRC=cfgcheck.exp
+MCHCFG_SRC=$EXPECT_PREFIX/mchconf.exp
+CFGCHECK_SRC=$EXPECT_PREFIX/cfgcheck.exp
 declare -A GOLDEN_CFG
 GOLDEN_CFG[3U]=$SRC_PREFIX/GOLDEN_cfg_3u.txt
 GOLDEN_CFG[9U]=$SRC_PREFIX/GOLDEN_cfg_9u.txt
@@ -44,9 +45,9 @@ DHCPCFG_SRC=dhcp.exp
 
 # Scripts that load the clock configuration
 declare -A CLK_SRC
-CLK_SRC[3U]=clock_update_3u.exp
-CLK_SRC[5U]=clock_update_mini.exp
-CLK_SRC[9U]=clock_update_9u.exp
+CLK_SRC[3U]=$EXPECT_PREFIX/clock_update_3u.exp
+CLK_SRC[5U]=$EXPECT_PREFIX/clock_update_mini.exp
+CLK_SRC[9U]=$EXPECT_PREFIX/clock_update_9u.exp
 
 # Current MCH firmware
 CURRENT_VERSION=(2 20 4)
@@ -55,7 +56,7 @@ CURRENT_VERSION=(2 20 4)
 PORT_PREFIX=40
 
 # Log
-LOG_PREFIX="./log"
+LOG_PREFIX="../log"
 LOG_FILE=$LOG_PREFIX/"mch_config_"
 
 # Flags for the different configuration steps: 1 -> enable the step
