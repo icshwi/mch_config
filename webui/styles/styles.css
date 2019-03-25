@@ -1,0 +1,181 @@
+/* Align the content to the middle of the space */
+#page {
+  max-width: 350px;
+  margin: auto;
+}
+
+/* Ref: http://www.tipue.com/blog/radio-checkbox/ */
+
+.selectableOpts
+{
+ border: 1px solid grey;
+}
+
+#SendButton
+{
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  display: inline-block;
+  position: relative;
+  background-color: #53d17b;
+  color: #666;
+  top: 10px;
+  height: 40px;
+  width: 100px;
+  border: 0;
+  border-radius: 3px;
+  cursor: pointer;     
+  margin-right: 7px;
+  outline: none;
+  font: 16px/1 'Open Sans', sans-serif;
+}
+
+#SendButton:disabled
+{
+  background-color: #f1f1f1;
+  color: #666;
+}
+
+#SendButton:checked::before
+{
+  position: absolute;
+  font: 13px/1 'Open Sans', sans-serif;
+  top: 0px;
+  content: '\02143';
+  transform: rotate(40deg);
+}
+
+#SendButton:checked
+{
+  background-color: #26b67b;
+}
+
+.SelectR,.SelectL,.SelectAllL,.SelectAllR
+{
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  display: inline-block;
+  position: relative;
+  background-color: #f1f1f1;
+  color: #666;
+  top: 2px;
+  height: 15px;
+  width: 15px;
+  border: 0;
+  border-radius: 3px;
+  cursor: pointer;     
+  margin-right: 7px;
+  outline: none;
+}
+
+.SelectAllL,.SelectAllR
+{
+  height: 20px;
+  width: 20px;
+}
+
+.SelectR:checked::before,.SelectL:checked::before,.SelectAllL:checked::before,.SelectAllR:checked::before
+{
+  position: absolute;
+  font: 13px/1 'Open Sans', sans-serif;
+  left: 4px;
+  top: 0px;
+  content: '\02143';
+  transform: rotate(40deg);
+}
+
+.SelectAllL:checked::before,.SelectAllR:checked::before
+{
+  font: 18px/1 'Open Sans', sans-serif;
+  left: 6px;
+}
+
+.SelectR:hover,.SelectL:hover,.SelectAllL:hover,.SelectAllR:hover
+{
+  background-color: #f7f7f7;
+}
+.SelectR:checked,.SelectL:checked,.SelectAllL:checked,.SelectAllR:checked
+{
+  background-color: #f1f1f1;
+}
+
+.RadioR,.RadioL,.RadioAllL,.RadioAllR
+{
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  display: inline-block;
+  position: relative;
+  background-color: #f1f1f1;
+  color: #666;
+  top: 2px;
+  height: 15px;
+  width: 15px;
+  border: 0;
+  border-radius: 50px;
+  cursor: pointer;     
+  margin-right: 7px;
+  outline: none;
+}
+
+.RadioAllL,.RadioAllR
+{
+  height: 20px;
+  width: 20px;
+}
+
+.RadioR:checked::before,.RadioL:checked::before,.RadioAllL:checked::before,.RadioAllR:checked::before
+{
+  position: absolute;
+  font: 12px/1 'Open Sans', sans-serif;
+  left: 4px;
+  top: 1px;
+  content: '\02143';
+  transform: rotate(40deg);
+}
+
+.RadioAllL::before,.RadioAllR::before
+{
+  font: 18px/1 'Open Sans', sans-serif;
+  left: 6px;
+}
+.RadioR:hover,.RadioL:hover,.RadioR:hover,.RadioL:hover
+{
+  background-color: #f7f7f7;
+}
+.RadioR:checked,.RadioL:checked,.RadioR:checked,.RadioL:checked
+{
+  background-color: #f1f1f1;
+}
+
+.thead
+{
+  font: 300 20px/1.7 'Open Sans', sans-serif;
+  color: #666;
+  cursor: pointer;
+}
+
+.theadlabel
+{
+  font: 300 14px/1.7 'Open Sans', sans-serif;
+  color: #666;
+  cursor: pointer;
+  font-style: italic;
+}
+
+.webtitle
+{
+  font: 300 20px/1.7 'Open Sans', sans-serif;
+  color: #666;
+  cursor: pointer;
+}
+
+label,input
+{
+  font: 300 14px/1.7 'Open Sans', sans-serif;
+  color: #666;
+  cursor: pointer;
+}
+
