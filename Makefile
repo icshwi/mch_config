@@ -34,4 +34,5 @@ install:
 	install -m 644 $(CONFIG_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SRC_DESTDIR)
 	install -d 644 $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SCRIPT_SRC)
 	install -m 645 $(SCRIPT_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SCRIPT_SRC)
+	install -d 644 $(SCRIPT_SRC)/websocketd.service /etc/systemd/system/
 
