@@ -7,6 +7,7 @@ SRC_DESTDIR 	:= src
 
 EXPECT_SRC_FILES	:= $(wildcard $(EXPECT_SRC)/*.exp)
 CONFIG_SRC_FILES	:= $(wildcard $(CONFIG_SRC)/*.txt)
+SCRIPT_SRC_FILES	:= $(SCRIPT_SRC)/wsmanager.bash
 
 LOG_PREFIX	?= /tmp/mch_cfg
 
@@ -31,4 +32,6 @@ install:
 	install -m 644 $(EXPECT_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(EXPECT_DESTDIR)
 	install -d $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SRC_DESTDIR)
 	install -m 644 $(CONFIG_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SRC_DESTDIR)
+	install -d 644 $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SCRIPT_SRC)
+	install -m 644 $(SCRIPT_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SCRIPT_SRC)
 
