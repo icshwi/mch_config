@@ -21,43 +21,12 @@
 #   version : 0.0.2
 
 SCRIPT_INTERPRETER=expect
-SRC_PREFIX=../src
-EXPECT_PREFIX=../expect
-
-#
-# The real magic happens inside a set of script written in Expect language
-# Following variables store the name of the individual steps:
-#
-# Script to check & update the firmware of the MCH CPU
-FWCHECK_SRC=$EXPECT_PREFIX/fwcheck.exp
-FWUPDATE_SRC=$EXPECT_PREFIX/fwupdate.exp
-
-# Script to write general configuration and check it
-MCHCFG_SRC=$EXPECT_PREFIX/mchconf.exp
-CFGCHECK_SRC=$EXPECT_PREFIX/cfgcheck.exp
-declare -A GOLDEN_CFG
-GOLDEN_CFG[3U]=$SRC_PREFIX/GOLDEN_cfg_3u.txt
-GOLDEN_CFG[9U]=$SRC_PREFIX/GOLDEN_cfg_9u.txt
-GOLDEN_CFG[5U]=$SRC_PREFIX/GOLDEN_cfg_mini.txt
-
-# Script to set DHCP configuration
-DHCPCFG_SRC=dhcp.exp
-
-# Scripts that load the clock configuration
-declare -A CLK_SRC
-CLK_SRC[3U]=$EXPECT_PREFIX/clock_update_3u.exp
-CLK_SRC[5U]=$EXPECT_PREFIX/clock_update_mini.exp
-CLK_SRC[9U]=$EXPECT_PREFIX/clock_update_9u.exp
 
 # Current MCH firmware
 CURRENT_VERSION=(2 20 4)
 
 # Port numbers in the MOXA are 40XX
 PORT_PREFIX=40
-
-# Log
-LOG_PREFIX="../log"
-LOG_FILE=$LOG_PREFIX/"mch_config_"
 
 # Flags for the different configuration steps: 1 -> enable the step
 FW_UPDATE=1
@@ -95,6 +64,8 @@ Options:
                   4 -> Clock configuration
                   5 -> Check the configuration
                   By default, the script is executed with options: 1,2,3,5
+  -p|--prefix    -> Source prefix for the tool. By default is "../".
+  -l|--log       -> Log prefix. By default is "../log"
 Examples:
 Run the script to update FW only in the port 4010:
     mch_config.sh 10.0.5.173 10, -s 1
@@ -174,7 +145,8 @@ function step_parser {
 function update_fw {
   TEMPFILE=`mktemp`
 
-  fancyecho "40$1::Checking FW version"
+  port=$(printf "%02d" $1)
+  fancyecho "40${port}::Checking FW version"
   run_script $FWCHECK_SRC $1 > $TEMPFILE
   # Add all outputs to log file
   cat $TEMPFILE
@@ -199,13 +171,13 @@ function update_fw {
   fi
 
   if [[ $UPDATE -eq 1 ]]; then
-    fancyecho "40$1::Writing new FW (Old=$fw_version)...."
+    fancyecho "40$port::Writing new FW (Old=$fw_version)...."
     run_script $FWUPDATE_SRC $1 &
     # Usually it takes around 3 minutes
     sleep 240
-    fancyecho "40$1::FW updated (New=${CURRENT_VERSION[*]})...."
+    fancyecho "40$port::FW updated (New=${CURRENT_VERSION[*]})...."
   else
-    fancyecho "40$1::FW up to date"
+    fancyecho "40$port::FW up to date"
   fi
 }
 
@@ -215,9 +187,10 @@ function update_fw {
 # $1 -> MOXA port index (1 to 16)
 
 function dhcp_conf {
-  fancyecho "40$1::Setting up DCHP for the management port..."
+  port=$(printf "%02d" $1)
+  fancyecho "40$port::Setting up DCHP for the management port..."
   run_script $DHCPCFG_SRC $1
-  fancyecho "\n40$1::DCHP configuration done"
+  fancyecho "\n40$port::DCHP configuration done"
 }
 
 # Write the standard configuration
@@ -226,9 +199,10 @@ function dhcp_conf {
 # $1 -> MOXA port index (1 to 16)
 
 function mch_conf {
-  fancyecho "40$1::Setting up MCH configuration..."
+  port=$(printf "%02d" $1)
+  fancyecho "40$port::Setting up MCH configuration..."
   run_script $MCHCFG_SRC $1
-  fancyecho "\n40$1::MCH configuration done"
+  fancyecho "\n40$port::MCH configuration done"
 }
 
 # Write the clock configuration
@@ -236,9 +210,10 @@ function mch_conf {
 # Arguments:
 # $1 -> MOXA port index (1 to 16)
 function clk_conf {
-  fancyecho "40$1::Setting up ${FORMFACTOR}U clock configuration..."
+  port=$(printf "%02d" $1)
+  fancyecho "40$port::Setting up ${FORMFACTOR}U clock configuration..."
   run_script ${CLK_SRC[$FORMFACTOR]} $1
-  fancyecho "\n40$1::${FORMFACTOR}U clock configuration done"
+  fancyecho "\n40$port::${FORMFACTOR}U clock configuration done"
 }
 
 # Check the written configuration
@@ -260,9 +235,9 @@ function err_check {
   retvalue=$?
   rm $TEMPFILE
   rm ${TEMPFILE}_2
-  #mv $TEMPFILE $SRC_PREFIX
   if [[ $retvalue -ne 0 ]]; then exit 4; fi
-  fancyecho "\n40$1::The configuration of the MCH is OK"
+  port=$(printf "%02d" $1)
+  fancyecho "\n40$port::The configuration of the MCH is OK"
 }
 
 # Check step flags and run the scripts on a specific port
@@ -274,6 +249,39 @@ function runner {
   if [[ $CFG_CHECK -eq 1 ]];  then err_check  $1; fi
 }
 
+# Define the path for the source files.
+# _______________________________
+
+function var_definition {
+  CFG_PREFIX=$SRC_PREFIX/src
+  EXPECT_PREFIX=$SRC_PREFIX/expect
+
+  # The real magic happens inside a set of script written in Expect language
+  # Following variables store the name of the individual steps:
+  #
+  # Script to check & update the firmware of the MCH CPU
+  FWCHECK_SRC=$EXPECT_PREFIX/fwcheck.exp
+  FWUPDATE_SRC=$EXPECT_PREFIX/fwupdate.exp
+
+  # Script to write general configuration and check it
+  MCHCFG_SRC=$EXPECT_PREFIX/mchconf.exp
+  CFGCHECK_SRC=$EXPECT_PREFIX/cfgcheck.exp
+
+  declare -A GOLDEN_CFG
+  GOLDEN_CFG[3U]=$CFG_PREFIX/GOLDEN_cfg_3u.txt
+  GOLDEN_CFG[9U]=$CFG_PREFIX/GOLDEN_cfg_9u.txt
+  GOLDEN_CFG[5U]=$CFG_PREFIX/GOLDEN_cfg_mini.txt
+
+  # Script to set DHCP configuration
+  DHCPCFG_SRC=$EXPECT_PREFIX/dhcp.exp
+
+  # Scripts that load the clock configuration
+  declare -A CLK_SRC
+  CLK_SRC[3U]=$EXPECT_PREFIX/clock_update_3u.exp
+  CLK_SRC[5U]=$EXPECT_PREFIX/clock_update_mini.exp
+  CLK_SRC[9U]=$EXPECT_PREFIX/clock_update_9u.exp
+}
+
 # Start of the script magic
 # _________________________
 start=`date +%s`
@@ -282,10 +290,6 @@ if [[ $# -lt 1 ]]; then brief_help; exit 1;
 elif [[ $1 = "--help" ]] || [[ $1 = "-h" ]]; then help; exit 1;
 elif [[ $# -lt 3 ]]; then print_error 1; exit 1;
 fi
-
-mkdir -p $LOG_PREFIX
-logfile="${LOG_FILE}`date "+%y%m%d_%H:%M:%S"`.log"
-fancyecho "MCH configuration script init (`date "+%Y%m%d %H:%M:%S"`)" >> $logfile
 
 MOXAIP=$1
 PORTS=$2
@@ -309,10 +313,28 @@ while [ $# -gt 0 ]; do
   case "$1" in
     -h|--help) help;;
     -s|--steps) step_parser $2;shift;;
+    -p|--prefix) SRC_PREFIX=$2;shift;;
+    -l|--log) LOG_PREFIX=$2;shift;;
     *) echo "Unknown arg: $1"; help;;
   esac
   shift
 done
+
+# We need to define properly the path to all the source files used by this
+# script. We need to bear in mind that the script may be placed locally in
+# the repository folder, or may be installed system wide.
+if [ -z $SRC_PREFIX ]; then
+  SRC_PREFIX=$(realpath $0);
+  SRC_PREFIX=$(echo $SRC_PREFIX | sed "s|${0##*/}|../|g")
+fi
+var_definition
+
+if [ -z $SRC_PREFIX ]; then LOG_PREFIX=../log; fi
+LOG_FILE=$LOG_PREFIX/"mch_config_"
+
+mkdir -p $LOG_PREFIX
+logfile="${LOG_FILE}`date "+%y%m%d_%H:%M:%S"`.log"
+fancyecho "MCH configuration script init (`date "+%Y%m%d %H:%M:%S"`)" >> $logfile
 
 # Run the expect scripts
 if [[ $mode -eq 1 ]]; then      # Sequence mode
