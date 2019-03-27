@@ -152,7 +152,7 @@ $("#SendButton").on('click', function(e) {
     var config3U = "";
     var config9U = "";
     var configNA = "";
-    var params   = "-l /tmp/mch_config -p /usr/local/share/mch_config"
+    var params   = "-l /tmp/mch_conf -p /usr/local/share/mch_config"
 
     $("#sending3u").html(listSelected["3U"]);
     $("#sending9u").html(listSelected["9U"]);
