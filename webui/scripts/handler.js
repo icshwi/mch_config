@@ -152,6 +152,7 @@ $("#SendButton").on('click', function(e) {
     var config3U = "";
     var config9U = "";
     var configNA = "";
+    var params   = "-l /tmp/mch_config -p /usr/local/share/mch_config"
 
     $("#sending3u").html(listSelected["3U"]);
     $("#sending9u").html(listSelected["9U"]);
@@ -159,19 +160,19 @@ $("#SendButton").on('click', function(e) {
     
     if(listSelected["3U"] != "") {
       config3U = "mch_config " + $("#ipaddr").val() + " " +
-        listSelected["3U"] + " 3U " + "-s 1,2,3,4,5"
+        listSelected["3U"] + " 3U " + "-s 1,2,3,4,5 " + params
     }
 
     if(listSelected["9U"] != "") {
       config3U = "mch_config " + $("#ipaddr").val() + " " +
-        listSelected["9U"] + " 9U " + "-s 1,2,3,4,5"
+        listSelected["9U"] + " 9U " + "-s 1,2,3,4,5 " + params
     }
 
     // If step 5 is not specified, the form factor is not really take into
     // account in the Bash script
     if(listSelected["NA"] != "") {
       config3U = "mch_config " + $("#ipaddr").val() + " " +
-        listSelected["NA"] + " NA " + "-s 1,2,3"
+        listSelected["NA"] + " NA " + "-s 1,2,3 " + params
     }
 
     /*
@@ -181,15 +182,15 @@ $("#SendButton").on('click', function(e) {
     try {
       if(config3U != "") {
         ws.send(config3U);
-        $("#sending3u").html(config3U);
+        $("#wsresults").html(config3U);
       }
       if(config9U != "") {
         ws.send(config9U);
-        $("#sending9u").html(config9U);
+        $("#wsresults").html(config9U);
       }
       if(configNA != "") {
         ws.send(configNAU);
-        $("#sendingnau").html(configNA);
+        $("#wsresults").html(configNA);
       }
       } catch (ex) {
         alert("Cannot send: " + ex);
