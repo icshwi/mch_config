@@ -44,7 +44,7 @@ do
 
     # which script to run?
     if [ "$first" == "mch_config" ]; then
-        script='mch_config.bash'
+        script='./mch_config.bash'
     else
         echo "Option not recognized: $C"
     fi

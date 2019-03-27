@@ -7,7 +7,7 @@ Type=simple
 Restart=always
 RestartSec=60
 User=iocuser
-ExecStart=/usr/bin/websocketd --port=8080 /usr/local/share/mch_config/scripts/wsmanager.bash
+ExecStart=/usr/bin/websocketd --port=8080 /usr/local/share/mch_config/script/wsmanager.bash
 
 [Install]
 WantedBy=multi-user.target
