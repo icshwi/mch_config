@@ -999,13 +999,13 @@ pcie_vs_cfg = VS_0, AMC1_4, NONE, AMC2_4, AMC3_4, AMC4_4, AMC5_4, AMC6_4, AMC7_4
 #                 LS_5_0GTs - 5.0   GT/s
 #                 LS_8_0GTs - 8.0   GT/s
 #
-pcie_lnk_speed_max = AMC1_4,  LS_2_5GTs
-pcie_lnk_speed_max = AMC2_4,  LS_2_5GTs
-pcie_lnk_speed_max = AMC3_4,  LS_2_5GTs
-pcie_lnk_speed_max = AMC4_4,  LS_2_5GTs
-pcie_lnk_speed_max = AMC5_4,  LS_2_5GTs
-pcie_lnk_speed_max = AMC6_4,  LS_2_5GTs
-pcie_lnk_speed_max = AMC7_4,  LS_2_5GTs
+pcie_lnk_speed_max = AMC1_4,  LS_8_0GTs
+pcie_lnk_speed_max = AMC2_4,  LS_8_0GTs
+pcie_lnk_speed_max = AMC3_4,  LS_8_0GTs
+pcie_lnk_speed_max = AMC4_4,  LS_8_0GTs
+pcie_lnk_speed_max = AMC5_4,  LS_8_0GTs
+pcie_lnk_speed_max = AMC6_4,  LS_8_0GTs
+pcie_lnk_speed_max = AMC7_4,  LS_8_0GTs
 
 
 #
