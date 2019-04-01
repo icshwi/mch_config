@@ -47,7 +47,7 @@ set ip [lindex $argv 0]
 set port [lindex $argv 1]
 
 
-set logfile_path "log_path"
+set logfile_path "/tmp/mch_conf/expect_log"
 file mkdir $logfile_path
 log_file $logfile_path/MCH_CLOCKUPDATE_CONF_$ip\_$port\_$DATE.log
 

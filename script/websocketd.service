@@ -1,0 +1,13 @@
+[Unit]
+Description=Run websocketd as a system service
+After=network.target
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+Restart=always
+RestartSec=60
+User=iocuser
+ExecStart=/usr/bin/websocketd --port=8080 /usr/local/share/mch_config/script/wsmanager.bash
+
+[Install]
+WantedBy=multi-user.target

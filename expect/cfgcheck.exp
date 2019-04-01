@@ -48,7 +48,7 @@ set port [lindex $argv 1]
 # MCH Configuration Commands File
 #
 #set commands_file [lindex $argv 0]
-set logfile_path "log_path"
+set logfile_path "/tmp/mch_conf/expect_log"
 file mkdir $logfile_path
 
 log_file $logfile_path/MCH_DHCP_CONF_$ip\_$port\_$DATE.log
