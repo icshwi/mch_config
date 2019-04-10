@@ -705,8 +705,7 @@ clk_pcb_min  =  2
 # AMC5     | 4    | 20   | AMC4_CLK | 5
 # AMC6     | 5    | 21   | AMC5_CLK | 6
 # AMC7     | 6    | 22   | AMC6_CLK | 7
-# CLK3 is always PCIe CLK 100MHz but if forwarded on other clocks then 41 has
-to be used
+# CLK3 is always PCIe CLK 100MHz but if forwarded on other clocks then 41 has to be used
 # AMC2 EVR delivering CLKA configuration:
 
 clk_phys_out =  1,  0
