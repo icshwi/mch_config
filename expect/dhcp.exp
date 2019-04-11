@@ -26,7 +26,24 @@ set timeout 5
 
 set prompt "nat> ";
 set mchcfgprompt "Enter configuration mode (RET=\*): ";
-
+# Debug Level
+# - configure CM/ShM interface debug
+# - configure IPMI MSG debug
+# - configure local ShM debug
+# - configure redundancy debug
+# - configure RMCP interface debug
+# - configure SDR repository debug
+# - configure SEL debug
+set debugprompt "Enter debug state (RET=\*): "
+set debugcmds {
+    csif_dbg 
+    imsg_dbg 
+    lshm_dbg 
+    red_dbg  
+    rmcp_dbg 
+    sdrrep_dbg
+    sel_dbg
+}
 
 # MCH is slow not to understand the machine send command
 # So, we have to put some delay between characters.
@@ -51,7 +68,6 @@ set logfile_path "/tmp/mch_conf/expect_log"
 file mkdir $logfile_path
 
 log_file $logfile_path/MCH_DHCP_CONF_$ip\_$port\_$DATE.log
-
 
 proc dialog {expstring send } {
     expect {
@@ -79,11 +95,6 @@ exp_spawn telnet $ip $port
 
 dialog "Escape character is '^\]'.\r" ""
 
-# foreach line $lines {
-#     dialog "$prompt" "$line"
-# }
-
-
 expect  {
     "$prompt"       { exp_send -s "\r" }
     "$mchcfgprompt" { exp_send -s "0\r"}
@@ -96,6 +107,10 @@ expect  {
 }
 
 
+foreach cmd $debugcmds {
+    dialog "$prompt" "$cmd"
+    dialog "$debugprompt" "0x0"
+}
 
 dialog "$prompt" "mchcfg"
 

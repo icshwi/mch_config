@@ -28,13 +28,6 @@ set ntpserver "194.58.204.20"
 
 set prompt "nat> ";
 set mchcfgprompt "Enter configuration mode (RET=\*): ";
-# set ntpprompt1   "Enable Time client (y/n) (RET=\*): ";
-# set ntpprompt2   "SNTP (y) or Time Protocol (n) (RET=\*): ";
-# set ntpprompt3   "Enter Time server IP (dot notation): \*.\*.\*.\*";
-# set ntpprompt4   "Enter 'Check for Time' delay (dec, minutes) (RET=\*): "
-# set ntpprompt5   "Enter 'Check for Time' delay (dec, hours) (RET=\*): " 
-# set ntpprompt6   "Enter local time offset (dec, hours) (RET=\*): "
-
 # Debug Level
 # - configure CM/ShM interface debug
 # - configure IPMI MSG debug
@@ -44,7 +37,6 @@ set mchcfgprompt "Enter configuration mode (RET=\*): ";
 # - configure SDR repository debug
 # - configure SEL debug
 set debugprompt "Enter debug state (RET=\*): "
-
 set debugcmds {
     csif_dbg 
     imsg_dbg 
@@ -90,14 +82,6 @@ log_file $logfile_path/MCH_BASIC_CONF_$ip\_$port\_$DATE.log
 set mch_hostname ""
 # #
 
-# # Read all command sequence from a file to save them into
-# #
-# set input [open "$commands_file" r]
-# set lines [split [read -nonewline $input] "\n"]
-# foreach line $lines {
-#     puts $line
-# }
-
 proc dialog {expstring send } {
     expect {
 	$expstring {
@@ -124,11 +108,6 @@ exp_spawn telnet $ip $port
 
 dialog "Escape character is '^\]'.\r" ""
 
-# foreach line $lines {
-#     dialog "$prompt" "$line"
-# }
-
-
 expect  {
     "$prompt"       { exp_send -s "\r" }
     "$mchcfgprompt" { exp_send -s "0\r"}
@@ -139,8 +118,6 @@ expect  {
 	    "Expected: $expstring. Saw: $expect_out(buffer)"
     }
 }
-
-
 
 foreach cmd $debugcmds {
     dialog "$prompt" "$cmd"

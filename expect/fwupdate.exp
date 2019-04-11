@@ -23,12 +23,47 @@
 
 set DATE [exec date +%y%m%d%H%M]
 set timeout 5
+
+
+# set envdata [open "envdata.conf" r]
+# gets $envdata tftp_server
+# close $envdata
+
+# # Read all command sequence from a file to save them into
+# #
+# set input [open "$commands_file" r]
+# set lines [split [read -nonewline $input] "\n"]
+# foreach line $lines {
+#     puts $line
+# }
+
+
 set tftp_server "10.0.4.134"
 set fw_path_filename "latest_mch_fw.bin"
 
 
 set prompt "nat> ";
 set mchcfgprompt "Enter configuration mode (RET=\*): ";
+# Debug Level
+# - configure CM/ShM interface debug
+# - configure IPMI MSG debug
+# - configure local ShM debug
+# - configure redundancy debug
+# - configure RMCP interface debug
+# - configure SDR repository debug
+# - configure SEL debug
+set debugprompt "Enter debug state (RET=\*): "
+set debugcmds {
+    csif_dbg 
+    imsg_dbg 
+    lshm_dbg 
+    red_dbg  
+    rmcp_dbg 
+    sdrrep_dbg
+    sel_dbg
+}
+
+
 
 # MCH is slow not to understand the machine send command
 # So, we have to put some delay between characters.
@@ -85,16 +120,10 @@ proc dialog {expstring send } {
     }
 }
 
-
 # Connect the MOXA serial port
 exp_spawn telnet $ip $port
 
 dialog "Escape character is '^\]'.\r" ""
-
-# foreach line $lines {
-#     dialog "$prompt" "$line"
-# }
-
 
 expect  {
     "$prompt"       { exp_send -s "\r" }
@@ -107,8 +136,14 @@ expect  {
     }
 }
 
+foreach cmd $debugcmds {
+    dialog "$prompt" "$cmd"
+    dialog "$debugprompt" "0x0"
+}
+
 
 set timeout -1
+
 dialog "$prompt" "update_firmware"
 dialog "firmware> " "$tftp_server:$fw_path_filename"
 

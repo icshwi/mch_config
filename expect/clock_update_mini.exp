@@ -29,6 +29,16 @@ set conf_path_filename "latest_mch_conf_mini_cfg.txt"
 
 set prompt "nat> ";
 set mchcfgprompt "Enter configuration mode (RET=\*): ";
+set debugprompt "Enter debug state (RET=\*): "
+set debugcmds {
+    csif_dbg 
+    imsg_dbg 
+    lshm_dbg 
+    red_dbg  
+    rmcp_dbg 
+    sdrrep_dbg
+    sel_dbg
+}
 
 # MCH is slow not to understand the machine send command
 # So, we have to put some delay between characters.
@@ -89,6 +99,10 @@ expect  {
     }
 }
 
+foreach cmd $debugcmds {
+    dialog "$prompt" "$cmd"
+    dialog "$debugprompt" "0x0"
+}
 
 dialog "$prompt" "upload_cfg"
 dialog "\[IP:FILENAME\*" "$tftp_server:$conf_path_filename"
