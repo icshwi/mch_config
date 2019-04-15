@@ -705,7 +705,7 @@ clk_pcb_min  =  2
 #  --------------------------------------------------------------------------------
 
 clk_phys_out =  1, 18
-clk_phys_out =  2, 0
+clk_phys_out =  2,  0
 clk_phys_out =  3, 18
 clk_phys_out =  4, 18
 clk_phys_out =  5, 18
