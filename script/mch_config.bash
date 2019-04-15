@@ -16,9 +16,13 @@
 #  this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
 #
 #   author  : Felipe Torres González
+#             Jeong Han Lee
 #   email   : torresfelipex1@gmail.com
-#   date    : 20190308
-#   version : 0.0.2
+#             jeonghan.lee@gmail.com
+#
+#   date    : Monday, April 15 15:08:12 CEST 2019
+#
+#   version : 0.0.3
 
 SCRIPT_INTERPRETER=expect
 
@@ -30,7 +34,7 @@ PORT_PREFIX=40
 
 # Flags for the different configuration steps: 1 -> enable the step
 FW_UPDATE=1
-DHCP_CFG=1
+DHCP_CFG=0
 MCH_CFG=1
 CLK_CFG=0
 CFG_CHECK=0
@@ -58,8 +62,8 @@ Arguments:
 Options:
   -h|--help      -> Prints this help
   -s|--steps     -> Specify wich steps to run:
-                  1 -> FW update (default)
-                  2 -> DHCP network configuration (default)
+                  1 -> DHCP network configuration (default)
+                  2 -> FW update (default)
                   3 -> Standard MCH configuration (default)
                   4 -> Clock configuration
                   5 -> Check the configuration
@@ -80,10 +84,12 @@ EOF
 
 # Just another wrapper function
 # Arguments:
-# $1 -> Port number (just last 2 digits).
-# $2 -> Source script (Expect) to run
+# $2-> Port number (just last 2 digits).
+# $1 -> Source script (Expect) to run
 function run_script {
-  $SCRIPT_INTERPRETER $1 $MOXAIP $PORT_PREFIX$2
+    local src_script=$1;
+    local portN=$2;
+    $SCRIPT_INTERPRETER $src_script $MOXAIP $PORT_PREFIX$portN
 }
 
 # Error information
@@ -117,6 +123,18 @@ function fancyecho {
   echo -e "\033[107;34m$1\033[0m"
 }
 
+function set_portN {
+
+    local portN=$1; shift;
+    
+    if [[ ${#portN} -lt 2 ]] ; then
+	portN="00${portN}"
+	portN="${portN: -2}"
+    fi
+
+    echo $portN;
+}
+
 # Get which steps to run
 function step_parser {
   # First diable all
@@ -126,9 +144,9 @@ function step_parser {
   CLK_CFG=0
   arg_list=$(echo $1 | tr "," "\n")
   for arg in ${arg_list[*]}; do
-    case "$arg" in
-      1) FW_UPDATE=1;;
-      2) DHCP_CFG=1;;
+      case "$arg" in
+      1) DHCP_CFG=1;;
+      2) FW_UPDATE=1;;
       3) MCH_CFG=1;;
       4) CLK_CFG=1;;
       5) CFG_CHECK=1;;
@@ -143,16 +161,18 @@ function step_parser {
 # $1 -> MOXA port index (1 to 16)
 
 function update_fw {
-  TEMPFILE=`mktemp`
 
-  port=$(printf "%02d" $1)
-  fancyecho "40${port}::Checking FW version"
-  run_script $FWCHECK_SRC $1 > $TEMPFILE
+  local FW_TEMPFILE=$(mktemp -q --suffix=_fw)
+
+  port=$(set_portN $1)
+  
+  fancyecho "40${port}::Checking FW version ${FW_TEMPFILE}"
+  run_script $FWCHECK_SRC $port > $FW_TEMPFILE
   # Add all outputs to log file
-  cat $TEMPFILE
+  cat $FW_TEMPFILE
   echo ""
-  fw_version=$(grep "MCH FW" $TEMPFILE | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}")
-  rm $TEMPFILE
+  fw_version=$(grep "MCH FW" $FW_TEMPFILE | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}")
+  rm $FM_TEMPFILE
 
   if [ "x$fw_version" == "x" ]; then
     exit 2
@@ -172,7 +192,7 @@ function update_fw {
 
   if [[ $UPDATE -eq 1 ]]; then
     fancyecho "40$port::Writing new FW (Old=$fw_version)...."
-    run_script $FWUPDATE_SRC $1 &
+    run_script $FWUPDATE_SRC $port &
     # Usually it takes around 3 minutes
     sleep 240
     fancyecho "40$port::FW updated (New=${CURRENT_VERSION[*]})...."
@@ -187,9 +207,9 @@ function update_fw {
 # $1 -> MOXA port index (1 to 16)
 
 function dhcp_conf {
-  port=$(printf "%02d" $1)
+  local port=$(set_portN $1)
   fancyecho "40$port::Setting up DCHP for the management port..."
-  run_script $DHCPCFG_SRC $1
+  run_script $DHCPCFG_SRC $port
   fancyecho "\n40$port::DCHP configuration done"
 }
 
@@ -199,9 +219,9 @@ function dhcp_conf {
 # $1 -> MOXA port index (1 to 16)
 
 function mch_conf {
-  port=$(printf "%02d" $1)
+  local port=$(set_portN $1)
   fancyecho "40$port::Setting up MCH configuration..."
-  run_script $MCHCFG_SRC $1
+  run_script $MCHCFG_SRC $port
   fancyecho "\n40$port::MCH configuration done"
 }
 
@@ -210,10 +230,11 @@ function mch_conf {
 # Arguments:
 # $1 -> MOXA port index (1 to 16)
 function clk_conf {
-  port=$(printf "%02d" $1)
-  fancyecho "40$port::Setting up ${FORMFACTOR}U clock configuration..."
-  run_script ${CLK_SRC[$FORMFACTOR]} $1
-  fancyecho "\n40$port::${FORMFACTOR}U clock configuration done"
+  local port=$(set_portN $1)
+  fancyecho "40$port::Setting up ${FORMFACTOR} clock configuration..."
+  local CLK_SRC="CLK_SRC_$FORMFACTOR"
+  run_script ${!CLK_SRC} $port
+  fancyecho "\n40$port::${FORMFACTOR} clock configuration done"
 }
 
 # Check the written configuration
@@ -221,30 +242,44 @@ function clk_conf {
 #
 #
 function err_check {
-  TEMPFILE=`mktemp`
+  local port=$(set_portN $1)
+  # This is really needed to avoid race conditions
+  RUNNING_CFG=`mktemp`
+  CMP1=`mktemp`
+  CMP2=`mktemp`
   # Retrieve the IP address
-  run_script $CFGCHECK_SRC $1  > $TEMPFILE
+  #run_script $CFGCHECK_SRC $1  > ${TEMPFILE}_2 
+  #run_script $CFGCHECK_SRC $1  > $RUNNING_CFG;exit 0;
+  # Now the run_script wrapper sends by default the output to /dev/null,
+  # and here we really need that.
+  $SCRIPT_INTERPRETER $CFGCHECK_SRC $MOXAIP $PORT_PREFIX$1 > $RUNNING_CFG
   # Delete output from expect script. Leave the configuration file.
-  sed -i '1,33d' $TEMPFILE
-  # Last 4 lines need to be removed
-  sed -i "$(($(wc -l < $TEMPFILE)-3)),\$d" $TEMPFILE
+  sed -i '/===  Text/,$!d' $RUNNING_CFG
+  # Remove "===Text"
+  sed -i '1,2d' $RUNNING_CFG
+  # Last 2 lines need to be removed (promt and something else)
+  sed -i "$(($(wc -l < ${RUNNING_CFG})-3)),\$d" $RUNNING_CFG
   #BUG: Sometimes there's still one blank line in the begining of the file.
   # I'm sorry but I don't know a clean way to do this:
-  awk '/^$/ && !f{f=1;next}1' $TEMPFILE > ${TEMPFILE}_2
-  diff --strip-trailing-cr ${TEMPFILE}_2 ${GOLDEN_CFG[$FORMFACTOR]}
+  # awk '/^$/ && !f{f=1;next}1' ${TEMPFILE}_2 > ${TEMPFILE}
+  local CFG_FILE="GOLDEN_CFG_${FORMFACTOR}"
+  # In oder to avoid cumbersome missmatches, it's better to remove all 
+  # commented and blank lines before the comparison.
+  grep -o '^[^#]*' ${!CFG_FILE} > $CMP1
+  grep -o '^[^#]*' $RUNNING_CFG > $CMP2
+  diff --strip-trailing-cr --ignore-blank-lines $CMP1 $CMP2
   retvalue=$?
-  rm $TEMPFILE
-  rm ${TEMPFILE}_2
+  #rm $TEMPFILE
+  #rm ${TEMPFILE}_2
   if [[ $retvalue -ne 0 ]]; then exit 4; fi
-  port=$(printf "%02d" $1)
   fancyecho "\n40$port::The configuration of the MCH is OK"
 }
 
 # Check step flags and run the scripts on a specific port
 function runner {
-  if [[ $FW_UPDATE -eq 1 ]]; then update_fw  $1; fi
   if [[ $DHCP_CFG -eq 1 ]];  then dhcp_conf  $1; fi
-  if [[ $MCH_CFG -eq 1 ]];   then mch_conf   $1; err_check $1; fi
+  if [[ $FW_UPDATE -eq 1 ]]; then update_fw  $1; fi
+  if [[ $MCH_CFG -eq 1 ]];   then mch_conf   $1; fi
   if [[ $CLK_CFG -eq 1 ]];   then clk_conf   $1; fi
   if [[ $CFG_CHECK -eq 1 ]];  then err_check  $1; fi
 }
@@ -253,8 +288,8 @@ function runner {
 # _______________________________
 
 function var_definition {
-  CFG_PREFIX=$SRC_PREFIX/src
-  EXPECT_PREFIX=$SRC_PREFIX/expect
+  CFG_PREFIX=${SRC_PREFIX}/src
+  EXPECT_PREFIX=${SRC_PREFIX}/expect
 
   # The real magic happens inside a set of script written in Expect language
   # Following variables store the name of the individual steps:
@@ -267,19 +302,21 @@ function var_definition {
   MCHCFG_SRC=$EXPECT_PREFIX/mchconf.exp
   CFGCHECK_SRC=$EXPECT_PREFIX/cfgcheck.exp
 
-  declare -A GOLDEN_CFG
-  GOLDEN_CFG[3U]=$CFG_PREFIX/GOLDEN_cfg_3u.txt
-  GOLDEN_CFG[9U]=$CFG_PREFIX/GOLDEN_cfg_9u.txt
-  GOLDEN_CFG[5U]=$CFG_PREFIX/GOLDEN_cfg_mini.txt
+  #declare -A GOLDEN_CFG
+  GOLDEN_CFG_3U=$CFG_PREFIX/GOLDEN_cfg_3u.txt
+  GOLDEN_CFG_9U=$CFG_PREFIX/GOLDEN_cfg_9u.txt
+  GOLDEN_CFG_5U=$CFG_PREFIX/GOLDEN_cfg_mini.txt
 
   # Script to set DHCP configuration
   DHCPCFG_SRC=$EXPECT_PREFIX/dhcp.exp
 
   # Scripts that load the clock configuration
-  declare -A CLK_SRC
-  CLK_SRC[3U]=$EXPECT_PREFIX/clock_update_3u.exp
-  CLK_SRC[5U]=$EXPECT_PREFIX/clock_update_mini.exp
-  CLK_SRC[9U]=$EXPECT_PREFIX/clock_update_9u.exp
+  #declare -A CLK_SRC
+  CLK_SRC_3U=$EXPECT_PREFIX/clock_update_3u.exp
+  CLK_SRC_5U=$EXPECT_PREFIX/clock_update_mini.exp
+  CLK_SRC_9U=$EXPECT_PREFIX/clock_update_9u.exp
+
+  
 }
 
 # Start of the script magic
