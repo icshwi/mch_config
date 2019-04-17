@@ -34,10 +34,10 @@ PORT_PREFIX=40
 
 # Flags for the different configuration steps: 1 -> enable the step
 FW_UPDATE=1
-DHCP_CFG=0
+DHCP_CFG=1
 MCH_CFG=1
-CLK_CFG=0
-CFG_CHECK=0
+CLK_CFG=1
+CFG_CHECK=1
 
 function brief_help {
   cat << EOF

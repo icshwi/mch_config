@@ -23,7 +23,13 @@
 
 set DATE [exec date +%y%m%d%H%M]
 set timeout 5
-set tftp_server "10.0.5.91"
+
+
+#set envdata [open "envdata.conf" r]
+#gets $envdata tftp_server
+#close $envdata
+
+set tftp_server "10.0.7.175"
 set conf_path_filename "latest_mch_conf_3u_cfg.txt"
 
 

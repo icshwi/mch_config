@@ -37,8 +37,7 @@ set timeout 5
 #     puts $line
 # }
 
-
-set tftp_server "10.0.5.91"
+set tftp_server "10.0.7.175"
 set fw_path_filename "latest_mch_fw.bin"
 
 
