@@ -966,7 +966,9 @@ pcie_vs_cfg = VS_0, AMC2_4, NONE, AMC1_4, AMC1_8, AMC2_8, AMC3_4, AMC3_8, AMC4_4
 #                 LW_X4X4X4X4
 #                 <NULL>
 #
-
+pcie_lnk_width = PCIE_ST_0, LW_X4X4X4X4
+pcie_lnk_width = PCIE_ST_1, LW_X4X4X4X4
+pcie_lnk_width = PCIE_ST_2, LW_X4X4X4X4
 
 #
 # Item <<pcie_lnk_speed_max>>: Reduces the maximum PCIe speed of a switch 
