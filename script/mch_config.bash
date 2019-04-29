@@ -36,8 +36,11 @@ PORT_PREFIX=40
 FW_UPDATE=1
 DHCP_CFG=1
 MCH_CFG=1
-CLK_CFG=1
-CFG_CHECK=1
+CLK_CFG=0
+CFG_CHECK=0
+
+SLEEP=30
+
 
 function brief_help {
   cat << EOF
@@ -172,7 +175,7 @@ function update_fw {
   cat $FW_TEMPFILE
   echo ""
   fw_version=$(grep "MCH FW" $FW_TEMPFILE | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}")
-  rm $FM_TEMPFILE
+  rm $FW_TEMPFILE 
 
   if [ "x$fw_version" == "x" ]; then
     exit 2
@@ -199,6 +202,9 @@ function update_fw {
   else
     fancyecho "40$port::FW up to date"
   fi
+
+  sleep $SLEEP
+  
 }
 
 # Configure the MCH to accept an IP address from a DHCP server
@@ -211,6 +217,7 @@ function dhcp_conf {
   fancyecho "40$port::Setting up DCHP for the management port..."
   run_script $DHCPCFG_SRC $port
   fancyecho "\n40$port::DCHP configuration done"
+  sleep $SLEEP
 }
 
 # Write the standard configuration
@@ -223,6 +230,7 @@ function mch_conf {
   fancyecho "40$port::Setting up MCH configuration..."
   run_script $MCHCFG_SRC $port
   fancyecho "\n40$port::MCH configuration done"
+  sleep $SLEEP
 }
 
 # Write the clock configuration
@@ -235,6 +243,7 @@ function clk_conf {
   local CLK_SRC="CLK_SRC_$FORMFACTOR"
   run_script ${!CLK_SRC} $port
   fancyecho "\n40$port::${FORMFACTOR} clock configuration done"
+  sleep $SLEEP
 }
 
 # Check the written configuration
@@ -273,14 +282,15 @@ function err_check {
   #rm ${TEMPFILE}_2
   if [[ $retvalue -ne 0 ]]; then exit 4; fi
   fancyecho "\n40$port::The configuration of the MCH is OK"
+  sleep $SLEEP
 }
 
 # Check step flags and run the scripts on a specific port
 function runner {
-  if [[ $DHCP_CFG -eq 1 ]];  then dhcp_conf  $1; fi
-  if [[ $FW_UPDATE -eq 1 ]]; then update_fw  $1; fi
-  if [[ $MCH_CFG -eq 1 ]];   then mch_conf   $1; fi
-  if [[ $CLK_CFG -eq 1 ]];   then clk_conf   $1; fi
+  if [[ $DHCP_CFG -eq 1 ]];   then dhcp_conf  $1; fi
+  if [[ $FW_UPDATE -eq 1 ]];  then update_fw  $1; fi
+  if [[ $MCH_CFG -eq 1 ]];    then mch_conf   $1; fi
+  if [[ $CLK_CFG -eq 1 ]];    then clk_conf   $1; fi
   if [[ $CFG_CHECK -eq 1 ]];  then err_check  $1; fi
 }
 
@@ -319,6 +329,10 @@ function var_definition {
   
 }
 
+
+
+killall telnet
+
 # Start of the script magic
 # _________________________
 start=`date +%s`
@@ -327,6 +341,8 @@ if [[ $# -lt 1 ]]; then brief_help; exit 1;
 elif [[ $1 = "--help" ]] || [[ $1 = "-h" ]]; then help; exit 1;
 elif [[ $# -lt 3 ]]; then print_error 1; exit 1;
 fi
+
+
 
 MOXAIP=$1
 PORTS=$2
@@ -376,7 +392,7 @@ fancyecho "MCH configuration script init (`date "+%Y%m%d %H:%M:%S"`)" >> $logfil
 # Run the expect scripts
 if [[ $mode -eq 1 ]]; then      # Sequence mode
   while [ $fp -le $ep ]; do
-    runner $fp &>> $logfile &
+    ( runner $fp &>> $logfile)&
     # Retrieve the pid of the process in order to wait for it later
     pids[${i}]=$!
     portn[${i}]=$fp
@@ -386,7 +402,7 @@ if [[ $mode -eq 1 ]]; then      # Sequence mode
 else
   k=0
   for i in ${PORTS[*]}; do    # List mode
-    runner $i &>> $logfile &
+    ( runner $i &>> $logfile)&
     # Retrieve the pid of the process in order to wait for it later
     pids[${k}]=$!
     portn[${k}]=$i
@@ -398,7 +414,7 @@ fi
 # Wait for all pids and print error code (if any)
 i=0
 for pid in ${pids[*]}; do
-    wait $pid
+    wait $pid 
     err=$?
     if [[ $err -ne 0 ]]; then
       print_error $err ${portn[$i]} >> $logfile

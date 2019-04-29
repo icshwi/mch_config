@@ -22,8 +22,8 @@
 
 
 set DATE [exec date +%y%m%d%H%M]
-set timeout 5
-set tftp_server "10.0.5.91"
+set timeout 10
+set tftp_server "10.0.7.175"
 set fw_path_filename "latest_mch_fw.bin"
 
 
@@ -70,7 +70,7 @@ set port [lindex $argv 1]
 set logfile_path "/tmp/mch_conf/expect_log"
 file mkdir $logfile_path
 
-log_file $logfile_path/MCH_FWUPDATE_CONF_$ip\_$port\_$DATE.log
+log_file $logfile_path/MCH_FWCHECK_CONF_$ip\_$port\_$DATE.log
 
 # #
 
