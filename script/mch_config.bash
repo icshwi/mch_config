@@ -167,14 +167,14 @@ function update_fw {
   local FW_TEMPFILE=$(mktemp -q --suffix=_fw)
 
   port=$(set_portN $1)
-  
+
   fancyecho "40${port}::Checking FW version ${FW_TEMPFILE}"
   run_script $FWCHECK_SRC $port > $FW_TEMPFILE
   # Add all outputs to log file
   cat $FW_TEMPFILE
   echo ""
   fw_version=$(grep "MCH FW" $FW_TEMPFILE | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}")
-  rm $FW_TEMPFILE 
+  rm $FW_TEMPFILE
 
   if [ "x$fw_version" == "x" ]; then
     exit 2
@@ -194,7 +194,7 @@ function update_fw {
 
   if [[ $UPDATE -eq 1 ]]; then
     fancyecho "40$port::Writing new FW (Old=$fw_version)...."
-    run_script $FWUPDATE_SRC $port &
+    run_script $FWUPDATE_SRC $port >> /dev/null
     # Usually it takes around 3 minutes
     sleep 240
     fancyecho "40$port::FW updated (New=${CURRENT_VERSION[*]})...."
@@ -203,7 +203,6 @@ function update_fw {
   fi
 
   sleep $SLEEP
-  
 }
 
 # Configure the MCH to accept an IP address from a DHCP server
@@ -214,7 +213,7 @@ function update_fw {
 function dhcp_conf {
   local port=$(set_portN $1)
   fancyecho "40$port::Setting up DCHP for the management port..."
-  run_script $DHCPCFG_SRC $port
+  run_script $DHCPCFG_SRC $port >> /dev/null
   fancyecho "\n40$port::DCHP configuration done"
   sleep $SLEEP
 }
@@ -227,7 +226,7 @@ function dhcp_conf {
 function mch_conf {
   local port=$(set_portN $1)
   fancyecho "40$port::Setting up MCH configuration..."
-  run_script $MCHCFG_SRC $port
+  run_script $MCHCFG_SRC $port >> /dev/null
   fancyecho "\n40$port::MCH configuration done"
   sleep $SLEEP
 }
@@ -240,8 +239,8 @@ function clk_conf {
   local port=$(set_portN $1)
   fancyecho "40$port::Setting up ${FORMFACTOR} clock configuration..."
   local CLK_SRC="CLK_SRC_$FORMFACTOR"
-  run_script ${!CLK_SRC} $port
-  fancyecho "\n40$port::${FORMFACTOR} clock configuration done"
+  run_script ${!CLK_SRC} $port >> /dev/null
+  fancyecho "\n40$port::${FORMFACTOR}U clock configuration done"
   sleep $SLEEP
 }
 
@@ -389,7 +388,7 @@ fancyecho "MCH configuration script init (`date "+%Y%m%d %H:%M:%S"`)" >> $logfil
 # Run the expect scripts
 if [[ $mode -eq 1 ]]; then      # Sequence mode
   while [ $fp -le $ep ]; do
-    ( runner $fp &>> $logfile)&
+    ( runner $fp )&
     # Retrieve the pid of the process in order to wait for it later
     pids[${i}]=$!
     portn[${i}]=$fp
@@ -399,7 +398,7 @@ if [[ $mode -eq 1 ]]; then      # Sequence mode
 else
   k=0
   for i in ${PORTS[*]}; do    # List mode
-    ( runner $i &>> $logfile)&
+    ( runner $i )&
     # Retrieve the pid of the process in order to wait for it later
     pids[${k}]=$!
     portn[${k}]=$i
@@ -411,7 +410,7 @@ fi
 # Wait for all pids and print error code (if any)
 i=0
 for pid in ${pids[*]}; do
-    wait $pid 
+    wait $pid
     err=$?
     if [[ $err -ne 0 ]]; then
       print_error $err ${portn[$i]} >> $logfile
