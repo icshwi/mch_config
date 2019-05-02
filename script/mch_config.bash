@@ -22,7 +22,7 @@
 #
 #   date    : Monday, April 15 15:08:12 CEST 2019
 #
-#   version : 0.0.3
+#   version : 0.0.4
 
 SCRIPT_INTERPRETER=expect
 
@@ -72,14 +72,14 @@ Options:
                   5 -> Check the configuration
                   By default, the script is executed with options: 1,2,3,5
   -p|--prefix    -> Source prefix for the tool. By default is "../".
-  -l|--log       -> Log prefix. By default is "../log"
+  -l|--log       -> Log prefix. By default is "../log" (deprecated)
 Examples:
 Run the script to update FW only in the port 4010:
-    mch_config.sh 10.0.5.173 10, -s 1
+    mch_config.sh 10.0.5.173 10, 3U -s 1
 Run the script to configure DHCP in ports 10 to 14:
-    mch_config.sh 10.0.5.173 10-14 --steps 2
+    mch_config.sh 10.0.5.173 10-14 3U --steps 2
 Run the script with the default steps on ports 10,11 and 15:
-    mch_config.sh 10.0.5.173 10,11,15
+    mch_config.sh 10.0.5.173 10,11,15 9U
 
 EOF
   exit 0
@@ -87,8 +87,8 @@ EOF
 
 # Just another wrapper function
 # Arguments:
-# $2-> Port number (just last 2 digits).
-# $1 -> Source script (Expect) to run
+# $1 -> Port number (just last 2 digits).
+# $2 -> Source script (Expect) to run
 function run_script {
     local src_script=$1;
     local portN=$2;
@@ -106,7 +106,6 @@ function run_script {
 # (2)  : Failed to retrieve FW version string
 # (3)  : Insuficient arguments
 # (4)  : Error in the MCH configuration check
-
 
 function errecho {
   echo -e "\033[101;30m$1\033[0m"
@@ -129,7 +128,7 @@ function fancyecho {
 function set_portN {
 
     local portN=$1; shift;
-    
+
     if [[ ${#portN} -lt 2 ]] ; then
 	portN="00${portN}"
 	portN="${portN: -2}"
@@ -341,8 +340,6 @@ if [[ $# -lt 1 ]]; then brief_help; exit 1;
 elif [[ $1 = "--help" ]] || [[ $1 = "-h" ]]; then help; exit 1;
 elif [[ $# -lt 3 ]]; then print_error 1; exit 1;
 fi
-
-
 
 MOXAIP=$1
 PORTS=$2
