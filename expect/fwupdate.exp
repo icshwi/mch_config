@@ -22,7 +22,7 @@
 
 
 set DATE [exec date +%y%m%d%H%M]
-set timeout 5
+set timeout 10
 
 
 # set envdata [open "envdata.conf" r]
@@ -37,8 +37,7 @@ set timeout 5
 #     puts $line
 # }
 
-
-set tftp_server "10.0.4.134"
+set tftp_server "10.0.7.175"
 set fw_path_filename "latest_mch_fw.bin"
 
 

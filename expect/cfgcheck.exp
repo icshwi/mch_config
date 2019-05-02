@@ -22,7 +22,7 @@
 
 
 set DATE [exec date +%y%m%d%H%M]
-set timeout 5
+set timeout 20
 
 set prompt "nat> ";
 set mchcfgprompt "Enter configuration mode (RET=\*): ";

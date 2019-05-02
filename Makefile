@@ -22,17 +22,17 @@ all: install deploy
 
 # Install&Uninstall are related to the commandline tool
 install:
-	install -d $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/bin/
-	install -m 645 $(SCRIPT_SRC)/mch_config.bash $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/bin/
-	install -d $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(EXPECT_DESTDIR)
-	install -m 644 $(EXPECT_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(EXPECT_DESTDIR)
-	install -d $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SRC_DESTDIR)
-	install -m 644 $(CONFIG_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SRC_DESTDIR)
-	install -d 644 $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SCRIPT_SRC)
-	install -m 645 $(SCRIPT_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SCRIPT_SRC)
+	sudo install -d $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/bin/
+	sudo install -m 645 $(SCRIPT_SRC)/mch_config.bash $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/bin/
+	sudo install -d $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(EXPECT_DESTDIR)
+	sudo install -m 644 $(EXPECT_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(EXPECT_DESTDIR)
+	sudo install -d $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SRC_DESTDIR)
+	sudo install -m 644 $(CONFIG_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SRC_DESTDIR)
+	sudo install -d 644 $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SCRIPT_SRC)
+	sudo install -m 645 $(SCRIPT_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SCRIPT_SRC)
 
 uninstall:
-	rm -rf $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)
+	sudo rm -rf $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)
 
 # The following rules are related to the web interface
 deploy:

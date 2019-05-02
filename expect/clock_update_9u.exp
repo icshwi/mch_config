@@ -22,8 +22,8 @@
 
 
 set DATE [exec date +%y%m%d%H%M]
-set timeout 5
-set tftp_server "10.0.4.134"
+set timeout 10
+set tftp_server "10.0.7.175"
 set conf_path_filename "latest_mch_conf_9u_cfg.txt"
 
 
