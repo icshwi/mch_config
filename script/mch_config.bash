@@ -39,7 +39,15 @@ MCH_CFG=1
 CLK_CFG=0
 CFG_CHECK=0
 
+UPDATE_SLEEP=300
 SLEEP=30
+
+# Flag to control the log system in the application
+# Valid options:
+# -> "WEB" : All messages will contain extra information for the web interface
+# -> "USER" : Only human readable information in the output messages
+# -> "" : Raw format
+LOG=""
 
 
 function brief_help {
@@ -72,7 +80,8 @@ Options:
                   5 -> Check the configuration
                   By default, the script is executed with options: 1,2,3,5
   -p|--prefix    -> Source prefix for the tool. By default is "../".
-  -l|--log       -> Log prefix. By default is "../log" (deprecated)
+  -l|--log       -> Enable an human readable log
+  -w|--web       -> Enable web log (interface with the WEBUI)
 Examples:
 Run the script to update FW only in the port 4010:
     mch_config.sh 10.0.5.173 10, 3U -s 1
@@ -107,22 +116,45 @@ function run_script {
 # (3)  : Insuficient arguments
 # (4)  : Error in the MCH configuration check
 
-function errecho {
-  echo -e "\033[101;30m$1\033[0m"
-}
-
 function print_error {
   case $1 in
-    1) errecho "40$2::Generic error, check the logs";;
-    2) errecho "40$2::Couldn't retrieve a FW version, please manually check this port.";;
-    3) errecho "40$2::Insuficient arguments passed to the script";;
-    4) errecho "40$2::MCH configuration is not properly setup";;
-    *) errecho "Unrecognized error code";;
+    1) $wecho "Generic error, check the logs" $2 $3;;
+    2) $wecho "Couldn't retrieve a FW version, please manually check this port." $2 $3;;
+    3) $wecho "Insuficient arguments passed to the script" $2 $3;;
+    4) $wecho "MCH configuration is not properly setup" $2 $3;;
+    *) $wecho "Unrecognized error code" $2 $3;;
   esac
 }
 
-function fancyecho {
-  echo -e "\033[107;34m$1\033[0m"
+# echo wrapper to include extra information for the web interface
+# _______________________________________________________________
+# Arguments:
+# 1 -> message content
+# 2 -> message type (see description in the beginning of the source code)
+# 3 -> message destination (see description in the beginning)
+function webecho {
+  local msg=$1
+  local type=$2
+  local dest=$3
+  echo "$INIT_TAG$type::@$3::$msg$END_TAG"
+}
+
+# echo wrapper to beautify a little bit the output messages
+# _________________________________________________________
+# 1 -> message content
+# 2 -> type: "err" or "inf" or "dbg"
+# 3 -> port number
+function userecho {
+  local msg=$1
+  local type=$2
+  local port="@"$3
+
+  if [[ $port = "@ALL" ]]; then port="";fi
+  if [[ $type = "inf" ]]; then format="107;34";
+  elif [[ $type = "dbg" ]]; then format="94"
+  else format="101;30"; fi
+
+  echo -e "\033[${format}m$msg $port\033[0m"
 }
 
 function set_portN {
@@ -160,24 +192,23 @@ function step_parser {
 # Check FW of the MCH and update it if needed
 # ___________________________________________
 # Arguments:
-# $1 -> MOXA port index (1 to 16)
+# $1 -> MOXA port index (1 to 32)
 
 function update_fw {
-
   local FW_TEMPFILE=$(mktemp -q --suffix=_fw)
 
   port=$(set_portN $1)
 
-  fancyecho "40${port}::Checking FW version ${FW_TEMPFILE}"
+  $wecho "Init FW version checking" "$INFO_TAG" "40$port"
   run_script $FWCHECK_SRC $port > $FW_TEMPFILE
-  # Add all outputs to log file
-  cat $FW_TEMPFILE
-  echo ""
   fw_version=$(grep "MCH FW" $FW_TEMPFILE | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}")
+  $wecho "FW tempfile:$FW_TEMPFILE" "$DBG_TAG" "40$port"
+  $wecho "Current FW version:$fw_version" "$DBG_TAG" "40$port"
+  $wecho "Expected FW version:${CURRENT_VERSION[*]}" "$DBG_TAG" "40$port"
   rm $FW_TEMPFILE
 
   if [ "x$fw_version" == "x" ]; then
-    exit 2
+    print_error 2 "notused" "40$port"
   fi
 
   UPDATE=1
@@ -193,16 +224,16 @@ function update_fw {
   fi
 
   if [[ $UPDATE -eq 1 ]]; then
-    fancyecho "40$port::Writing new FW (Old=$fw_version)...."
+    $wecho "Updating FW version" "$INFO_TAG" "40$port"
     run_script $FWUPDATE_SRC $port >> /dev/null
     # Usually it takes around 3 minutes
-    sleep 240
-    fancyecho "40$port::FW updated (New=${CURRENT_VERSION[*]})...."
+    sleep $UPDATE_SLEEP
+    $wecho "Updated FW version" "$INFO_TAG" "40$port"
   else
-    fancyecho "40$port::FW up to date"
+    $wecho "FW version up to date" "$INFO_TAG" "40$port"
   fi
 
-  sleep $SLEEP
+  $wecho "End FW version checking" "$INFO_TAG" "40$port"
 }
 
 # Configure the MCH to accept an IP address from a DHCP server
@@ -212,9 +243,9 @@ function update_fw {
 
 function dhcp_conf {
   local port=$(set_portN $1)
-  fancyecho "40$port::Setting up DCHP for the management port..."
+  $wecho "Init DCHP configuration" "$INFO_TAG" "40$port"
   run_script $DHCPCFG_SRC $port >> /dev/null
-  fancyecho "\n40$port::DCHP configuration done"
+  $wecho "End DCHP configuration" "$INFO_TAG" "40$port"
   sleep $SLEEP
 }
 
@@ -225,9 +256,9 @@ function dhcp_conf {
 
 function mch_conf {
   local port=$(set_portN $1)
-  fancyecho "40$port::Setting up MCH configuration..."
+  $wecho "Init MCH general configuration" "$INFO_TAG" "40$port"
   run_script $MCHCFG_SRC $port >> /dev/null
-  fancyecho "\n40$port::MCH configuration done"
+  $wecho "End MCH general configuration" "$INFO_TAG" "40$port"
   sleep $SLEEP
 }
 
@@ -237,10 +268,10 @@ function mch_conf {
 # $1 -> MOXA port index (1 to 16)
 function clk_conf {
   local port=$(set_portN $1)
-  fancyecho "40$port::Setting up ${FORMFACTOR} clock configuration..."
+  $wecho "Init MCH clock configuration" "$INFO_TAG" "40$port"
   local CLK_SRC="CLK_SRC_$FORMFACTOR"
   run_script ${!CLK_SRC} $port >> /dev/null
-  fancyecho "\n40$port::${FORMFACTOR}U clock configuration done"
+  $wecho "End MCH clock configuration" "$INFO_TAG" "40$port"
   sleep $SLEEP
 }
 
@@ -250,37 +281,36 @@ function clk_conf {
 #
 function err_check {
   local port=$(set_portN $1)
-  # This is really needed to avoid race conditions
-  RUNNING_CFG=`mktemp`
-  CMP1=`mktemp`
-  CMP2=`mktemp`
-  # Retrieve the IP address
-  #run_script $CFGCHECK_SRC $1  > ${TEMPFILE}_2 
-  #run_script $CFGCHECK_SRC $1  > $RUNNING_CFG;exit 0;
-  # Now the run_script wrapper sends by default the output to /dev/null,
-  # and here we really need that.
-  $SCRIPT_INTERPRETER $CFGCHECK_SRC $MOXAIP $PORT_PREFIX$1 > $RUNNING_CFG
-  # Delete output from expect script. Leave the configuration file.
-  sed -i '/===  Text/,$!d' $RUNNING_CFG
-  # Remove "===Text"
-  sed -i '1,2d' $RUNNING_CFG
-  # Last 2 lines need to be removed (promt and something else)
-  sed -i "$(($(wc -l < ${RUNNING_CFG})-3)),\$d" $RUNNING_CFG
-  #BUG: Sometimes there's still one blank line in the begining of the file.
-  # I'm sorry but I don't know a clean way to do this:
-  # awk '/^$/ && !f{f=1;next}1' ${TEMPFILE}_2 > ${TEMPFILE}
-  local CFG_FILE="GOLDEN_CFG_${FORMFACTOR}"
-  # In oder to avoid cumbersome missmatches, it's better to remove all 
-  # commented and blank lines before the comparison.
-  grep -o '^[^#]*' ${!CFG_FILE} > $CMP1
-  grep -o '^[^#]*' $RUNNING_CFG > $CMP2
-  diff --strip-trailing-cr --ignore-blank-lines $CMP1 $CMP2
-  retvalue=$?
-  #rm $TEMPFILE
-  #rm ${TEMPFILE}_2
-  if [[ $retvalue -ne 0 ]]; then exit 4; fi
-  fancyecho "\n40$port::The configuration of the MCH is OK"
-  sleep $SLEEP
+  # Not implemented
+  $wecho "Error checking not implemented" "$ERR_TAG" "40$port"
+  # RUNNING_CFG=`mktemp`
+  # CMP1=`mktemp`
+  # CMP2=`mktemp`
+  # # Now the run_script wrapper sends by default the output to /dev/null,
+  # # and here we really need that.
+  # $SCRIPT_INTERPRETER $CFGCHECK_SRC $MOXAIP $PORT_PREFIX$1 > $RUNNING_CFG
+  # # Delete output from expect script. Leave the configuration file.
+  # sed -i '/===  Text/,$!d' $RUNNING_CFG
+  # # Remove "===Text"
+  # sed -i '1,2d' $RUNNING_CFG
+  # # Last 2 lines need to be removed (promt and something else)
+  # sed -i "$(($(wc -l < ${RUNNING_CFG})-3)),\$d" $RUNNING_CFG
+  # #BUG: Sometimes there's still one blank line in the begining of the file.
+  # # I'm sorry but I don't know a clean way to do this:
+  # # awk '/^$/ && !f{f=1;next}1' ${TEMPFILE}_2 > ${TEMPFILE}
+  # local CFG_FILE="GOLDEN_CFG_${FORMFACTOR}"
+  # # In oder to avoid cumbersome missmatches, it's better to remove all
+  # # commented and blank lines before the comparison.
+  # grep -o '^[^#]*' ${!CFG_FILE} > $CMP1
+  # grep -o '^[^#]*' $RUNNING_CFG > $CMP2
+  # diff --strip-trailing-cr --ignore-blank-lines $CMP1 $CMP2
+  # retvalue=$?
+  # #rm $TEMPFILE
+  # #rm ${TEMPFILE}_2
+  # if [[ $retvalue -ne 0 ]]; then exit 4; fi
+  # port=$(printf "%02d" $1)
+  # fancyecho "\n40$port::The configuration of the MCH is OK"
+  # sleep $SLEEP
 }
 
 # Check step flags and run the scripts on a specific port
@@ -323,6 +353,16 @@ function var_definition {
   CLK_SRC_3U=$EXPECT_PREFIX/clock_update_3u.exp
   CLK_SRC_5U=$EXPECT_PREFIX/clock_update_mini.exp
   CLK_SRC_9U=$EXPECT_PREFIX/clock_update_9u.exp
+
+  INIT_TAG="^"
+  END_TAG=";;"
+  INFO_TAG="inf"
+  DBG_TAG="dbg"
+  ERR_TAG="err"
+
+  wecho=echo
+  if [[ $LOG = "USER" ]]; then wecho=userecho;
+  elif [[ $LOG = "WEB" ]]; then wecho=webecho; fi
 }
 
 # Start of the script magic
@@ -336,6 +376,7 @@ fi
 
 MOXAIP=$1
 PORTS=$2
+rawports=$2
 FORMFACTOR=$3
 
 # Detect mode: sequence (1) or list (0)
@@ -357,13 +398,14 @@ while [ $# -gt 0 ]; do
     -h|--help) help;;
     -s|--steps) step_parser $2;shift;;
     -p|--prefix) SRC_PREFIX=$2;shift;;
-    -l|--log) LOG_PREFIX=$2;shift;;
-    *) echo "Unknown arg: $1"; help;;
+    -l|--log) LOG="USER";;
+    -w|--web) LOG="WEB";;
+    *) $wecho "Unknown arg: $1"; help;;
   esac
   shift
 done
 
-# We need to define properly the path to all the source files used by this
+# We need to properly define the path to all the source files used by this
 # script. We need to bear in mind that the script may be placed locally in
 # the repository folder, or may be installed system wide.
 if [ -z $SRC_PREFIX ]; then
@@ -372,12 +414,10 @@ if [ -z $SRC_PREFIX ]; then
 fi
 var_definition
 
-if [ -z $SRC_PREFIX ]; then LOG_PREFIX=../log; fi
-LOG_FILE=$LOG_PREFIX/"mch_config_"
-
-mkdir -p $LOG_PREFIX
-logfile="${LOG_FILE}`date "+%y%m%d_%H:%M:%S"`.log"
-fancyecho "MCH configuration script init (`date "+%Y%m%d %H:%M:%S"`)" >> $logfile
+$wecho "MCH configuration script started" "$INFO_TAG" "ALL"
+$wecho "Selected ports:${rawports}" "$INFO_TAG" "ALL"
+steps=$(echo $arg_list | tr "\n" "," | tr " " ",")
+$wecho "Selected steps:${steps%?}" "$INFO_TAG" "ALL"
 
 # Run the expect scripts
 if [[ $mode -eq 1 ]]; then      # Sequence mode
@@ -385,8 +425,6 @@ if [[ $mode -eq 1 ]]; then      # Sequence mode
     ( runner $fp )&
     # Retrieve the pid of the process in order to wait for it later
     pids[${i}]=$!
-    portn[${i}]=$fp
-
     fp=$(($fp+1))
   done
 else
@@ -395,22 +433,15 @@ else
     ( runner $i )&
     # Retrieve the pid of the process in order to wait for it later
     pids[${k}]=$!
-    portn[${k}]=$i
     k=$(($k+1))
   done
 
 fi
 
-# Wait for all pids and print error code (if any)
-i=0
+# Wait for all PIDs
 for pid in ${pids[*]}; do
     wait $pid
-    err=$?
-    if [[ $err -ne 0 ]]; then
-      print_error $err ${portn[$i]} >> $logfile
-    fi
-    i=$(($i+1))
 done
 end=`date +%s`
 
-fancyecho "MCH configuration script done ($((end-start))s)" >> $logfile
+$wecho "MCH configuration script done ($((end-start))s)" "$INFO_TAG" "ALL"
