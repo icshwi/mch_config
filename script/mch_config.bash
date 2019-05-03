@@ -323,13 +323,7 @@ function var_definition {
   CLK_SRC_3U=$EXPECT_PREFIX/clock_update_3u.exp
   CLK_SRC_5U=$EXPECT_PREFIX/clock_update_mini.exp
   CLK_SRC_9U=$EXPECT_PREFIX/clock_update_9u.exp
-
-  
 }
-
-
-
-killall telnet
 
 # Start of the script magic
 # _________________________
