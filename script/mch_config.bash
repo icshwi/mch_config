@@ -122,6 +122,7 @@ function print_error {
     2) $wecho "Couldn't retrieve a FW version, please manually check this port." $2 $3;;
     3) $wecho "Insuficient arguments passed to the script" $2 $3;;
     4) $wecho "MCH configuration is not properly setup" $2 $3;;
+    5) $wecho "Wrong step argument" $2 $3;;
     *) $wecho "Unrecognized error code" $2 $3;;
   esac
 }
@@ -162,8 +163,8 @@ function set_portN {
     local portN=$1; shift;
 
     if [[ ${#portN} -lt 2 ]] ; then
-	portN="00${portN}"
-	portN="${portN: -2}"
+      portN="00${portN}"
+      portN="${portN: -2}"
     fi
 
     echo $portN;
@@ -184,7 +185,7 @@ function step_parser {
       3) MCH_CFG=1;;
       4) CLK_CFG=1;;
       5) CFG_CHECK=1;;
-      *) print_error "Unknow step number $arg"
+      *) print_error 5 "err" "@ALL"
     esac
   done
 }
@@ -208,7 +209,8 @@ function update_fw {
   rm $FW_TEMPFILE
 
   if [ "x$fw_version" == "x" ]; then
-    print_error 2 "notused" "40$port"
+    print_error 2 "err" "40$port"
+    exit 2
   fi
 
   UPDATE=1
