@@ -24,6 +24,14 @@
 #
 #   version : 0.0.3
 
+declare -gr SC_SCRIPT="$(realpath "$0")"
+declare -gr SC_SCRIPTNAME=${0##*/}
+declare -gr SC_TOP="${SC_SCRIPT%/*}"
+declare -gr SC_LOGDATE="$(date +%y%m%d%H%M)"
+declare -g  TFTP_IP_ADDRS=""
+
+TFTP_IP_ADDRS=$(cat ${SC_TOP}/.tftp_ip.txt);
+
 SCRIPT_INTERPRETER=expect
 
 # Current MCH firmware
@@ -90,9 +98,12 @@ EOF
 # $2-> Port number (just last 2 digits).
 # $1 -> Source script (Expect) to run
 function run_script {
-    local src_script=$1;
-    local portN=$2;
-    $SCRIPT_INTERPRETER $src_script $MOXAIP $PORT_PREFIX$portN
+    local src_script="$1"; shift;
+    local portN="$1"; shift;
+    local tftp_server="${TFTP_IP_ADDRS}";
+
+    $SCRIPT_INTERPRETER $src_script $MOXAIP $PORT_PREFIX$portN ${tftp_server}
+
 }
 
 # Error information
