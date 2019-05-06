@@ -1,7 +1,12 @@
 /* Align the content to the middle of the space */
 #page {
-  max-width: 350px;
+  max-width: 450px;
   margin: auto;
+}
+
+#general
+{
+  width: 100%
 }
 
 /* Ref: http://www.tipue.com/blog/radio-checkbox/ */
@@ -9,6 +14,7 @@
 .selectableOpts
 {
  border: 1px solid grey;
+ width: 100%;
 }
 
 #SendButton
@@ -22,7 +28,7 @@
   color: #FFFFFF;
   /* top: 10px; */
   height: 25px;
-  width: 378px;
+  width: 100%;
   border: 0;
   /* border-radius: 3px; */
   cursor: pointer;
