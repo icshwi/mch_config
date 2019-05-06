@@ -18,8 +18,8 @@
   author  : Felipe Torres González
   email   : torresfelipex1@gmail.com
   date    : 20190426
-  version : 0.0.2
-  
+  version : 0.0.3
+
   Thanks to Anne Marie Muñoz who lent me all the help I needed to make this web.
 !-->
 <html>
@@ -44,6 +44,37 @@
       <tr>
         <td><label>Firmware Version</td>
         <td> <input class="label" type="text" id="fwVer" value="2.20.4"> </td>
+      </tr>
+      <tr>
+        <td><label>Enable DHCP</td>
+        <td><input id="checkDHCP" type="checkbox"></td>
+      </tr>
+      <tr>
+        <td><label>Enable advanced mode</td>
+        <td><input id="AdvButton" type="checkbox" value="advanced"></td>
+      </tr>
+      <tr class="hiddenRow" hidden>
+        <td><label class="tooltip">Custom steps
+            <span class="tooltiptext">Steps to run for the general table</span>
+        </td>
+        <td><input id="stepsLabel" value=""></td>
+      </tr>
+      <tr class="hiddenRow" hidden>
+        <td><label class="tooltip">Port bias
+            <span class="tooltiptext">Use this to access ports with an index greater than 16</span>
+        </td>
+        <td><input id="biasLabel" value="0"></td>
+      </tr>
+      <tr class="hiddenRow" hidden>
+        <td><label class="tooltip">Custom command
+            <span class="tooltiptext">Use this to run the tool manually with the command in the label</span>
+        </td>
+        <td><input id="customCmd" type="checkbox"></td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <input id="AdvLabel" value="mch_config 10.0.5.55 1, 3U -s 2 -w" hidden>
+        </td>
       </tr>
     </table>
   </div>
@@ -198,7 +229,7 @@
 
       <td></td>
 
-      <td> <label>23 </td>
+      <td> <label>15 </td>
       <td> <input class="SelectR" type="checkbox" name="selectB" value="select"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r7" value="3U"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r7" value="NA" checked="checked"></td>
@@ -226,9 +257,14 @@
   </table>
 
   <div>
-     <button id="SendButton" name = "Send" value = "OK" type = "button" disabled>Send</button>
+    <button id="SendButton" name="Send" value="OK" type="button" disabled>Run</button>
   </div>
-  </div>
+  <details>
+    <summary><b>See log output</b></summary>
+    <label id="LogOutput">
+  </details>
+
+
 
   <!-- Script with the JS code to call the Bash script which will run the
        configuration of the MCHs -->

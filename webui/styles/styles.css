@@ -18,37 +18,31 @@
   appearance: none;
   display: inline-block;
   position: relative;
-  background-color: #53d17b;
-  color: #666;
-  top: 10px;
-  height: 40px;
-  width: 100px;
+  background-color: #556B2F;
+  color: #FFFFFF;
+  /* top: 10px; */
+  height: 25px;
+  width: 378px;
   border: 0;
-  border-radius: 3px;
-  cursor: pointer;     
-  margin-right: 7px;
+  /* border-radius: 3px; */
+  cursor: pointer;
+  /* margin-right: 7px; */
   outline: none;
-  font: 16px/1 'Open Sans', sans-serif;
+  /* font: 16px/1 'Open Sans', sans-serif; */
+  font-size: 16px;
+  font-weight: normal;
 }
 
 #SendButton:disabled
 {
   background-color: #f1f1f1;
-  color: #666;
+  color: #0;
 }
 
-#SendButton:checked::before
+#SendButton:hover
 {
-  position: absolute;
-  font: 13px/1 'Open Sans', sans-serif;
-  top: 0px;
-  content: '\02143';
-  transform: rotate(40deg);
-}
-
-#SendButton:checked
-{
-  background-color: #26b67b;
+  background-color: #8A6B2F;
+  color: #0;
 }
 
 .SelectR,.SelectL,.SelectAllL,.SelectAllR
@@ -65,7 +59,7 @@
   width: 15px;
   border: 0;
   border-radius: 3px;
-  cursor: pointer;     
+  cursor: pointer;
   margin-right: 7px;
   outline: none;
 }
@@ -115,7 +109,7 @@
   width: 15px;
   border: 0;
   border-radius: 50px;
-  cursor: pointer;     
+  cursor: pointer;
   margin-right: 7px;
   outline: none;
 }
@@ -179,3 +173,42 @@ label,input
   cursor: pointer;
 }
 
+#AdvLabel
+{
+  visibility: hidden;
+  width: 100%;
+  margin: 0px;
+}
+
+#LogOutput
+{
+  font-family: monospace;
+  font-size: 10pt;
+  line-height: 50%;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
