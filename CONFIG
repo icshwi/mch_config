@@ -1,0 +1,11 @@
+
+
+TFTP_SEVER="10.0.4.189"
+WEBSOCKET="10.0.4.189"
+#MOXA_SERVER=10.0.5.231
+
+
+# The definitions shown below can also be placed in an untracked RELEASE.local
+-include $(TOP)/CONFIG.local
+
+
