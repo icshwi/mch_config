@@ -31,7 +31,7 @@ endif
 all: install deploy
 
 # Install&Uninstall are related to the commandline tool
-install: | path
+install: | path setip
 	sudo install -m 645 $(SCRIPT_SRC)/mch_config.bash $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/bin/
 	sudo install -m 644 $(TFTP_IPADDR_TXT)  $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/bin/
 	sudo install -m 644 $(EXPECT_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(EXPECT_DESTDIR)
@@ -76,3 +76,5 @@ getip:
 setip:
 	@echo "$(TFTP_SEVER)" > $(TFTP_IPADDR_TXT)
 
+patch:
+	
