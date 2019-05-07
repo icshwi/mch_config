@@ -17,14 +17,14 @@ Copyright (c) 2019           European Spallation Source ERIC
   author  : Felipe Torres González
   email   : torresfelipex1@gmail.com
   date    : 20190325
-  version : 0.0.2
+  version : 0.0.4
 
   Thanks to Anne Marie Muñoz who lent me all the help I needed to make this web.
 
   Ref: https://github.com/joewalnes/websocketd
 */
 
-var ws = new WebSocket('ws://10.0.4.189:8080/');
+var ws = new WebSocket('ws://10.0.6.18:8080/');
 
 ws.onopen = function() {
   // The "send" button is disabled by default. If the connection is OK, it will
@@ -217,6 +217,7 @@ $("#SendButton").on('click', function() {
     var configNA = "";
     var params   = "-w -p /usr/local/share/mch_config";
     var steps = "-s "
+    var customSteps = false;
 
     if ($("#checkDHCP").prop("checked")) {
       steps += "1,"
@@ -224,10 +225,12 @@ $("#SendButton").on('click', function() {
     if ($("#AdvButton").prop("checked")) {
       if ($("#stepsLabel").val() != "") {
         steps += $("#stepsLabel").val();
+        customSteps = true;
       }
     }
     else {
       steps += "2,3";
+      customSteps = false;
     }
 
     var customCmd = $("#customCmd").prop("checked");
@@ -238,18 +241,18 @@ $("#SendButton").on('click', function() {
       $("#sendingnau").html(listSelected["NA"]);
 
       if(listSelected["3U"] != "") {
-        steps += ",4,5";
+        if (!customSteps) steps += ",4,5";
         config3U = "mch_config " + $("#ipaddr").val() + " " +
           listSelected["3U"] + " 3U " + steps + " " + params
       }
 
       if(listSelected["9U"] != "") {
-        steps += ",4,5";
+        if (!customSteps) steps += ",4,5";
         config3U = "mch_config " + $("#ipaddr").val() + " " +
           listSelected["9U"] + " 9U " + steps + " " + params
       }
 
-      // If step 5 is not specified, the form factor is not really take into
+      // If step 5 is not specified, the form factor is not really taken into
       // account in the Bash script
       if(listSelected["NA"] != "") {
         config3U = "mch_config " + $("#ipaddr").val() + " " +
