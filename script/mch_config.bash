@@ -30,6 +30,8 @@ declare -gr SC_TOP="${SC_SCRIPT%/*}"
 declare -gr SC_LOGDATE="$(date +%y%m%d%H%M)"
 declare -g  TFTP_IP_ADDRS=""
 
+# The following Global variable is used in run_script directly
+#
 TFTP_IP_ADDRS=$(cat ${SC_TOP}/.tftp_ip.txt);
 
 SCRIPT_INTERPRETER=expect
@@ -109,7 +111,7 @@ EOF
 function run_script {
     local src_script=$1;
     local portN=$2;
-    $SCRIPT_INTERPRETER $src_script $MOXAIP $PORT_PREFIX$portN
+    $SCRIPT_INTERPRETER $src_script $MOXAIP $PORT_PREFIX$portN $TFTP_IP_ADDRS
 }
 
 # Error information
@@ -210,14 +212,12 @@ function update_fw {
 
   $wecho "Init FW version checking" "$INFO_TAG" "40$port"
   run_script $FWCHECK_SRC $port > $FW_TEMPFILE
-  # Add all outputs to log file
-  cat $FW_TEMPFILE
-  echo ""
+
   fw_version=$(grep "MCH FW" $FW_TEMPFILE | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}")
   $wecho "FW tempfile:$FW_TEMPFILE" "$DBG_TAG" "40$port"
   $wecho "Current FW version:$fw_version" "$DBG_TAG" "40$port"
   $wecho "Expected FW version:${CURRENT_VERSION[*]}" "$DBG_TAG" "40$port"
-  rm $FW_TEMPFILE
+  rm -f $FW_TEMPFILE
 
   if [ "x$fw_version" == "x" ]; then
     print_error 2 "err" "40$port"

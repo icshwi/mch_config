@@ -25,7 +25,6 @@ set DATE [exec date +%y%m%d%H%M]
 set timeout 10
 #log_user 0
 
-
 set prompt "nat> ";
 set mchcfgprompt "Enter configuration mode (RET=\*): ";
 set debugprompt "Enter debug state (RET=\*): "
@@ -61,7 +60,6 @@ set port [lindex $argv 1]
 #set commands_file [lindex $argv 0]
 set logfile_path "/tmp/mch_conf/expect_log"
 file mkdir $logfile_path
-
 log_file $logfile_path/MCH_DHCP_CONF_$ip\_$port\_$DATE.log
 
 proc dialog {expstring send } {
@@ -89,7 +87,8 @@ proc dialog {expstring send } {
 	}
     }
 }
-      
+
+
 exp_spawn telnet "$ip" "$port"
 
 

@@ -37,9 +37,13 @@ install: | path
 	sudo install -m 644 $(EXPECT_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(EXPECT_DESTDIR)
 	sudo install -m 644 $(CONFIG_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SRC_DESTDIR)
 	sudo install -m 645 $(SCRIPT_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SCRIPT_DESTDIR)
+	sudo cp -r $(WEBUI_SRC)/* $(APACHE_DIR)/
+
 
 uninstall:
 	sudo rm -rf $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)
+
+
 
 # The following rules are related to the web interface
 deploy: | path
@@ -59,10 +63,10 @@ undeploy: uninstall
 	@echo "If you don't need anymore the Apache server, you should remove it manually"
 
 path:
-	sudo install -d $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/bin/
-	sudo install -d $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(EXPECT_DESTDIR)
-	sudo install -d $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SRC_DESTDIR)
-	sudo install -m 644 -d $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SCRIPT_DESTDIR)
+	sudo install -m 755 -d $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/bin/
+	sudo install -m 755 -d $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(EXPECT_DESTDIR)
+	sudo install -m 755 -d $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SRC_DESTDIR)
+	sudo install -m 755 -d $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SCRIPT_DESTDIR)
 
 getip:
 	@ipaddr="";\

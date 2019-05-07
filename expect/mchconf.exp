@@ -64,7 +64,6 @@ set port [lindex $argv 1]
 
 set logfile_path "/tmp/mch_conf/expect_log"
 file mkdir $logfile_path
-
 log_file $logfile_path/MCH_BASIC_CONF_$ip\_$port\_$DATE.log
 
 # set mch_ip_address "10.4.8.123"
@@ -100,6 +99,8 @@ proc dialog {expstring send } {
 	}
     }
 }
+
+
 
 
 # Connect the MOXA serial port

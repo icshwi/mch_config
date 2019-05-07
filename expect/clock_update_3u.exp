@@ -25,8 +25,7 @@ set DATE [exec date +%y%m%d%H%M]
 set timeout 10
 
 set conf_path_filename "latest_mch_conf_3u_cfg.txt"
-set logfile_path "/tmp/mch_conf/expect_log"
-log_file $logfile_path/MCH_CLOCKUPDATE_CONF_$ip\_$port\_$DATE.log
+
 
 
 set prompt "nat> ";
@@ -59,7 +58,9 @@ set port [lindex $argv 1]
 # TFTP Server IP
 set tftp_server [lindex $argv 2]
 
-
+set logfile_path "/tmp/mch_conf/expect_log"
+file mkdir $logfile_path
+log_file $logfile_path/MCH_CLOCKUPDATE_CONF_$ip\_$port\_$DATE.log
 
 proc dialog {expstring send } {
     expect {
@@ -87,8 +88,6 @@ proc dialog {expstring send } {
     }
 }
 
-
-file mkdir $logfile_path
 
 exp_spawn telnet "$ip" "$port"
 
