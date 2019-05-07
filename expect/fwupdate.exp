@@ -24,21 +24,11 @@
 set DATE [exec date +%y%m%d%H%M]
 set timeout 10
 
-
-# set envdata [open "envdata.conf" r]
-# gets $envdata tftp_server
-# close $envdata
-
-# # Read all command sequence from a file to save them into
-# #
-# set input [open "$commands_file" r]
-# set lines [split [read -nonewline $input] "\n"]
-# foreach line $lines {
-#     puts $line
-# }
-
-set tftp_server "10.0.7.175"
+#set tftp_server "10.0.7.175"
 set fw_path_filename "latest_mch_fw.bin"
+
+set logfile_path "/tmp/mch_conf/expect_log"
+log_file $logfile_path/MCH_FWUPDATE_CONF_$ip\_$port\_$DATE.log
 
 
 set prompt "nat> ";
@@ -80,31 +70,24 @@ set ip [lindex $argv 0]
 #
 set port [lindex $argv 1]
 #
-# MCH Configuration Commands File
-#
-#set commands_file [lindex $argv 0]
 
-set logfile_path "/tmp/mch_conf/expect_log"
-file mkdir $logfile_path
+# TFTP Server IP
+set tftp_server [lindex $argv 2]
 
-log_file $logfile_path/MCH_FWUPDATE_CONF_$ip\_$port\_$DATE.log
 
-# #
-
-# # Read all command sequence from a file to save them into
-# #
-# set input [open "$commands_file" r]
-# set lines [split [read -nonewline $input] "\n"]
-# foreach line $lines {
-#     puts $line
-# }
 
 proc dialog {expstring send } {
     expect {
 	$expstring {
 	    sleep .1;
-	    exp_send -s "$send\r"
+	    exp_send -s -- "$send\r"
 	    sleep 1;
+	}
+	-re "Enter configuration mode (RET=\*): " {
+	    exp_send -s -- "0\rq\r"
+	}
+	-re "Enter debug state (RET=\*): " {
+	    exp_send -s -- "0x0\r"
 	}
 	-gl "timeout" {
 	    expect *
@@ -119,8 +102,10 @@ proc dialog {expstring send } {
     }
 }
 
-# Connect the MOXA serial port
-exp_spawn telnet $ip $port
+
+file mkdir $logfile_path
+
+exp_spawn telnet "$ip" "$port"
 
 dialog "Escape character is '^\]'.\r" ""
 
@@ -148,6 +133,12 @@ dialog "firmware> " "$tftp_server:$fw_path_filename"
 
 dialog "$prompt" "reboot"
 
-set timeout 10
+
+sleep 20
+
+set tpid [exp_pid -i $spawn_id]
+exec kill -9 $tpid
 
 expect eof
+
+

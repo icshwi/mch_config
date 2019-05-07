@@ -28,14 +28,6 @@ set ntpserver "194.58.204.20"
 
 set prompt "nat> ";
 set mchcfgprompt "Enter configuration mode (RET=\*): ";
-# Debug Level
-# - configure CM/ShM interface debug
-# - configure IPMI MSG debug
-# - configure local ShM debug
-# - configure redundancy debug
-# - configure RMCP interface debug
-# - configure SDR repository debug
-# - configure SEL debug
 set debugprompt "Enter debug state (RET=\*): "
 set debugcmds {
     csif_dbg 
@@ -82,12 +74,19 @@ log_file $logfile_path/MCH_BASIC_CONF_$ip\_$port\_$DATE.log
 set mch_hostname ""
 # #
 
+
 proc dialog {expstring send } {
     expect {
 	$expstring {
 	    sleep .1;
-	    exp_send -s "$send\r"
+	    exp_send -s -- "$send\r"
 	    sleep 1;
+	}
+	-re "Enter configuration mode (RET=\*): " {
+	    exp_send -s -- "0\rq\r"
+	}
+	-re "Enter debug state (RET=\*): " {
+	    exp_send -s -- "0x0\r"
 	}
 	-gl "timeout" {
 	    expect *
@@ -101,10 +100,10 @@ proc dialog {expstring send } {
 	}
     }
 }
-      
+
 
 # Connect the MOXA serial port
-exp_spawn telnet $ip $port
+exp_spawn telnet "$ip" "$port"
 
 dialog "Escape character is '^\]'.\r" ""
 
@@ -119,10 +118,58 @@ expect  {
     }
 }
 
+
+### Start DISABLE DEBUG as much as we can
+
 foreach cmd $debugcmds {
-    dialog "$prompt" "$cmd"
-    dialog "$debugprompt" "0x0"
+   dialog "$prompt" "$cmd"
+   dialog "$debugprompt" "0x0"
 }
+
+
+# dialog "$prompt" "sw_mp"
+# dialog "SWITCH (RET=\*): " "13"
+# dialog "DBG (RET=\*): " "2"
+# expect -exact "2\r
+# Should the mode be activated?\r
+# \[y\] - Yes; \[n\] - NO (RET=\*): "
+# send -- "n\r"
+# expect -exact "n\r
+# OK\r
+# DBG (RET=2/0x2): "
+# send -- "3\r"
+# expect -exact "3\r
+# Should the mode be activated?\r
+# \[y\] - Yes; \[n\] - NO (RET=\*): "
+# send -- "n\r"
+# expect -exact "n\r
+# OK\r
+# DBG (RET=3/0x3): "
+# send -- "4\r"
+# expect -exact "4\r
+# Should the mode be activated?\r
+# \[y\] - Yes; \[n\] - NO (RET=\*): "
+# send -- "n\r"
+# expect -exact "n\r
+# OK\r
+# DBG (RET=4/0x4): "
+# send -- "5\r"
+# expect -exact "5\r
+# Should the mode be activated?\r
+# \[y\] - Yes; \[n\] - NO (RET=\*): "
+# send -- "n\r"
+# expect -exact "n\r
+# OK\r
+# DBG (RET=5/0x5): "
+# send -- "q\r"
+# expect -exact "q\r
+# SWITCH (RET=0/0x0): "
+# send -- "14\r"
+# expect -exact "14\r
+# SWITCH (RET=0/0x0): "
+# send -- "q\r"
+# ### End DISABLE DEBUG as much as we can
+
 
 
 # # - IP configuration setup
@@ -153,7 +200,7 @@ dialog "Enter session activity timeout (dec, seconds) (RET=\*): " "60"
 dialog "Enter default fan level (dec, percent) (RET=\*): " "30"
 dialog "Enable watch dog timer                     (y/n) (RET=\*): " "n"
 dialog "Enable alternative cooling scheme          (y/n) (RET=\*): " "n"
-dialog "Telnet inactivity timeout (0: disabled or seconds) (RET=\*): " "120"
+dialog "Telnet inactivity timeout (0: disabled or seconds) (RET=\*): " "30"
 dialog "Enable PM relaxed assignment               (y/n) (RET=\*): " "n"
 # [ q] quit and save configuration
 dialog "$mchcfgprompt" "q"
@@ -275,7 +322,13 @@ send -- "\r"
 
 dialog "$prompt" "reboot"
 
+sleep 20
 
+
+set tpid [exp_pid -i $spawn_id]
+exec kill -9 $tpid
 
 expect eof
+
+
 

@@ -23,20 +23,13 @@
 
 set DATE [exec date +%y%m%d%H%M]
 set timeout 10
-set tftp_server "10.0.7.175"
+
+#set tftp_server "10.0.7.175"
 set fw_path_filename "latest_mch_fw.bin"
 
 
 set prompt "nat> ";
 set mchcfgprompt "Enter configuration mode (RET=\*): ";
-# Debug Level
-# - configure CM/ShM interface debug
-# - configure IPMI MSG debug
-# - configure local ShM debug
-# - configure redundancy debug
-# - configure RMCP interface debug
-# - configure SDR repository debug
-# - configure SEL debug
 set debugprompt "Enter debug state (RET=\*): "
 set debugcmds {
     csif_dbg 
@@ -62,6 +55,7 @@ set ip [lindex $argv 0]
 # MOXA Server PORT
 #
 set port [lindex $argv 1]
+
 #
 # MCH Configuration Commands File
 #
@@ -86,8 +80,14 @@ proc dialog {expstring send } {
     expect {
 	$expstring {
 	    sleep .1;
-	    exp_send -s "$send\r"
-	    sleep 1;
+	    exp_send -s -- "$send\r"
+	    sleep .1;
+	}
+	-re "Enter configuration mode (RET=\*): " {
+	    exp_send -s -- "0\rq\r"
+	}
+	-re "Enter debug state (RET=\*): " {
+	    exp_send -s -- "0x0\r"
 	}
 	-gl "timeout" {
 	    expect *
@@ -102,16 +102,25 @@ proc dialog {expstring send } {
     }
 }
 
-# Connect the MOXA serial port
-exp_spawn telnet $ip $port
+
+exp_spawn telnet "$ip" "$port"
 
 dialog "Escape character is '^\]'.\r" ""
 
-foreach cmd $debugcmds {
-    dialog "$prompt" "$cmd"
-    dialog "$debugprompt" "0x0"
-}
+# foreach cmd $debugcmds {
+#     dialog "$prompt" "$cmd"
+#     dialog "$debugprompt" "0x0"
+# }
 
-# MCH is placed by default in slot 3
 dialog "$prompt" "show_fruinfo 3"
+
+
+sleep 5
+
+
+set tpid [exp_pid -i $spawn_id]
+exec kill -9 $tpid
+
 expect eof
+
+

@@ -24,13 +24,9 @@
 set DATE [exec date +%y%m%d%H%M]
 set timeout 10
 
-
-#set envdata [open "envdata.conf" r]
-#gets $envdata tftp_server
-#close $envdata
-
-set tftp_server "10.0.7.175"
 set conf_path_filename "latest_mch_conf_3u_cfg.txt"
+set logfile_path "/tmp/mch_conf/expect_log"
+log_file $logfile_path/MCH_CLOCKUPDATE_CONF_$ip\_$port\_$DATE.log
 
 
 set prompt "nat> ";
@@ -60,19 +56,23 @@ set ip [lindex $argv 0]
 # MOXA Server PORT
 #
 set port [lindex $argv 1]
+# TFTP Server IP
+set tftp_server [lindex $argv 2]
 
-
-set logfile_path "/tmp/mch_conf/expect_log"
-file mkdir $logfile_path
-log_file $logfile_path/MCH_CLOCKUPDATE_CONF_$ip\_$port\_$DATE.log
 
 
 proc dialog {expstring send } {
     expect {
 	$expstring {
 	    sleep .1;
-	    exp_send -s "$send\r"
+	    exp_send -s -- "$send\r"
 	    sleep 1;
+	}
+	-re "Enter configuration mode (RET=\*): " {
+	    exp_send -s -- "0\rq\r"
+	}
+	-re "Enter debug state (RET=\*): " {
+	    exp_send -s -- "0x0\r"
 	}
 	-gl "timeout" {
 	    expect *
@@ -86,10 +86,11 @@ proc dialog {expstring send } {
 	}
     }
 }
-   
 
-# Connect the MOXA serial port
-exp_spawn telnet $ip $port
+
+file mkdir $logfile_path
+
+exp_spawn telnet "$ip" "$port"
 
 dialog "Escape character is '^\]'.\r" ""
 
@@ -123,10 +124,9 @@ send -- "\r"
 
 dialog "$prompt" "reboot"
 
+sleep 20
+
+set tpid [exp_pid -i $spawn_id]
+exec kill -9 $tpid
 
 expect eof
-
-
-
-
-

@@ -24,6 +24,14 @@
 #
 #   version : 0.0.3
 
+declare -gr SC_SCRIPT="$(realpath "$0")"
+declare -gr SC_SCRIPTNAME=${0##*/}
+declare -gr SC_TOP="${SC_SCRIPT%/*}"
+declare -gr SC_LOGDATE="$(date +%y%m%d%H%M)"
+declare -g  TFTP_IP_ADDRS=""
+
+TFTP_IP_ADDRS=$(cat ${SC_TOP}/.tftp_ip.txt);
+
 SCRIPT_INTERPRETER=expect
 
 # Current MCH firmware
@@ -36,7 +44,7 @@ PORT_PREFIX=40
 FW_UPDATE=1
 DHCP_CFG=1
 MCH_CFG=1
-CLK_CFG=0
+CLK_CFG=1
 CFG_CHECK=0
 
 SLEEP=30
@@ -90,9 +98,12 @@ EOF
 # $2-> Port number (just last 2 digits).
 # $1 -> Source script (Expect) to run
 function run_script {
-    local src_script=$1;
-    local portN=$2;
-    $SCRIPT_INTERPRETER $src_script $MOXAIP $PORT_PREFIX$portN
+    local src_script="$1"; shift;
+    local portN="$1"; shift;
+    local tftp_server="${TFTP_IP_ADDRS}";
+
+    $SCRIPT_INTERPRETER $src_script $MOXAIP $PORT_PREFIX$portN ${tftp_server}
+
 }
 
 # Error information
@@ -213,7 +224,7 @@ function update_fw {
 # $1 -> MOXA port index (1 to 16)
 
 function dhcp_conf {
-  local port=$(set_portN $1)
+  local port=$(set_portN "$1")
   fancyecho "40$port::Setting up DCHP for the management port..."
   run_script $DHCPCFG_SRC $port
   fancyecho "\n40$port::DCHP configuration done"
@@ -226,7 +237,8 @@ function dhcp_conf {
 # $1 -> MOXA port index (1 to 16)
 
 function mch_conf {
-  local port=$(set_portN $1)
+    
+  local port=$(set_portN "$1")
   fancyecho "40$port::Setting up MCH configuration..."
   run_script $MCHCFG_SRC $port
   fancyecho "\n40$port::MCH configuration done"
@@ -238,7 +250,7 @@ function mch_conf {
 # Arguments:
 # $1 -> MOXA port index (1 to 16)
 function clk_conf {
-  local port=$(set_portN $1)
+  local port=$(set_portN "$1")
   fancyecho "40$port::Setting up ${FORMFACTOR} clock configuration..."
   local CLK_SRC="CLK_SRC_$FORMFACTOR"
   run_script ${!CLK_SRC} $port
@@ -251,7 +263,7 @@ function clk_conf {
 #
 #
 function err_check {
-  local port=$(set_portN $1)
+  local port=$(set_portN "$1")
   # This is really needed to avoid race conditions
   RUNNING_CFG=`mktemp`
   CMP1=`mktemp`
@@ -261,7 +273,7 @@ function err_check {
   #run_script $CFGCHECK_SRC $1  > $RUNNING_CFG;exit 0;
   # Now the run_script wrapper sends by default the output to /dev/null,
   # and here we really need that.
-  $SCRIPT_INTERPRETER $CFGCHECK_SRC $MOXAIP $PORT_PREFIX$1 > $RUNNING_CFG
+  $SCRIPT_INTERPRETER $CFGCHECK_SRC $MOXAIP $PORT_PREFIX$port > $RUNNING_CFG
   # Delete output from expect script. Leave the configuration file.
   sed -i '/===  Text/,$!d' $RUNNING_CFG
   # Remove "===Text"
@@ -287,11 +299,11 @@ function err_check {
 
 # Check step flags and run the scripts on a specific port
 function runner {
-  if [[ $DHCP_CFG -eq 1 ]];   then dhcp_conf  $1; fi
-  if [[ $FW_UPDATE -eq 1 ]];  then update_fw  $1; fi
-  if [[ $MCH_CFG -eq 1 ]];    then mch_conf   $1; fi
-  if [[ $CLK_CFG -eq 1 ]];    then clk_conf   $1; fi
-  if [[ $CFG_CHECK -eq 1 ]];  then err_check  $1; fi
+  if [[ $DHCP_CFG  -eq 1 ]];  then dhcp_conf  "$1"; fi
+  if [[ $FW_UPDATE -eq 1 ]];  then update_fw  "$1"; fi
+  if [[ $MCH_CFG   -eq 1 ]];  then mch_conf   "$1"; fi
+  if [[ $CLK_CFG   -eq 1 ]];  then clk_conf   "$1"; fi
+  if [[ $CFG_CHECK -eq 1 ]];  then err_check  "$1"; fi
 }
 
 # Define the path for the source files.

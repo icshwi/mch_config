@@ -59,16 +59,21 @@ set port [lindex $argv 1]
 #set commands_file [lindex $argv 0]
 set logfile_path "/tmp/mch_conf/expect_log"
 file mkdir $logfile_path
-
-log_file $logfile_path/MCH_DHCP_CONF_$ip\_$port\_$DATE.log
+log_file $logfile_path/MCH_CFGCHECK_CONF_$ip\_$port\_$DATE.log
 
 
 proc dialog {expstring send } {
     expect {
 	$expstring {
 	    sleep .1;
-	    exp_send -s "$send\r"
+	    exp_send -s -- "$send\r"
 	    sleep 1;
+	}
+	-re "Enter configuration mode (RET=\*): " {
+	    exp_send -s -- "0\rq\r"
+	}
+	-re "Enter debug state (RET=\*): " {
+	    exp_send -s -- "0x0\r"
 	}
 	-gl "timeout" {
 	    expect *
@@ -85,7 +90,8 @@ proc dialog {expstring send } {
 
 
 # Connect the MOXA serial port
-exp_spawn telnet $ip $port
+exp_spawn telnet "$ip" "$port"
+
 
 dialog "Escape character is '^\]'.\r" ""
 
@@ -138,4 +144,12 @@ dialog "$mpprompt" "16"
 sleep 10;
 dialog "$mpprompt" "q"
 
+
+sleep 5
+
+
+set tpid [exp_pid -i $spawn_id]
+exec kill -9 $tpid
+
 expect eof
+
