@@ -17,9 +17,9 @@
 
   author  : Felipe Torres González
   email   : torresfelipex1@gmail.com
-  date    : 20190325
-  version : 0.0.1
-  
+  date    : 20190426
+  version : 0.0.3
+
   Thanks to Anne Marie Muñoz who lent me all the help I needed to make this web.
 !-->
 <html>
@@ -45,10 +45,42 @@
         <td><label>Firmware Version</td>
         <td> <input class="label" type="text" id="fwVer" value="2.20.4"> </td>
       </tr>
+      <tr>
+        <td><label>Enable DHCP</td>
+        <td><input id="checkDHCP" type="checkbox"></td>
+      </tr>
+      <tr>
+        <td><label>Enable advanced mode</td>
+        <td><input id="AdvButton" type="checkbox" value="advanced"></td>
+      </tr>
+      <tr class="hiddenRow" hidden>
+        <td><label class="tooltip">Custom steps
+            <span class="tooltiptext">Steps to run for the general table</span>
+        </td>
+        <td><input id="stepsLabel" value=""></td>
+      </tr>
+      <tr class="hiddenRow" hidden>
+        <td><label class="tooltip">Port bias
+            <span class="tooltiptext">Use this to access ports with an index greater than 16</span>
+        </td>
+        <td><input id="biasLabel" value="0"></td>
+      </tr>
+      <tr class="hiddenRow" hidden>
+        <td><label class="tooltip">Custom command
+            <span class="tooltiptext">Use this to run the tool manually with the command in the label</span>
+        </td>
+        <td><input id="customCmd" type="checkbox"></td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <input id="AdvLabel" value="mch_config 10.0.5.55 1, 3U -s 2 -w" hidden>
+        </td>
+      </tr>
     </table>
   </div>
 
   <div id="page">
+  <div>
   <table class="selectableOpts">
   <thead>
     <tr>
@@ -86,7 +118,7 @@
     <tr> </tr>
     <tr> </tr>
 
-    <!-- Row 1 & 17 !-->
+    <!-- Row 1 & 9 !-->
     <tr>
       <td> <label>1 </td>
       <td> <input class="SelectL" type="checkbox" name="selectA" value="select"></td>
@@ -96,14 +128,14 @@
 
       <td></td>
 
-      <td> <label>17</td>
+      <td> <label>9</td>
       <td> <input class="SelectR" type="checkbox" name="selectB" value="select"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r1" value="3U"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r1" value="NA" checked="checked"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r1" value="9U"></td>
     </tr>
 
-    <!-- Row 2 & 18 !-->
+    <!-- Row 2 & 10 !-->
     <tr>
       <td> <label>2 </td>
       <td> <input class="SelectL" type="checkbox" name="selectA" value="select"></td>
@@ -113,14 +145,14 @@
 
       <td></td>
 
-      <td> <label>18 </td>
+      <td> <label>10 </td>
       <td> <input class="SelectR" type="checkbox" name="selectB" value="select"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r2" value="3U"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r2" value="NA" checked="checked"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r2" value="9U"></td>
     </tr>
 
-    <!-- Row 3 & 19 !-->
+    <!-- Row 3 & 11 !-->
     <tr>
       <td> <label>3 </td>
       <td> <input class="SelectL" type="checkbox" name="selectA" value="select"></td>
@@ -130,14 +162,14 @@
 
       <td></td>
 
-      <td> <label>19 </td>
+      <td> <label>11 </td>
       <td> <input class="SelectR" type="checkbox" name="selectB" value="select"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r3" value="3U"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r3" value="NA" checked="checked"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r3" value="9U"></td>
     </tr>
 
-    <!-- Row 4 & 20 !-->
+    <!-- Row 4 & 12 !-->
     <tr>
       <td> <label>4 </td>
       <td> <input class="SelectL" type="checkbox" name="selectA" value="select"></td>
@@ -147,14 +179,14 @@
 
       <td></td>
 
-      <td> <label>20 </td>
+      <td> <label>12 </td>
       <td> <input class="SelectR" type="checkbox" name="selectB" value="select"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r4" value="3U"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r4" value="NA" checked="checked"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r4" value="9U"></td>
     </tr>
 
-    <!-- Row 5 & 21 !-->
+    <!-- Row 5 & 13 !-->
     <tr>
       <td> <label>5 </td>
       <td> <input class="SelectL" type="checkbox" name="selectA" value="select"></td>
@@ -164,14 +196,14 @@
 
       <td></td>
 
-      <td> <label>21 </td>
+      <td> <label>13 </td>
       <td> <input class="SelectR" type="checkbox" name="selectB" value="select"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r5" value="3U"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r5" value="NA" checked="checked"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r5" value="9U"></td>
     </tr>
 
-    <!-- Row 6 & 22 !-->
+    <!-- Row 6 & 14 !-->
     <tr>
       <td> <label>6 </td>
       <td> <input class="SelectL" type="checkbox" name="selectA" value="select"></td>
@@ -181,14 +213,14 @@
 
       <td></td>
 
-      <td> <label>22 </td>
+      <td> <label>14 </td>
       <td> <input class="SelectR" type="checkbox" name="selectB" value="select"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r6" value="3U"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r6" value="NA" checked="checked"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r6" value="9U"></td>
     </tr>
 
-    <!-- Row 7 & 23 !-->
+    <!-- Row 7 & 15 !-->
     <tr>
       <td> <label>7 </td>
       <td> <input class="SelectL" type="checkbox" name="selectA" value="select"></td>
@@ -198,14 +230,14 @@
 
       <td></td>
 
-      <td> <label>23 </td>
+      <td> <label>15 </td>
       <td> <input class="SelectR" type="checkbox" name="selectB" value="select"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r7" value="3U"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r7" value="NA" checked="checked"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r7" value="9U"></td>
     </tr>
 
-    <!-- Row 8 & 24 !-->
+    <!-- Row 8 & 16 !-->
     <tr>
       <td> <label>8 </td>
       <td> <input class="SelectL" type="checkbox" name="selectA" value="select"></td>
@@ -215,156 +247,26 @@
 
       <td></td>
 
-      <td> <label>24 </td>
+      <td> <label>16 </td>
       <td> <input class="SelectR" type="checkbox" name="selectB" value="select"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r8" value="3U"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r8" value="NA" checked="checked"></td>
       <td> <input class="RadioR" type="radio" name="clockSelectR-r8" value="9U"></td>
     </tr>
 
-    <!-- Row 9 & 25 !-->
-    <tr>
-      <td> <label>9 </td>
-      <td> <input class="SelectL" type="checkbox" name="selectA" value="select"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r9" value="3U"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r9" value="NA" checked="checked"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r9" value="9U"></td>
-
-      <td></td>
-
-      <td> <label>25 </td>
-      <td> <input class="SelectR" type="checkbox" name="selectB" value="select"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r9" value="3U"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r9" value="NA" checked="checked"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r9" value="9U"></td>
-    </tr>
-
-    <!-- Row 10 & 26 !-->
-    <tr>
-      <td> <label>10 </td>
-      <td> <input class="SelectL" type="checkbox" name="selectA" value="select"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r10" value="3U"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r10" value="NA" checked="checked"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r10" value="9U"></td>
-
-      <td></td>
-
-      <td> <label>26 </td>
-      <td> <input class="SelectR" type="checkbox" name="selectB" value="select"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r10" value="3U"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r10" value="NA" checked="checked"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r10" value="9U"></td>
-    </tr>
-
-    <!-- Row 11 & 27 !-->
-    <tr>
-      <td> <label>11 </td>
-      <td> <input class="SelectL" type="checkbox" name="selectA" value="select"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r11" value="3U"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r11" value="NA" checked="checked"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r11" value="9U"></td>
-
-      <td></td>
-
-      <td> <label>27 </td>
-      <td> <input class="SelectR" type="checkbox" name="selectB" value="select"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r11" value="3U"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r11" value="NA" checked="checked"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r11" value="9U"></td>
-    </tr>
-
-    <!-- Row 12 & 28 !-->
-    <tr>
-      <td> <label>12 </td>
-      <td> <input class="SelectL" type="checkbox" name="selectA" value="select"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r12" value="3U"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r12" value="NA" checked="checked"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r12" value="9U"></td>
-
-      <td></td>
-
-      <td> <label>28 </td>
-      <td> <input class="SelectR" type="checkbox" name="selectB" value="select"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r12" value="3U"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r12" value="NA" checked="checked"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r12" value="9U"></td>
-    </tr>
-
-    <!-- Row 13 & 29 !-->
-    <tr>
-      <td> <label>13 </td>
-      <td> <input class="SelectL" type="checkbox" name="selectA" value="select"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r13" value="3U"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r13" value="NA" checked="checked"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r13" value="9U"></td>
-
-      <td></td>
-
-      <td> <label>29 </td>
-      <td> <input class="SelectR" type="checkbox" name="selectB" value="select"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r13" value="3U"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r13" value="NA" checked="checked"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r13" value="9U"></td>
-    </tr>
-
-    <!-- Row 14 & 30 !-->
-    <tr>
-      <td> <label>14 </td>
-      <td> <input class="SelectL" type="checkbox" name="selectA" value="select"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r14" value="3U"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r14" value="NA" checked="checked"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r14" value="9U"></td>
-
-      <td></td>
-
-      <td> <label>30 </td>
-      <td> <input class="SelectR" type="checkbox" name="selectB" value="select"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r14" value="3U"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r14" value="NA" checked="checked"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r14" value="9U"></td>
-    </tr>
-
-    <!-- Row 15 & 31 !-->
-    <tr>
-      <td> <label>15 </td>
-      <td> <input class="SelectL" type="checkbox" name="selectA" value="select"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r15" value="3U"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r15" value="NA" checked="checked"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r15" value="9U"></td>
-
-      <td></td>
-
-      <td> <label>31 </td>
-      <td> <input class="SelectR" type="checkbox" name="selectB" value="select"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r15" value="3U"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r15" value="NA" checked="checked"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r15" value="9U"></td>
-    </tr>
-
-    <!-- Row 16 & 32 !-->
-    <tr>
-      <td> <label>16 </td>
-      <td> <input class="SelectL" type="checkbox" name="selectA" value="select"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r16" value="3U"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r16" value="NA" checked="checked"></td>
-      <td> <input class="RadioL" type="radio" name="clockSelectL-r16" value="9U"></td>
-
-      <td></td>
-
-      <td> <label>32 </td>
-      <td> <input class="SelectR" type="checkbox" name="selectB" value="select"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r16" value="3U"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r16" value="NA" checked="checked"></td>
-      <td> <input class="RadioR" type="radio" name="clockSelectR-r16" value="9U"></td>
-    </tr>
-
   </tbody>
   </table>
+  </div>
 
   <div>
-     <button id="SendButton" name = "Send" value = "OK" type = "button" disabled>Send</button>
+    <button id="SendButton" name="Send" value="OK" type="button" disabled>Run</button>
   </div>
-  </div>
+  <details>
+    <summary><b>See log output</b></summary>
+    <label id="LogOutput">
+  </details>
+
+
 
   <!-- Script with the JS code to call the Bash script which will run the
        configuration of the MCHs -->
