@@ -32,8 +32,7 @@ all: install deploy
 
 # Install&Uninstall are related to the commandline tool
 install: | path setip
-	sudo install -m 645 $(SCRIPT_SRC)/mch_config.bash $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/bin/
-	sudo install -m 644 $(TFTP_IPADDR_TXT)  $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/bin/
+	sudo install -m 644 $(TFTP_IPADDR_TXT)  $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SCRIPT_DESTDIR)/
 	sudo install -m 644 $(EXPECT_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(EXPECT_DESTDIR)
 	sudo install -m 644 $(CONFIG_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SRC_DESTDIR)
 	sudo install -m 645 $(SCRIPT_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SCRIPT_DESTDIR)
@@ -74,7 +73,7 @@ getip:
 	echo "$$ipaddr";
 
 setip:
-	@echo "$(TFTP_SEVER)" > $(TFTP_IPADDR_TXT)
+	@echo "TFTP_IP_ADDRS=$(TFTP_SEVER)" > $(TFTP_IPADDR_TXT)
 
 patch:
 	@sed -e "s|\(ws://\)\([0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\)\(.*\)|\1${WEBSOCKET}\3|g" -i $(WEBUI_SRC)/scripts/handler.js

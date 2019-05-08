@@ -28,14 +28,13 @@ declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME=${0##*/}
 declare -gr SC_TOP="${SC_SCRIPT%/*}"
 declare -gr SC_LOGDATE="$(date +%y%m%d%H%M)"
-declare -g  TFTP_IP_ADDRS=""
 
 # The following Global variable is used in run_script directly
 #
-TFTP_IP_ADDRS=$(cat ${SC_TOP}/.tftp_ip.txt);
 
-#echo $TFTP_IP_ADDRS
-# exit;
+set -a
+. ${SC_TOP}/.tftp_ip.txt
+set +a
 
 
 SCRIPT_INTERPRETER=expect
@@ -132,12 +131,12 @@ function run_script {
 
 function print_error {
   case "$1" in
-    1) $wecho "Generic error, check the logs" $2 $3;;
-    2) $wecho "Couldn't retrieve a FW version, please manually check this port." $2 $3;;
-    3) $wecho "Insuficient arguments passed to the script" $2 $3;;
-    4) $wecho "MCH configuration is not properly setup" $2 $3;;
-    5) $wecho "Wrong step argument" $2 $3;;
-    *) $wecho "Unrecognized error code" $2 $3;;
+    1) $wecho "Generic error, check the logs" "$2" "$3";;
+    2) $wecho "Couldn't retrieve a FW version, please manually check this port." "$2" "$3";;
+    3) $wecho "Insuficient arguments passed to the script" "$2" "$3";;
+    4) $wecho "MCH configuration is not properly setup" "$2" "$3";;
+    5) $wecho "Wrong step argument" "$2" "$3";;
+    *) $wecho "Unrecognized error code" "$2" "$3";;
   esac
 }
 
