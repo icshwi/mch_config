@@ -24,7 +24,7 @@ Copyright (c) 2019           European Spallation Source ERIC
   Ref: https://github.com/joewalnes/websocketd
 */
 
-var ws = new WebSocket('ws://10.0.6.18:8080/');
+var ws = new WebSocket('ws://0.0.0.0:8080/');
 
 ws.onopen = function() {
   // The "send" button is disabled by default. If the connection is OK, it will
@@ -37,7 +37,7 @@ ws.onopen = function() {
 };
 
 ws.onerror = function(evt) {
-  alert("Cannot connect to the WebSocketd (10.0.6.18:8080)");
+  alert("Cannot connect to the WebSocketd (ws://0.0.0.0:8080)");
   $("#SendButton").attr('false', true);
 };
 

@@ -77,4 +77,5 @@ setip:
 	@echo "$(TFTP_SEVER)" > $(TFTP_IPADDR_TXT)
 
 patch:
-	
+	@sed -e "s|\(ws://\)\([0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\)\(.*\)|\1${WEBSOCKET}\3|g" -i $(WEBUI_SRC)/scripts/handler.js
+	@echo "\033[1mPatched IP address in the JS handler\033[0m"
