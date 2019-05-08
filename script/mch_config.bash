@@ -34,6 +34,10 @@ declare -g  TFTP_IP_ADDRS=""
 #
 TFTP_IP_ADDRS=$(cat ${SC_TOP}/.tftp_ip.txt);
 
+#echo $TFTP_IP_ADDRS
+# exit;
+
+
 SCRIPT_INTERPRETER=expect
 
 # Current MCH firmware
@@ -109,9 +113,9 @@ EOF
 # $1 -> Port number (just last 2 digits).
 # $2 -> Source script (Expect) to run
 function run_script {
-    local src_script=$1;
-    local portN=$2;
-    $SCRIPT_INTERPRETER $src_script $MOXAIP $PORT_PREFIX$portN $TFTP_IP_ADDRS
+    local src_script="$1";
+    local portN="$2";
+    $SCRIPT_INTERPRETER "$src_script" "$MOXAIP" "$PORT_PREFIX$portN" "$TFTP_IP_ADDRS"
 }
 
 # Error information
@@ -127,7 +131,7 @@ function run_script {
 # (4)  : Error in the MCH configuration check
 
 function print_error {
-  case $1 in
+  case "$1" in
     1) $wecho "Generic error, check the logs" $2 $3;;
     2) $wecho "Couldn't retrieve a FW version, please manually check this port." $2 $3;;
     3) $wecho "Insuficient arguments passed to the script" $2 $3;;
@@ -144,9 +148,9 @@ function print_error {
 # 2 -> message type (see description in the beginning of the source code)
 # 3 -> message destination (see description in the beginning)
 function webecho {
-  local msg=$1
-  local type=$2
-  local dest=$3
+  local msg="$1"
+  local type="$2"
+  local dest="$3"
   echo "$INIT_TAG$type::@$3::$msg$END_TAG"
 }
 
@@ -156,9 +160,9 @@ function webecho {
 # 2 -> type: "err" or "inf" or "dbg"
 # 3 -> port number
 function userecho {
-  local msg=$1
-  local type=$2
-  local port="@"$3
+  local msg="$1"
+  local type="$2"
+  local port="@$3"
 
   if [[ $port = "@ALL" ]]; then port="";fi
   if [[ $type = "inf" ]]; then format="107;34";
@@ -170,7 +174,7 @@ function userecho {
 
 function set_portN {
 
-    local portN=$1; shift;
+    local portN="$1"; shift;
 
     if [[ ${#portN} -lt 2 ]] ; then
       portN="00${portN}"
@@ -187,7 +191,7 @@ function step_parser {
   DHCP_CFG=0
   MCH_CFG=0
   CLK_CFG=0
-  arg_list=$(echo $1 | tr "," "\n")
+  arg_list=$(echo "$1" | tr "," "\n")
   for arg in ${arg_list[*]}; do
       case "$arg" in
       1) DHCP_CFG=1;;
@@ -208,7 +212,7 @@ function step_parser {
 function update_fw {
   local FW_TEMPFILE=$(mktemp -q --suffix=_fw)
 
-  port=$(set_portN $1)
+  port=$(set_portN "$1")
 
   $wecho "Init FW version checking" "$INFO_TAG" "40$port"
   run_script $FWCHECK_SRC $port > $FW_TEMPFILE
@@ -255,7 +259,7 @@ function update_fw {
 # $1 -> MOXA port index (1 to 16)
 
 function dhcp_conf {
-  local port=$(set_portN $1)
+  local port=$(set_portN "$1")
   $wecho "Init DCHP configuration" "$INFO_TAG" "40$port"
   run_script $DHCPCFG_SRC $port >> /dev/null
   $wecho "End DCHP configuration" "$INFO_TAG" "40$port"
@@ -268,7 +272,7 @@ function dhcp_conf {
 # $1 -> MOXA port index (1 to 16)
 
 function mch_conf {
-  local port=$(set_portN $1)
+  local port=$(set_portN "$1")
   $wecho "Init MCH general configuration" "$INFO_TAG" "40$port"
   run_script $MCHCFG_SRC $port >> /dev/null
   $wecho "End MCH general configuration" "$INFO_TAG" "40$port"
@@ -293,7 +297,7 @@ function clk_conf {
 #
 #
 function err_check {
-  local port=$(set_portN $1)
+  local port=$(set_portN "$1")
   # Not implemented
   $wecho "Error checking not implemented" "$ERR_TAG" "40$port"
   # RUNNING_CFG=`mktemp`
@@ -387,10 +391,10 @@ elif [[ $1 = "--help" ]] || [[ $1 = "-h" ]]; then help; exit 1;
 elif [[ $# -lt 3 ]]; then print_error 1; exit 1;
 fi
 
-MOXAIP=$1
-PORTS=$2
-rawports=$2
-FORMFACTOR=$3
+MOXAIP="$1"
+PORTS="$2"
+rawports="$2"
+FORMFACTOR="$3"
 
 # Detect mode: sequence (1) or list (0)
 x=$(echo $PORTS | grep ",")
@@ -409,8 +413,8 @@ shift 3
 while [ $# -gt 0 ]; do
   case "$1" in
     -h|--help) help;;
-    -s|--steps) step_parser $2;shift;;
-    -p|--prefix) SRC_PREFIX=$2;shift;;
+    -s|--steps) step_parser "$2";shift;;
+    -p|--prefix) SRC_PREFIX="$2";shift;;
     -l|--log) LOG="USER";;
     -w|--web) LOG="WEB";;
     *) $wecho "Unknown arg: $1"; help;;

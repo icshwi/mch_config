@@ -1011,9 +1011,13 @@ pcie_lnk_width = PCIE_ST_2, LW_X4X4X4X4
 #                 LS_5_0GTs - 5.0   GT/s
 #                 LS_8_0GTs - 8.0   GT/s
 #
+# AMC2_4 is allocated for MTCA EVR 300 with 2.5 GT/s max.
+# However, we would like to keep all speed_max as LS_8_0GTs
+# They roll back to LS_2_5GTs.
+# Wednesday, May  8 11:35:17 CEST 2019, han
 
 pcie_lnk_speed_max = AMC1_4,  LS_8_0GTs
-pcie_lnk_speed_max = AMC2_4,  LS_2_5GTs
+pcie_lnk_speed_max = AMC2_4,  LS_8_0GTs
 pcie_lnk_speed_max = AMC3_4,  LS_8_0GTs
 pcie_lnk_speed_max = AMC4_4,  LS_8_0GTs
 pcie_lnk_speed_max = AMC5_4,  LS_8_0GTs

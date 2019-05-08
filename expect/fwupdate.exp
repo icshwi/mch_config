@@ -129,10 +129,11 @@ foreach cmd $debugcmds {
 set timeout -1
 
 dialog "$prompt" "update_firmware"
+
+# puts $tftp_server:$fw_path_filename
 dialog "firmware> " "$tftp_server:$fw_path_filename"
 
 dialog "$prompt" "reboot"
-
 
 sleep 20
 
