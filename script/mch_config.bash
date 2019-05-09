@@ -203,23 +203,25 @@ function step_parser {
   done
 }
 
-# Check FW of the MCH and update it if needed
-# ___________________________________________
+# Check FW version and return if the current version matches the expected one
+# ___________________________________________________________________________
 # Arguments:
 # $1 -> MOXA port index (1 to 32)
-
-function update_fw {
-  local FW_TEMPFILE=$(mktemp -q --suffix=_fw)
-
+# Returns
+# 0 -> if the current version matches the expected one
+# 1 -> if the current version is different
+function check_fw {
   port=$(set_portN "$1")
-
   $wecho "Init FW version checking" "$INFO_TAG" "40$port"
+
+  local FW_TEMPFILE=$(mktemp -q --suffix=_fw)
   run_script $FWCHECK_SRC $port > $FW_TEMPFILE
 
   fw_version=$(grep "MCH FW" $FW_TEMPFILE | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}")
   $wecho "FW tempfile:$FW_TEMPFILE" "$DBG_TAG" "40$port"
   $wecho "Current FW version:$fw_version" "$DBG_TAG" "40$port"
-  $wecho "Expected FW version:${CURRENT_VERSION[*]}" "$DBG_TAG" "40$port"
+  local current_ver=$(echo ${CURRENT_VERSION[*]} | tr ' ' '.')
+  $wecho "Expected FW version:$current_ver" "$DBG_TAG" "40$port"
   rm -f $FW_TEMPFILE
 
   if [ "x$fw_version" == "x" ]; then
@@ -238,18 +240,44 @@ function update_fw {
   elif [[ $x3 -ge ${CURRENT_VERSION[2]} ]]; then
     UPDATE=0
   fi
+  $wecho "End FW version checking (RET=$UPDATE)" "$INFO_TAG" "40$port"
+
+  return $UPDATE
+}
+
+# Check FW of the MCH and update it if needed
+# ___________________________________________
+# Arguments:
+# $1 -> MOXA port index (1 to 32)
+
+function update_fw {
+  port=$(set_portN "$1")
+  $wecho "Init FW version update" "$INFO_TAG" "40$port"
+  check_fw "$1"
+  UPDATE=$?
 
   if [[ $UPDATE -eq 1 ]]; then
     $wecho "Updating FW version" "$INFO_TAG" "40$port"
     run_script $FWUPDATE_SRC $port >> /dev/null
+    echo "script ran"
     # Usually it takes around 3 minutes
+    $wecho "FW updated, waiting for reboot... ($UPDATE_SLEEP s)" "$INFO_TAG" "40$port"
     sleep $UPDATE_SLEEP
     $wecho "Updated FW version" "$INFO_TAG" "40$port"
+    $wecho "Checking FW version after update" "$INFO_TAG" "40$port"
+    check_fw "$1"
+    UPDATED=$?
+    if [[ $UPDATED -eq 1 ]]; then
+      $wecho "FW is not properly updated. Ending process..." "ERR_TAG" "40$port"
+      exit 5
+    else
+      $wecho "FW succesfully updated" "$INFO_TAG" "40$port"
+    fi
   else
     $wecho "FW version up to date" "$INFO_TAG" "40$port"
   fi
 
-  $wecho "End FW version checking" "$INFO_TAG" "40$port"
+  $wecho "End FW version update" "$INFO_TAG" "40$port"
 }
 
 # Configure the MCH to accept an IP address from a DHCP server
@@ -383,7 +411,7 @@ function var_definition {
 
 # Start of the script magic
 # _________________________
-start=`date +%s`
+start=$(date +%s)
 
 if [[ $# -lt 1 ]]; then brief_help; exit 1;
 elif [[ $1 = "--help" ]] || [[ $1 = "-h" ]]; then help; exit 1;
@@ -458,6 +486,6 @@ fi
 for pid in ${pids[*]}; do
     wait $pid
 done
-end=`date +%s`
+end=$(date +%s)
 
 $wecho "MCH configuration script done ($((end-start))s)" "$INFO_TAG" "ALL"
