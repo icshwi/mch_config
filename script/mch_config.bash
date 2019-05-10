@@ -335,8 +335,8 @@ function cfg_check {
   local CFG_TEMPFILE2=$(mktemp -q --suffix=_cfg)
   local DIFF_TEMPFILE=$(mktemp -q --suffix=_diff)
   $wecho "Init MCH configuration check" "$INFO_TAG" "40$port"
-  $wecho "CFG tempfile:$CFG_TEMPFILE" "$DBG_TAG" "40$port"
-  $wecho "CFG tempfile:$CFG_TEMPFILE2" "$DBG_TAG" "40$port"
+  $wecho "CFG tempfile: $CFG_TEMPFILE" "$DBG_TAG" "40$port"
+  $wecho "CFG tempfile2: $CFG_TEMPFILE2" "$DBG_TAG" "40$port"
   run_script $CFGCHECK_SRC $port "mch" > $CFG_TEMPFILE
   # Remove the useless head of the file
   sed "1,8d" -i $CFG_TEMPFILE
@@ -349,7 +349,7 @@ function cfg_check {
     rm $CFG_TEMPFILE2
     rm $DIFF_TEMPFILE
   else
-    $wecho "Clock configuration file differs" "$ERR_TAG" "40$port"
+    $wecho "General configuration file differs" "$ERR_TAG" "40$port"
     $wecho "See $DIFF_TEMPFILE" "$DBG_TAG" "40$port"
   fi
 
@@ -365,7 +365,7 @@ function clk_check {
   local CFG_TEMPFILE=$(mktemp -q --suffix=_cfg)
   local DIFF_TEMPFILE=$(mktemp -q --suffix=_diff)
   $wecho "Init MCH clock check" "$INFO_TAG" "40$port"
-  $wecho "CFG tempfile:$CFG_TEMPFILE" "$DBG_TAG" "40$port"
+  $wecho "CLK CFG tempfile: $CFG_TEMPFILE" "$DBG_TAG" "40$port"
   run_script $CFGCHECK_SRC $port "ni" > $CFG_TEMPFILE
   ip=$(grep -Po 'ip address.*:.\K(\d{1,3}\.?){1,4}' $CFG_TEMPFILE)
   $wecho "Retrieving the MCH configuration file ($ip)..." "$DBG_TAG" "40$port"
