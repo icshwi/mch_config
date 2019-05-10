@@ -262,7 +262,6 @@ function update_fw {
   if [[ $UPDATE -eq 1 ]]; then
     $wecho "Updating FW version" "$INFO_TAG" "40$port"
     run_script $FWUPDATE_SRC $port >> /dev/null
-    echo "script ran"
     # Usually it takes around 3 minutes
     $wecho "FW updated, waiting for reboot... ($UPDATE_SLEEP s)" "$INFO_TAG" "40$port"
     sleep $UPDATE_SLEEP
