@@ -1,0 +1,94 @@
+MCH global parameter:
+---------------------
+remote interfaces:
+  RMCP access:                         enabled
+  telnet access:                       enabled
+  WEB access:                          enabled
+  ssh access:                          disabled
+IP address source Mgmt:                DHCP
+RMCP session activity timeout minutes: 0 min
+RMCP session activity timeout seconds: 60 sec
+default fan level:                     30 percent
+MCH configuration flags:
+  Enable watch dog timer:              no
+  Enable alternative cooling scheme:   no
+  Telnet inact timeout :               30s
+  Set PM Assignment strategy:          strict
+
+Shelf manager parameter:
+------------------------
+ShM configuration flags:
+  allow shelf FRU invalid:             yes
+  temperature management:              enabled
+  emergency shutdown:                  disabled
+  send SEND_MSG confirmation to SMS:   no
+  use external shelf manager:          no
+
+Carrier manager parameter:
+--------------------------
+carrier number default:                0
+quiesced event timeout:                30 sec
+CM configuration flags:
+  allow carrier FRU invalid:           yes
+  overrule carrier FRU:                no
+  shutdown system if MCH goes down:    no
+  enable Clock E-keying:               no
+
+CM debug:
+  IPMI:                                disabled
+  FRU:                                 disabled
+  E-keying:                            disabled
+  sensor:                              disabled
+  event:                               disabled
+  power module:                        disabled
+  cooling unit:                        disabled
+  CM/ShM interface:                    disabled
+  debugging FRU:                       0
+
+SEL parameter:
+--------------
+SEL configuration flags:
+  'keep on read':                      disabled
+  allocate SEL in non-volatile RAM:    yes
+  ignore 'version change' sensor:      yes
+
+Ethernet switch parameter:
+--------------------------
+ configuration source:  load from FLASH
+ ignore backplane FRU info:            no
+
+CLK module parameter:
+---------------------
+ CLK module configuration source:      load from FLASH
+
+PCIe parameter:
+---------------
+PCIe Virtual Switch configuration
+change via web-interface
+ VS # | Host   | NT-Host | Members
+  0     AMC01_4  none      AMC01_4 AMC02_4 AMC03_4 AMC04_4 AMC05_4 AMC06_4 AMC07_4 AMC08_4 AMC09_4 AMC10_4 AMC11_4 AMC12_4 
+  1     
+  2     
+  3     
+  4     
+  5     
+Upstream slot power up delay:          30 sec
+PCIe hot plug delay for AMCs:          0 sec
+PCIe configuration flags:
+  100 MHz spread spectrum:             disabled
+  hot plug support:                    disabled
+  PCIe early ekey (before payload):    disabled
+  'no ekey' for PCIe:                  disabled
+  Use PCIe on MCH-RTM(disable AMC12):  no
+  PCIe clock configuration:            common
+PCIe module configuration source:      load from FLASH
+
+Time Protocol/SNTP parameter:
+--------------
+Time server IP:                        194.58.204.20
+'Check for Time' delay minutes:        0 min
+'Check for Time' delay hours:          0 h
+local time offset:                     0 h
+Configuration flags:
+  Time client:                         enabled
+  Time client protocol:                SNTP
