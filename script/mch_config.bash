@@ -329,6 +329,7 @@ function cfg_check {
   local port=$(set_portN "$1")
   local CFG_TEMPFILE=$(mktemp -q --suffix=_cfg)
   local CFG_TEMPFILE2=$(mktemp -q --suffix=_cfg)
+  local DIFF_TEMPFILE=$(mktemp -q --suffix=_diff)
   $wecho "Init MCH configuration check" "$INFO_TAG" "40$port"
   $wecho "CFG tempfile:$CFG_TEMPFILE" "$DBG_TAG" "40$port"
   $wecho "CFG tempfile:$CFG_TEMPFILE2" "$DBG_TAG" "40$port"
@@ -337,11 +338,12 @@ function cfg_check {
   sed "1,8d" -i $CFG_TEMPFILE
   # Remove last lines from configuration (hostname and DHCP)
   tac $CFG_TEMPFILE | sed "1,4d" | tac > $CFG_TEMPFILE2
-  diff --strip-trailing-cr --ignore-blank-lines $GENERIC_CFG $CFG_TEMPFILE2
+  diff --strip-trailing-cr --ignore-blank-lines $GENERIC_CFG $CFG_TEMPFILE2 > $DIFF_TEMPFILE
   if [[ $? = 0 ]]; then
     $wecho "Configuration file is fine" "$INFO_TAG" "40$port"
     rm $CFG_TEMPFILE
     rm $CFG_TEMPFILE2
+    rm $DIFF_TEMPFILE
   else
     $wecho "Configuration file differs, see the individual files." "$ERR_TAG" "40$port"
   fi
