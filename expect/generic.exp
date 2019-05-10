@@ -65,7 +65,7 @@ set command [lindex $argv 3]
 
 set logfile_path "/tmp/mch_conf/expect_log"
 file mkdir $logfile_path
-log_file $logfile_path/MCH_FWCHECK_CONF_$ip\_$port\_$DATE.log
+log_file $logfile_path/MCH_GENERIC_$ip\_$port\_$DATE.log
 
 # #
 
