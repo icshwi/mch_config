@@ -22,7 +22,7 @@
 #
 #   date    : Monday, April 15 15:08:12 CEST 2019
 #
-#   version : 0.0.4
+#   version : 0.0.8
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME=${0##*/}
@@ -89,8 +89,10 @@ Options:
                   1 -> DHCP network configuration (default)
                   2 -> FW update (default)
                   3 -> Standard MCH configuration (default)
-                  4 -> Clock configuration
-                  5 -> Check the configuration
+                  4 -> Standard MCH configuration (with check)
+                  5 -> Clock configuration
+                  6 -> Clock configuration (with check)
+                  7 -> Check all configurations (general and clock)
                   By default, the script is executed with options: 1,2,3,5
   -p|--prefix    -> Source prefix for the tool. By default is "../".
   -l|--log       -> Enable an human readable log
@@ -199,8 +201,10 @@ function step_parser {
       1) DHCP_CFG=1;;
       2) FW_UPDATE=1;;
       3) MCH_CFG=1;;
-      4) CLK_CFG=1;;
-      5) CFG_CHECK=1;;
+      4) MCH_CFG=2;;
+      5) CLK_CFG=1;;
+      6) CLK_CFG=2;;
+      7) CFG_CHECK=1;;
       *) print_error 5 "err" "@ALL"
     esac
   done
@@ -340,62 +344,65 @@ function cfg_check {
   tac $CFG_TEMPFILE | sed "1,4d" | tac > $CFG_TEMPFILE2
   diff --strip-trailing-cr --ignore-blank-lines $GENERIC_CFG $CFG_TEMPFILE2 > $DIFF_TEMPFILE
   if [[ $? = 0 ]]; then
-    $wecho "Configuration file is fine" "$INFO_TAG" "40$port"
+    $wecho "Configuration file is identical" "$INFO_TAG" "40$port"
     rm $CFG_TEMPFILE
     rm $CFG_TEMPFILE2
     rm $DIFF_TEMPFILE
   else
-    $wecho "Configuration file differs, see the individual files." "$ERR_TAG" "40$port"
+    $wecho "Clock configuration file differs" "$ERR_TAG" "40$port"
+    $wecho "See $DIFF_TEMPFILE" "$DBG_TAG" "40$port"
   fi
 
   $wecho "End MCH configuration check" "$INFO_TAG" "40$port"
 }
 
-# Check the written configuration
-# _______________________________
-#
-#
-function err_check {
+# Check the clock configuration
+# _____________________________
+# Arguments:
+# $1 -> MOXA port index (1 to 32)
+function clk_check {
   local port=$(set_portN "$1")
-  # Not implemented
-  $wecho "Error checking not implemented" "$ERR_TAG" "40$port"
-  # RUNNING_CFG=`mktemp`
-  # CMP1=`mktemp`
-  # CMP2=`mktemp`
-  # # Now the run_script wrapper sends by default the output to /dev/null,
-  # # and here we really need that.
-  # $SCRIPT_INTERPRETER $CFGCHECK_SRC $MOXAIP $PORT_PREFIX$1 > $RUNNING_CFG
-  # # Delete output from expect script. Leave the configuration file.
-  # sed -i '/===  Text/,$!d' $RUNNING_CFG
-  # # Remove "===Text"
-  # sed -i '1,2d' $RUNNING_CFG
-  # # Last 2 lines need to be removed (promt and something else)
-  # sed -i "$(($(wc -l < ${RUNNING_CFG})-3)),\$d" $RUNNING_CFG
-  # #BUG: Sometimes there's still one blank line in the begining of the file.
-  # # I'm sorry but I don't know a clean way to do this:
-  # # awk '/^$/ && !f{f=1;next}1' ${TEMPFILE}_2 > ${TEMPFILE}
-  # local CFG_FILE="GOLDEN_CFG_${FORMFACTOR}"
-  # # In oder to avoid cumbersome missmatches, it's better to remove all
-  # # commented and blank lines before the comparison.
-  # grep -o '^[^#]*' ${!CFG_FILE} > $CMP1
-  # grep -o '^[^#]*' $RUNNING_CFG > $CMP2
-  # diff --strip-trailing-cr --ignore-blank-lines $CMP1 $CMP2
-  # retvalue=$?
-  # #rm $TEMPFILE
-  # #rm ${TEMPFILE}_2
-  # if [[ $retvalue -ne 0 ]]; then exit 4; fi
-  # port=$(printf "%02d" $1)
-  # fancyecho "\n40$port::The configuration of the MCH is OK"
-  # sleep $SLEEP
+  local CFG_TEMPFILE=$(mktemp -q --suffix=_cfg)
+  local DIFF_TEMPFILE=$(mktemp -q --suffix=_diff)
+  $wecho "Init MCH clock check" "$INFO_TAG" "40$port"
+  $wecho "CFG tempfile:$CFG_TEMPFILE" "$DBG_TAG" "40$port"
+  run_script $CFGCHECK_SRC $port "ni" > $CFG_TEMPFILE
+  ip=$(grep -Po 'ip address.*:.\K(\d{1,3}\.?){1,4}' $CFG_TEMPFILE)
+  $wecho "Retrieving the MCH configuration file ($ip)..." "$DBG_TAG" "40$port"
+  ping -c 1 $ip &>> /dev/null
+  if [[ $? != 0 ]]; then
+    $wecho "Can't access to the MCH webserver" "$ERR_TAG" "40$port"
+    return 1
+  fi
+  wget --user root --password nat "http://$ip/goform/web_cfg_backup_show_menu" &>> /dev/null
+  wget --output-document=$CFG_TEMPFILE "http://$ip/nat_mch_startup_cfg.txt" &>> /dev/null
+  local GOLDEN_CFG="GOLDEN_CFG_$FORMFACTOR"
+  diff --strip-trailing-cr --ignore-blank-lines ${!GOLDEN_CFG} $CFG_TEMPFILE > $DIFF_TEMPFILE
+  if [[ $? = 0 ]]; then
+    $wecho "Clock configuration file is identical" "$INFO_TAG" "40$port"
+    rm $CFG_TEMPFILE
+    rm $DIFF_TEMPFILE
+  else
+    $wecho "Clock configuration file differs" "$ERR_TAG" "40$port"
+    $wecho "See $DIFF_TEMPFILE" "$DBG_TAG" "40$port"
+  fi
+
+  $wecho "End MCH clock check" "$INFO_TAG" "40$port"
 }
 
 # Check step flags and run the scripts on a specific port
 function runner {
   if [[ $DHCP_CFG  -eq 1 ]];  then dhcp_conf  "$1"; fi
   if [[ $FW_UPDATE -eq 1 ]];  then update_fw  "$1"; fi
-  if [[ $MCH_CFG   -eq 1 ]];  then mch_conf   "$1"; fi
-  if [[ $CLK_CFG   -eq 1 ]];  then clk_conf   "$1"; fi
-  if [[ $CFG_CHECK -eq 1 ]];  then cfg_check  "$1"; fi
+  if [[ $MCH_CFG   -gt 0 ]];  then
+    mch_conf "$1"
+    if [[ $MCH_CFG -gt 1 ]]; then cfg_check "$1"; fi
+  fi
+  if [[ $CLK_CFG   -gt 0 ]]; then
+    clk_conf "$1"
+    if [[ $CLK_CFG -gt 1 ]]; then clk_check "$1"; fi
+  fi
+  if [[ $CFG_CHECK -eq 1 ]];  then cfg_check "$1"; clk_check  "$1"; fi
 }
 
 # Define the path for the source files.
@@ -417,9 +424,9 @@ function var_definition {
   CFGCHECK_SRC=$EXPECT_PREFIX/generic.exp
 
   #declare -A GOLDEN_CFG
-  GOLDEN_CFG_3U=$CFG_PREFIX/GOLDEN_cfg_3u.txt
-  GOLDEN_CFG_9U=$CFG_PREFIX/GOLDEN_cfg_9u.txt
-  GOLDEN_CFG_5U=$CFG_PREFIX/GOLDEN_cfg_mini.txt
+  GOLDEN_CFG_3U=$CFG_PREFIX/nat_mch_fw2.20.4_3u_cfg.txt
+  GOLDEN_CFG_9U=$CFG_PREFIX/nat_mch_fw2.20.4_9u_cfg.txt
+  GOLDEN_CFG_5U=$CFG_PREFIX/nat_mch_fw2.20.4_mini_cfg.txt
   GENERIC_CFG=$CFG_PREFIX/GOLDEN_cfg.txt
 
   # Script to set DHCP configuration
