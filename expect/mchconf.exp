@@ -30,11 +30,11 @@ set prompt "nat> ";
 set mchcfgprompt "Enter configuration mode (RET=\*): ";
 set debugprompt "Enter debug state (RET=\*): "
 set debugcmds {
-    csif_dbg 
-    imsg_dbg 
-    lshm_dbg 
-    red_dbg  
-    rmcp_dbg 
+    csif_dbg
+    imsg_dbg
+    lshm_dbg
+    red_dbg
+    rmcp_dbg
     sdrrep_dbg
     sel_dbg
 }
@@ -44,7 +44,7 @@ set clearipaddr "\010\010\010\010\010\010\010\010\010\010\010\010\010\010\010"
 
 # MCH is slow not to understand the machine send command
 # So, we have to put some delay between characters.
-# 
+#
 # Send strings with .1 second in between each 1 characters sent
 #
 set send_slow {1 .1}
@@ -69,7 +69,7 @@ log_file $logfile_path/MCH_BASIC_CONF_$ip\_$port\_$DATE.log
 # set mch_ip_address "10.4.8.123"
 # set mch_ip_netmask "255.255.240.0"
 # set mch_ip_broadcast "10.4.15.255"
-# set mch_ip_gateway "10.4.8.1" 
+# set mch_ip_gateway "10.4.8.1"
 set mch_hostname ""
 # #
 
@@ -330,6 +330,3 @@ set tpid [exp_pid -i $spawn_id]
 exec kill -9 $tpid
 
 expect eof
-
-
-

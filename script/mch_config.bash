@@ -114,7 +114,10 @@ EOF
 function run_script {
     local src_script="$1";
     local portN="$2";
-    $SCRIPT_INTERPRETER "$src_script" "$MOXAIP" "$PORT_PREFIX$portN" "$TFTP_IP_ADDRS"
+    # This extra parameter allows sending a command directly to expect. Useful
+    # whenever you need to get the output from a simple command.
+    local custom="$3"
+    $SCRIPT_INTERPRETER "$src_script" "$MOXAIP" "$PORT_PREFIX$portN" "$TFTP_IP_ADDRS" "$custom"
 }
 
 # Error information
@@ -319,6 +322,34 @@ function clk_conf {
   sleep $SLEEP
 }
 
+# Check the general configuration
+# _______________________________
+# Arguments:
+# $1 -> MOXA port index (1 to 32)
+function cfg_check {
+  local port=$(set_portN "$1")
+  local CFG_TEMPFILE=$(mktemp -q --suffix=_cfg)
+  local CFG_TEMPFILE2=$(mktemp -q --suffix=_cfg)
+  $wecho "Init MCH configuration check" "$INFO_TAG" "40$port"
+  $wecho "CFG tempfile:$CFG_TEMPFILE" "$DBG_TAG" "40$port"
+  $wecho "CFG tempfile:$CFG_TEMPFILE2" "$DBG_TAG" "40$port"
+  run_script $CFGCHECK_SRC $port "mch" > $CFG_TEMPFILE
+  # Remove the useless head of the file
+  sed "1,8d" -i $CFG_TEMPFILE
+  # Remove last lines from configuration (hostname and DHCP)
+  tac $CFG_TEMPFILE | sed "1,4d" | tac > $CFG_TEMPFILE2
+  diff --strip-trailing-cr --ignore-blank-lines $GENERIC_CFG $CFG_TEMPFILE2
+  if [[ $? = 0 ]]; then
+    $wecho "Configuration file is fine" "$INFO_TAG" "40$port"
+    rm $CFG_TEMPFILE
+    rm $CFG_TEMPFILE2
+  else
+    $wecho "Configuration file differs, see the individual files." "$ERR_TAG" "40$port"
+  fi
+
+  $wecho "End MCH configuration check" "$INFO_TAG" "40$port"
+}
+
 # Check the written configuration
 # _______________________________
 #
@@ -363,7 +394,7 @@ function runner {
   if [[ $FW_UPDATE -eq 1 ]];  then update_fw  "$1"; fi
   if [[ $MCH_CFG   -eq 1 ]];  then mch_conf   "$1"; fi
   if [[ $CLK_CFG   -eq 1 ]];  then clk_conf   "$1"; fi
-  if [[ $CFG_CHECK -eq 1 ]];  then err_check  "$1"; fi
+  if [[ $CFG_CHECK -eq 1 ]];  then cfg_check  "$1"; fi
 }
 
 # Define the path for the source files.
@@ -382,12 +413,13 @@ function var_definition {
 
   # Script to write general configuration and check it
   MCHCFG_SRC=$EXPECT_PREFIX/mchconf.exp
-  CFGCHECK_SRC=$EXPECT_PREFIX/cfgcheck.exp
+  CFGCHECK_SRC=$EXPECT_PREFIX/generic.exp
 
   #declare -A GOLDEN_CFG
   GOLDEN_CFG_3U=$CFG_PREFIX/GOLDEN_cfg_3u.txt
   GOLDEN_CFG_9U=$CFG_PREFIX/GOLDEN_cfg_9u.txt
   GOLDEN_CFG_5U=$CFG_PREFIX/GOLDEN_cfg_mini.txt
+  GENERIC_CFG=$CFG_PREFIX/GOLDEN_cfg.txt
 
   # Script to set DHCP configuration
   DHCPCFG_SRC=$EXPECT_PREFIX/dhcp.exp

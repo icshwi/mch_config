@@ -1,0 +1,127 @@
+#!/usr/bin/expect --
+#
+#  Copyright (c) 2019           European Spallation Source ERIC
+#
+#  The program is free software: you can redistribute
+#  it and/or modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation, either version 2 of the
+#  License, or any newer version.
+#
+#  This program is distributed in the hope that it will be useful, but WITHOUT
+#  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#  FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+#  more details.
+#
+#  You should have received a copy of the GNU General Public License along with
+#  this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
+#
+#   author  : Jeong Han Lee
+#   email   : jeonghan.lee@gmail.com
+#   date    : Monday, February 18 23:32:20 CET 2019
+#   version : 0.0.3
+
+
+set DATE [exec date +%y%m%d%H%M]
+set timeout 10
+
+#set tftp_server "10.0.7.175"
+set fw_path_filename "latest_mch_fw.bin"
+
+
+set prompt "nat> ";
+set mchcfgprompt "Enter configuration mode (RET=\*): ";
+set debugprompt "Enter debug state (RET=\*): "
+set debugcmds {
+    csif_dbg 
+    imsg_dbg 
+    lshm_dbg 
+    red_dbg  
+    rmcp_dbg 
+    sdrrep_dbg
+    sel_dbg
+}
+# MCH is slow not to understand the machine send command
+# So, we have to put some delay between characters.
+#
+# Send strings with .1 second in between each 1 characters sent
+#
+set send_slow {1 .1}
+
+#
+# MOXA Server IP
+#
+set ip [lindex $argv 0]
+#
+# MOXA Server PORT
+#
+set port [lindex $argv 1]
+
+set command [lindex $argv 3]
+
+#
+# MCH Configuration Commands File
+#
+#set commands_file [lindex $argv 0]
+
+set logfile_path "/tmp/mch_conf/expect_log"
+file mkdir $logfile_path
+log_file $logfile_path/MCH_FWCHECK_CONF_$ip\_$port\_$DATE.log
+
+# #
+
+# # Read all command sequence from a file to save them into
+# #
+# set input [open "$commands_file" r]
+# set lines [split [read -nonewline $input] "\n"]
+# foreach line $lines {
+#     puts $line
+# }
+
+proc dialog {expstring send } {
+    expect {
+	$expstring {
+	    sleep .1;
+	    exp_send -s -- "$send\r"
+	    sleep .1;
+	}
+	-re "Enter configuration mode (RET=\*): " {
+	    exp_send -s -- "0\rq\r"
+	}
+	-re "Enter debug state (RET=\*): " {
+	    exp_send -s -- "0x0\r"
+	}
+	-gl "timeout" {
+	    expect *
+	    error "Timed out" \
+		"Expected: $expstring. Saw: $expect_out(buffer)"
+	}
+	eof {
+	    expect *
+	    error "Connection Closed" \
+		"Expected: $expstring. Saw: $expect_out(buffer)"
+	}
+    }
+}
+
+
+exp_spawn telnet "$ip" "$port"
+
+dialog "Escape character is '^\]'.\r" ""
+
+# foreach cmd $debugcmds {
+#     dialog "$prompt" "$cmd"
+#     dialog "$debugprompt" "0x0"
+# }
+
+dialog "$prompt" "$command"
+
+
+sleep 5
+
+
+set tpid [exp_pid -i $spawn_id]
+exec kill -9 $tpid
+
+expect eof
+
+
