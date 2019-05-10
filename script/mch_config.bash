@@ -374,8 +374,8 @@ function clk_check {
     $wecho "Can't access to the MCH webserver" "$ERR_TAG" "40$port"
     return 1
   fi
-  wget --user root --password nat "http://$ip/goform/web_cfg_backup_show_menu" &>> /dev/null
-  wget --output-document=$CFG_TEMPFILE "http://$ip/nat_mch_startup_cfg.txt" &>> /dev/null
+  curl -u root:nat "http://$ip/goform/web_cfg_backup_show_menu" &>> /dev/null
+  curl -u root:nat -o $CFG_TEMPFILE "http://$ip/nat_mch_startup_cfg.txt" &>> /dev/null
   local GOLDEN_CFG="GOLDEN_CFG_$FORMFACTOR"
   diff --strip-trailing-cr --ignore-blank-lines ${!GOLDEN_CFG} $CFG_TEMPFILE > $DIFF_TEMPFILE
   if [[ $? = 0 ]]; then
