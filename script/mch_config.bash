@@ -222,10 +222,18 @@ function check_fw {
   $wecho "Init FW version checking" "$INFO_TAG" "40$port"
 
   local FW_TEMPFILE=$(mktemp -q --suffix=_fw)
+  $wecho "FW tempfile: $FW_TEMPFILE" "$DBG_TAG" "40$port"
   run_script $FWCHECK_SRC $port > $FW_TEMPFILE
+  # No error is raisen in that kind of calls. We cannot trust in $?. Then we can
+  # check for the number of lines of the temporal file. When no connection is
+  # stablish, this file contains only 3 lines.
+  local filelines=$(wc -l $FW_TEMPFILE | cut -d " " -f1)
+  if [[ $filelines -le 3 ]]; then
+    $wecho "Error in FW check." "$ERR_TAG" "40$port"
+    exit 1
+  fi
 
   fw_version=$(grep "MCH FW" $FW_TEMPFILE | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}")
-  $wecho "FW tempfile:$FW_TEMPFILE" "$DBG_TAG" "40$port"
   $wecho "Current FW version:$fw_version" "$DBG_TAG" "40$port"
   local current_ver=$(echo ${CURRENT_VERSION[*]} | tr ' ' '.')
   $wecho "Expected FW version:$current_ver" "$DBG_TAG" "40$port"
@@ -265,7 +273,11 @@ function update_fw {
 
   if [[ $UPDATE -eq 1 ]]; then
     $wecho "Updating FW version" "$INFO_TAG" "40$port"
-    run_script $FWUPDATE_SRC $port >> /dev/null
+    run_script $FWUPDATE_SRC $port &>> /dev/null
+    if [[ $? -ne 0 ]]; then
+      $wecho "Error in FW update." "$ERR_TAG" "40$port"
+      exit 1
+    fi
     # Usually it takes around 3 minutes
     $wecho "FW updated, waiting for reboot... ($UPDATE_SLEEP s)" "$INFO_TAG" "40$port"
     sleep $UPDATE_SLEEP
@@ -294,7 +306,12 @@ function update_fw {
 function dhcp_conf {
   local port=$(set_portN "$1")
   $wecho "Init DCHP configuration" "$INFO_TAG" "40$port"
-  run_script $DHCPCFG_SRC $port >> /dev/null
+  run_script $DHCPCFG_SRC $port &>> /dev/null
+  if [[ $? -ne 0 ]]; then
+    $wecho "Error in the DHCP configuration." "$ERR_TAG" "40$port"
+    exit 1
+  fi
+
   $wecho "End DCHP configuration" "$INFO_TAG" "40$port"
   sleep $SLEEP
 }
@@ -307,7 +324,12 @@ function dhcp_conf {
 function mch_conf {
   local port=$(set_portN "$1")
   $wecho "Init MCH general configuration" "$INFO_TAG" "40$port"
-  run_script $MCHCFG_SRC $port >> /dev/null
+  run_script $MCHCFG_SRC $port &>> /dev/null
+  if [[ $? -ne 0 ]]; then
+    $wecho "Error in the MCH general configuration." "$ERR_TAG" "40$port"
+    exit 1
+  fi
+
   $wecho "End MCH general configuration" "$INFO_TAG" "40$port"
   sleep $SLEEP
 }
@@ -320,7 +342,11 @@ function clk_conf {
   local port=$(set_portN "$1")
   $wecho "Init MCH clock configuration" "$INFO_TAG" "40$port"
   local CLK_SRC="CLK_SRC_$FORMFACTOR"
-  run_script ${!CLK_SRC} $port >> /dev/null
+  run_script ${!CLK_SRC} $port &>> /dev/null
+  if [[ $? -ne 0 ]]; then
+    $wecho "Error in MCH clock configuration." "$ERR_TAG" "40$port"
+    exit 1
+  fi
   $wecho "End MCH clock configuration" "$INFO_TAG" "40$port"
   sleep $SLEEP
 }
@@ -338,6 +364,11 @@ function cfg_check {
   $wecho "CFG tempfile: $CFG_TEMPFILE" "$DBG_TAG" "40$port"
   $wecho "CFG tempfile2: $CFG_TEMPFILE2" "$DBG_TAG" "40$port"
   run_script $CFGCHECK_SRC $port "mch" > $CFG_TEMPFILE
+  local filelines=$(wc -l $CFG_TEMPFILE | cut -d " " -f1)
+  if [[ $filelines -le 3 ]]; then
+    $wecho "Error in MCH configuration check." "$ERR_TAG" "40$port"
+    exit 1
+  fi
   # Remove the useless head of the file
   sed "1,8d" -i $CFG_TEMPFILE
   # Remove last lines from configuration (hostname and DHCP)
@@ -367,6 +398,11 @@ function clk_check {
   $wecho "Init MCH clock check" "$INFO_TAG" "40$port"
   $wecho "CLK CFG tempfile: $CFG_TEMPFILE" "$DBG_TAG" "40$port"
   run_script $CFGCHECK_SRC $port "ni" > $CFG_TEMPFILE
+  local filelines=$(wc -l $CFG_TEMPFILE | cut -d " " -f1)
+  if [[ $filelines -le 3 ]]; then
+    $wecho "Error in MCH clock configuration check." "$ERR_TAG" "40$port"
+    exit 1
+  fi
   ip=$(grep -Po 'ip address.*:.\K(\d{1,3}\.?){1,4}' $CFG_TEMPFILE)
   $wecho "Retrieving the MCH configuration file ($ip)..." "$DBG_TAG" "40$port"
   ping -c 1 $ip &>> /dev/null
