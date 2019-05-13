@@ -1,0 +1,39 @@
+
+
+# MCH is slow not to understand the machine send command
+# So, we have to put some delay between characters.
+#
+# Send strings with .1 second in between each 1 characters sent
+#
+set send_slow {1 .1}
+
+#
+# MOXA Server IP
+#
+set ip [lindex $argv 0]
+#
+# MOXA Server PORT
+#
+set port [lindex $argv 1]
+#
+
+
+# TFTP Server IP
+set tftp_server [lindex $argv 2]
+
+
+if { [string trimleft $port] == "" } {
+    set port "23"
+    puts ">> Port is not defined, use the default one : $port"
+}
+
+
+
+
+
+exp_spawn telnet "$ip" "$port"
+
+
+interact
+
+

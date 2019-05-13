@@ -58,7 +58,16 @@ set port [lindex $argv 1]
 
 set command [lindex $argv 3]
 
-#
+
+
+if { [string trimleft $port] == "" } {
+    set port "23"
+    puts ">> It looks like one does not use the MOXA"
+    puts ">> We are going to use the telent default one : $port"
+}
+
+
+
 # MCH Configuration Commands File
 #
 #set commands_file [lindex $argv 0]

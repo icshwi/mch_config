@@ -61,6 +61,12 @@ set port [lindex $argv 1]
 #
 #set commands_file [lindex $argv 0]
 
+if { [string trimleft $port] == "" } {
+    set port "23"
+    puts ">> It looks like one does not use the MOXA"
+    puts ">> We are going to use the telent default one : $port"
+}
+
 set logfile_path "/tmp/mch_conf/expect_log"
 file mkdir $logfile_path
 log_file $logfile_path/MCH_FWCHECK_CONF_$ip\_$port\_$DATE.log
