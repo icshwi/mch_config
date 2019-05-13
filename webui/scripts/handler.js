@@ -17,7 +17,7 @@ Copyright (c) 2019           European Spallation Source ERIC
   author  : Felipe Torres González
   email   : torresfelipex1@gmail.com
   date    : 20190325
-  version : 0.0.4
+  version : 0.0.6
 
   Thanks to Anne Marie Muñoz who lent me all the help I needed to make this web.
 
@@ -241,13 +241,13 @@ $("#SendButton").on('click', function() {
       $("#sendingnau").html(listSelected["NA"]);
 
       if(listSelected["3U"] != "") {
-        if (!customSteps) steps += ",4,5";
+        if (!customSteps) steps += ",4,6";
         config3U = "mch_config " + $("#ipaddr").val() + " " +
           listSelected["3U"] + " 3U " + steps + " " + params
       }
 
       if(listSelected["9U"] != "") {
-        if (!customSteps) steps += ",4,5";
+        if (!customSteps) steps += ",4,6";
         config3U = "mch_config " + $("#ipaddr").val() + " " +
           listSelected["9U"] + " 9U " + steps + " " + params
       }
