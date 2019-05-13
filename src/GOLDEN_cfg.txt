@@ -66,12 +66,12 @@ PCIe parameter:
 PCIe Virtual Switch configuration
 change via web-interface
  VS # | Host   | NT-Host | Members
-  0     AMC01_4  none      AMC01_4 AMC02_4 AMC03_4 AMC04_4 AMC05_4 AMC06_4 AMC07_4 AMC08_4 AMC09_4 AMC10_4 AMC11_4 AMC12_4
-  1
-  2
-  3
-  4
-  5
+  0     AMC01_4  none      AMC01_4 AMC02_4 AMC03_4 AMC04_4 AMC05_4 AMC06_4 AMC07_4 AMC08_4 AMC09_4 AMC10_4 AMC11_4 AMC12_4 
+  1     
+  2     
+  3     
+  4     
+  5     
 Upstream slot power up delay:          30 sec
 PCIe hot plug delay for AMCs:          0 sec
 PCIe configuration flags:
