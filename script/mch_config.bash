@@ -22,7 +22,7 @@
 #
 #   date    : Monday, April 15 15:08:12 CEST 2019
 #
-#   version : 0.0.8
+#   version : 0.0.9
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME=${0##*/}
@@ -215,8 +215,8 @@ function step_parser {
 # Arguments:
 # $1 -> MOXA port index (1 to 32)
 # Returns
-# 0 -> if the current version matches the expected one
-# 1 -> if the current version is different
+# 0 -> if there's no need to update
+# 1 -> if the current version is older than the one expected
 function check_fw {
   port=$(set_portN "$1")
   $wecho "Init FW version checking" "$INFO_TAG" "40$port"
@@ -244,19 +244,21 @@ function check_fw {
     exit 2
   fi
 
-  UPDATE=1
-  x1=$(echo ${fw_version} | cut -d"." -f1)
-  x2=$(echo ${fw_version} | cut -d"." -f2)
-  x3=$(echo ${fw_version} | cut -d"." -f3)
-  if [[ $x1 -gt ${CURRENT_VERSION[0]} ]]; then
-    UPDATE=0
-  elif [[ $x2 -gt ${CURRENT_VERSION[1]} ]]; then
-    UPDATE=0
-  elif [[ $x3 -ge ${CURRENT_VERSION[2]} ]]; then
-    UPDATE=0
-  fi
-  $wecho "End FW version checking (RET=$UPDATE)" "$INFO_TAG" "40$port"
+  UPDATE=0
+  local x0=$(echo ${fw_version} | cut -d"." -f1)
+  local x1=$(echo ${fw_version} | cut -d"." -f2)
+  local x2=$(echo ${fw_version} | cut -d"." -f3)
 
+  for i in $(seq 0 2); do
+    local VAR="x$i"
+    if [[ ${!VAR} -lt ${CURRENT_VERSION[$i]} ]]; then
+      UPDATE=1; break;
+    elif [[ ${!VAR} -gt ${CURRENT_VERSION[$i]} ]]; then
+      UPDATE=0; break;
+    fi
+  done
+
+  $wecho "End FW version checking (RET=$UPDATE)" "$INFO_TAG" "40$port"
   return $UPDATE
 }
 
