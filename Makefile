@@ -78,3 +78,8 @@ setip:
 patch:
 	@sed -e "s|\(ws://\)\([0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\)\(.*\)|\1${WEBSOCKET}\3|g" -i $(WEBUI_SRC)/scripts/handler.js
 	@echo "\033[1mPatched IP address in the JS handler\033[0m"
+
+config:
+	@echo "Setting up environment variables for the Expect scripts"
+	@sed -E "s|(G_EXPECT_CFG_LOGFILEPATH )(.?)*$ |\1$(EXPECT_LOG_PATH)|g" -i $(CONFIG_SRC)/expect.config
+	@sed -E "s|(G_EXPECT_CFG_TFTPADDR )(.?)*$ |\1$(TFTP_SEVER)|g" -i $(CONFIG_SRC)/expect.config
