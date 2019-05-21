@@ -17,12 +17,14 @@
 #
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
+#   author  : Felipe Torres González
+#   email   : torresfelipex1@gmail.com
 #   date    : Monday, March  4 17:58:40 CET 2019
-#   version : 0.0.2
+#   version : 0.0.3
 
-
-set DATE [exec date +%y%m%d%H%M]
-set timeout 10
+# Let's centralize general options into a file :-)
+set script_path [ file dirname [ file normalize [ info script ] ] ]
+source $script_path/expect.config
 
 set conf_path_filename "latest_mch_conf_9u_cfg.txt"
 
@@ -30,17 +32,17 @@ set prompt "nat> ";
 set mchcfgprompt "Enter configuration mode (RET=\*): ";
 set debugprompt "Enter debug state (RET=\*): "
 set debugcmds {
-    csif_dbg 
-    imsg_dbg 
-    lshm_dbg 
-    red_dbg  
-    rmcp_dbg 
+    csif_dbg
+    imsg_dbg
+    lshm_dbg
+    red_dbg
+    rmcp_dbg
     sdrrep_dbg
     sel_dbg
 }
 # MCH is slow not to understand the machine send command
 # So, we have to put some delay between characters.
-# 
+#
 # Send strings with .1 second in between each 1 characters sent
 #
 set send_slow {1 .1}
@@ -53,10 +55,10 @@ set ip [lindex $argv 0]
 # MOXA Server PORT
 #
 set port [lindex $argv 1]
-
-# TFTP Server IP
-set tftp_server [lindex $argv 2]
-
+#
+# Date to append to the log file
+#
+set DATE [lindex $argv 2]
 
 if { [string trimleft $port] == "" } {
     set port "23"
@@ -64,10 +66,8 @@ if { [string trimleft $port] == "" } {
     puts ">> We are going to use the telent default one : $port"
 }
 
-
-set logfile_path "/tmp/mch_conf/expect_log"
-file mkdir $logfile_path
-log_file $logfile_path/MCH_CLOCKUPDATE_CONF_$ip\_$port\_$DATE.log
+file mkdir $G_EXPECT_CFG_LOGFILEPATH
+log_file $G_EXPECT_CFG_LOGFILEPATH/MCH_CLOCKUPDATE_CONF_$ip\_$port\_$DATE.log
 
 
 proc dialog {expstring send } {
@@ -118,7 +118,7 @@ foreach cmd $debugcmds {
 
 
 dialog "$prompt" "upload_cfg"
-dialog "\[IP:FILENAME\*" "$tftp_server:$conf_path_filename"
+dialog "\[IP:FILENAME\*" "$G_EXPECT_CFG_TFTPADDR:$conf_path_filename"
 dialog "Set configuration from file?  (RET=\*): " "y"
 dialog "Save configuration to FLASH memory?  (RET=\*): " "y"
 
@@ -136,12 +136,3 @@ set tpid [exp_pid -i $spawn_id]
 exec kill -9 $tpid
 
 expect eof
-
-
-
-
-
-
-
-
-

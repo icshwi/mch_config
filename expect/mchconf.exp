@@ -18,13 +18,13 @@
 #   author  : Jeong Han Lee
 #   email   : jeonghan.lee@gmail.com
 #   date    : Monday, March  4 17:58:16 CET 2019
-#   version : 0.0.6
+#   author  : Felipe Torres González
+#   email   : torresfelipex1@gmail.com
+#   version : 0.0.7
 
-
-set DATE [exec date +%y%m%d%H%M]
-set timeout 10
-#set ntpserver "174.16.6.38"
-set ntpserver "194.58.204.20"
+# Let's centralize general options into a file :-)
+set script_path [ file dirname [ file normalize [ info script ] ] ]
+source $script_path/expect.config
 
 set prompt "nat> ";
 set mchcfgprompt "Enter configuration mode (RET=\*): ";
@@ -58,9 +58,9 @@ set ip [lindex $argv 0]
 #
 set port [lindex $argv 1]
 #
-# MCH Configuration Commands File
+# Date to append to the log file
 #
-#set commands_file [lindex $argv 0]
+set DATE [lindex $argv 2]
 
 
 if { [string trimleft $port] == "" } {
@@ -71,9 +71,8 @@ if { [string trimleft $port] == "" } {
 
 
 
-set logfile_path "/tmp/mch_conf/expect_log"
-file mkdir $logfile_path
-log_file $logfile_path/MCH_BASIC_CONF_$ip\_$port\_$DATE.log
+file mkdir $G_EXPECT_CFG_LOGFILEPATH
+log_file $G_EXPECT_CFG_LOGFILEPATH/MCH_BASIC_CONF_$ip\_$port\_$DATE.log
 
 # set mch_ip_address "10.4.8.123"
 # set mch_ip_netmask "255.255.240.0"
@@ -306,7 +305,7 @@ dialog "$prompt" "mchcfg"
 dialog "$mchcfgprompt" "10"
 dialog "Enable Time client (y/n) (RET=\*): " "y"
 dialog "SNTP (y) or Time Protocol (n) (RET=\*): " "y"
-dialog "Enter Time server IP (dot notation): \*.\*.\*.\*" "$clearipaddr $ntpserver"
+dialog "Enter Time server IP (dot notation): \*.\*.\*.\*" "$clearipaddr $G_EXPECT_NTPADDR"
 dialog "Enter 'Check for Time' delay (dec, minutes) (RET=\*): " "0"
 dialog "Enter 'Check for Time' delay (dec, hours) (RET=\*): " "0"
 dialog "Enter local time offset (dec, hours) (RET=\*): " "0"
@@ -322,7 +321,7 @@ dialog "$mchcfgprompt" "q"
 sleep 2;
 
 
-dialog "$prompt" "ntpdate $ntpserver"
+dialog "$prompt" "ntpdate $G_EXPECT_NTPADDR"
 
 #interact
 
