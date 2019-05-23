@@ -666,76 +666,35 @@ clk_pcb_min  =  2
 #               37 -  EXT single ended 3 (INPUT  SMA 2)
 #               41 -  100MHz OSC (only with HCSL option)
 #
-#  --------------------------------------------------------------------------------
-#  The Clock Distribution Configuration is only valid with MRF MTCA EVR 300, which
-#  is located in AMC2_4 (AMC2) in MTCA Standard 9U Configuration. And Our default
-#  MCH has the HCSL buffer PCIe Clock Gen Assembly Option, which can be found in
-#  Maintenance/Board Information.
-#
-#  MTCA 5U Chassis (we can call it MINI), we DO NOT need to configure more than AMC7.
-#  Since they are ignored by MCH itself, we keep them as the same configuration as
-#  9U Chassis configuration.
-#
-#  clk_phys_out = 33,  1
-#  clk_phys_out = 34,  1
-#  clk_phys_out = 35,  1
-#  clk_phys_out = 36,  1
-#  clk_phys_out = 37,  1
-#  clk_phys_out = 38,  1
-#  clk_phys_out = 39,  1
-#  clk_phys_out = 40,  1
-#  clk_phys_out = 41,  1
-#  clk_phys_out = 42,  1
-#  clk_phys_out = 43,  1
-#  clk_phys_out = 44,  1
-#
-#
-#  Thank Simone for this configuration.
-#
-#  Monday, March 11 11:48:21 CET 2019
-#  --------------------------------------------------------------------------------
-# 20190410 Jerzy:
-# Mapping of the AMC clocks is different and follows the table:
-#
-# show_fru | CLKA | CLKB | AMC CLK  | Slot
-# AMC1     | -    | -    | -        | 1-1
-# AMC2     | 1    | 17   | AMC1_CLK | 2-1
-# AMC3     | 2    | 18   | AMC2_CLK | 3
-# AMC4     | 3    | 19   | AMC3_CLK | 4
-# AMC5     | 4    | 20   | AMC4_CLK | 5
-# AMC6     | 5    | 21   | AMC5_CLK | 6
-# AMC7     | 6    | 22   | AMC6_CLK | 7
-# CLK3 is always PCIe CLK 100MHz but if forwarded on other clocks then 41 has to be used
-# AMC2 EVR delivering CLKA configuration:
 
-clk_phys_out =  1,  0
-clk_phys_out =  2,  1
-clk_phys_out =  3,  1
-clk_phys_out =  4,  1
-clk_phys_out =  5,  1
-clk_phys_out =  6,  1
-clk_phys_out =  7,  1
-clk_phys_out =  8,  1
-clk_phys_out =  9,  1
-clk_phys_out = 10,  1
-clk_phys_out = 11,  1
-clk_phys_out = 12,  1
+clk_phys_out =  1,  2
+clk_phys_out =  2,  0
+clk_phys_out =  3,  2
+clk_phys_out =  4,  2
+clk_phys_out =  5,  2
+clk_phys_out =  6,  2
+clk_phys_out =  7,  2
+clk_phys_out =  8,  2
+clk_phys_out =  9,  2
+clk_phys_out = 10,  2
+clk_phys_out = 11,  2
+clk_phys_out = 12,  2
 clk_phys_out = 13,  0
 clk_phys_out = 14,  0
 clk_phys_out = 15,  0
 clk_phys_out = 16,  0
-clk_phys_out = 17,  0
-clk_phys_out = 18,  17
-clk_phys_out = 19,  17
-clk_phys_out = 20,  17
-clk_phys_out = 21,  17
-clk_phys_out = 22,  17
-clk_phys_out = 23,  17
-clk_phys_out = 24,  17
-clk_phys_out = 25,  17
-clk_phys_out = 26,  17
-clk_phys_out = 27,  17
-clk_phys_out = 28,  17
+clk_phys_out = 17,  18
+clk_phys_out = 18,  0
+clk_phys_out = 19,  18
+clk_phys_out = 20,  18
+clk_phys_out = 21,  18
+clk_phys_out = 22,  18
+clk_phys_out = 23,  18
+clk_phys_out = 24,  18
+clk_phys_out = 25,  18
+clk_phys_out = 26,  18
+clk_phys_out = 27,  18
+clk_phys_out = 28,  18
 clk_phys_out = 29,  0
 clk_phys_out = 30,  0
 clk_phys_out = 31,  0
