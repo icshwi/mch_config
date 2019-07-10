@@ -62,6 +62,8 @@ SLEEP=30
 # -> "" : Raw format
 LOG=""
 
+# Flag that indicates when a MOXA hub it's used for the connection to the MCH
+MOXA=1
 
 function brief_help {
   cat << EOF
@@ -97,6 +99,7 @@ Options:
   -p|--prefix    -> Source prefix for the tool. By default is "../".
   -l|--log       -> Enable an human readable log
   -w|--web       -> Enable web log (interface with the WEBUI)
+  -x|--nomoxa    -> Enable access via telnet (when not using a MOXA Hub)
 Examples:
 Run the script to update FW only in the port 4010:
     mch_config.sh 10.0.5.173 10, 3U -s 1
@@ -119,7 +122,13 @@ function run_script {
     # This extra parameter allows sending a command directly to expect. Useful
     # whenever you need to get the output from a simple command.
     local custom="$3"
-    $SCRIPT_INTERPRETER "$src_script" "$MOXAIP" "$PORT_PREFIX$portN" "$TFTP_IP_ADDRS" "$custom"
+    local lport="$PORT_PREFIX$portN"
+
+    # Set default telnet port when not using a MOXA
+    if [[ $MOXA -eq 0 ]]; then
+      lport="23"
+    fi
+    $SCRIPT_INTERPRETER "$src_script" "$MOXAIP" $lport "$TFTP_IP_ADDRS" "$custom"
 }
 
 # Error information
@@ -522,6 +531,7 @@ while [ $# -gt 0 ]; do
     -p|--prefix) SRC_PREFIX="$2";shift;;
     -l|--log) LOG="USER";;
     -w|--web) LOG="WEB";;
+    -x|--nomoxa) MOXA=0;;
     *) $wecho "Unknown arg: $1"; help;;
   esac
   shift
