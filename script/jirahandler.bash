@@ -45,8 +45,6 @@ declare -gr MCH_TAG="MCHLog&ICS_Lab"
 # JSON template for new issues
 declare -gr ISSUE_TEMPLATE="${JIRA_PREFIX}newissue.json"
 
-echo $ISSUE_TEMPLATE
-
 # find_MCH: Looks fro the MCH serial number into the Jira DB
 # summary:
 #   This function sends a GET to the Jira API to retrieve all the issues with

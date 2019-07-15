@@ -219,6 +219,10 @@ $("#SendButton").on('click', function() {
     var steps = "-s "
     var customSteps = false;
 
+    if ($("#checkJira").prop("checked")) {
+      params += " -j"
+    }
+
     if ($("#checkDHCP").prop("checked")) {
       steps += "1,"
     }
