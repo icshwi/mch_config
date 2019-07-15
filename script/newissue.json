@@ -1,0 +1,21 @@
+{
+  "fields": {
+    "project":
+    {
+      "key": "ICSLAB"
+    },
+    "summary": "MCH %sn% test report",
+    "issuetype":
+    {
+      "name": "Story"
+    },
+    "labels":
+    [
+      "ICS",
+      "ICS_Lab",
+      "MCH",
+      "MCHLog",
+      "Test"
+    ]
+  }
+}

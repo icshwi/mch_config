@@ -22,7 +22,7 @@
 #
 #   date    : Monday, April 15 15:08:12 CEST 2019
 #
-#   version : 0.0.9
+#   version : 0.1.0
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME=${0##*/}
@@ -36,6 +36,11 @@ set -a
 . ${SC_TOP}/.tftp_ip.txt
 set +a
 
+# File with some function definitions to interface with Jira
+source ${SC_TOP}/jirahandler.bash
+
+# Flag to enable some extra functionalities to add content to Jira
+ENABLE_JIRA=0
 
 SCRIPT_INTERPRETER=expect
 
@@ -94,6 +99,7 @@ Options:
                   6 -> Clock configuration (with check)
                   7 -> Check all configurations (general and clock)
                   By default, the script is executed with options: 1,2,3,5
+  -j|--jira      -> Enable to upload the results to Jira
   -p|--prefix    -> Source prefix for the tool. By default is "../".
   -l|--log       -> Enable an human readable log
   -w|--web       -> Enable web log (interface with the WEBUI)
@@ -119,7 +125,7 @@ function run_script {
     # This extra parameter allows sending a command directly to expect. Useful
     # whenever you need to get the output from a simple command.
     local custom="$3"
-    $SCRIPT_INTERPRETER "$src_script" "$MOXAIP" "$PORT_PREFIX$portN" "$TFTP_IP_ADDRS" "$custom"
+    $SCRIPT_INTERPRETER "$src_script" "$MOXAIP" "$PORT_PREFIX$portN" "$SC_LOGDATE" "$custom"
 }
 
 # Error information
@@ -156,6 +162,9 @@ function webecho {
   local type="$2"
   local dest="$3"
   echo "$INIT_TAG$type::@$3::$msg$END_TAG"
+  if [[ $ENABLE_JIRA -eq 1 ]]; then
+    echo "$INIT_TAG$type::@$3::$msg$END_TAG" >> $JIRA_LOG
+  fi
 }
 
 # echo wrapper to beautify a little bit the output messages
@@ -174,6 +183,10 @@ function userecho {
   else format="101;30"; fi
 
   echo -e "\033[${format}m$msg $port\033[0m"
+
+  if [[ $ENABLE_JIRA -eq 1 ]]; then
+    echo "$INIT_TAG$type::@$3::$msg$END_TAG" >> $JIRA_LOG
+  fi
 }
 
 function set_portN {
@@ -485,6 +498,10 @@ function var_definition {
   wecho=echo
   if [[ $LOG = "USER" ]]; then wecho=userecho;
   elif [[ $LOG = "WEB" ]]; then wecho=webecho; fi
+
+  if [[ $ENABLE_JIRA -eq 1 ]]; then
+    JIRA_LOG=$(mktemp -q --suffix=_jira)
+  fi
 }
 
 # Start of the script magic
@@ -522,6 +539,7 @@ while [ $# -gt 0 ]; do
     -p|--prefix) SRC_PREFIX="$2";shift;;
     -l|--log) LOG="USER";;
     -w|--web) LOG="WEB";;
+    -j|--jira) ENABLE_JIRA=1;shift;;
     *) $wecho "Unknown arg: $1"; help;;
   esac
   shift
@@ -567,3 +585,64 @@ done
 end=$(date +%s)
 
 $wecho "MCH configuration script done ($((end-start))s)" "$INFO_TAG" "ALL"
+
+if [[ $ENABLE_JIRA -eq 0 ]]; then exit 0;fi
+
+# ENABLE_JIRA allows to upload the results from the script to Jira.
+# Every registered MCH will have an associated "Story" ticket in Jira. In that
+# ticket, we'll store a compress file from every registered run.
+# That compressed file contains a file with the log output and every inidividual
+# expect log file as well.
+
+$wecho "Uploading the results to Jira..." "$INFO_TAG" "ALL"
+
+if [[ $mode -eq 1 ]]; then
+  fp=$(echo $PORTS | cut -d"-" -f1)
+  ports=$(seq $fp $ep)
+else
+  ports=${PORTS[*]}
+fi
+
+for i in ${PORTS[*]}; do
+  port=$(set_portN $i)
+  CFG_TEMPFILE=$(mktemp -q)
+
+  # First get the Board identifier and check if this board has already
+  # an associated ticket
+  run_script $CFGCHECK_SRC $port "bi" > $CFG_TEMPFILE
+  filelines=$(wc -l $CFG_TEMPFILE | cut -d " " -f1)
+  if [[ $filelines -le 3 ]]; then
+    $wecho "Error while retrieving the MCH s/n" "$ERR_TAG" "40$port"
+    exit 1
+  fi
+  sn=$(grep -aoP "Board Identifier:.?\K\d{6}\-\d{4}" $CFG_TEMPFILE)
+  if [[ "x$sn" = "x" ]]; then
+    $wecho "Error while retrieving the MCH s/n" "$ERR_TAG" "40$port"
+    exit 1
+  fi
+
+  # Second step: take the files for that board
+  path="/tmp/mch_${sn}_testreport_$SC_LOGDATE"
+  mkdir -p $path
+  grep "@40$port" $JIRA_LOG > "$path/logfile.txt"
+  cp /tmp/mch_testreports/MCH_*_40${port}_$SC_LOGDATE.log $path
+  zip -r $path $path >> /dev/null
+
+  # Third: check if there's a ticket for that board
+  find_MCH $sn
+  isTicket=$?
+  if [[ $isTicket -eq 1 ]]; then
+    $wecho "Ticket not found for $sn" $DBG_TAG "40$port"
+    add_MCH $sn
+    $wecho "Ticket added for $sn ($ISSUE)" $DBG_TAG "40$port"
+  else
+    $wecho "Ticket found for $sn ($ISSUE)" $DBG_TAG "40$port"
+  fi
+
+  add_Attachment $ISSUE ${path}.zip
+  if [[ $? -eq 1 ]]; then
+    $wecho "Reports added to ticket: $ISSUE" $DBG_TAG "40$port"
+  else
+    $wecho "Error while adding an attachment to the ticket: $ISSUE" $ERR_TAG "40$port"
+  fi
+done

@@ -26,6 +26,11 @@
 #
 #   version : 0.1
 
+if [ -z $JIRA_PREFIX ]; then
+  JIRA_PREFIX=$(realpath $0);
+  JIRA_PREFIX=$(echo $JIRA_PREFIX | sed "s|${0##*/}||g")
+fi
+
 # To build the credential string:
 # echo -n "user:password" | openssl base64
 # This string is empty in the repository!!
@@ -38,7 +43,9 @@ declare -gr JIRA_API="https://jira.esss.lu.se/rest/api/latest"
 declare -gr MCH_TAG="MCHLog&ICS_Lab"
 
 # JSON template for new issues
-declare -gr ISSUE_TEMPLATE="./newissue.json"
+declare -gr ISSUE_TEMPLATE="${JIRA_PREFIX}newissue.json"
+
+echo $ISSUE_TEMPLATE
 
 # find_MCH: Looks fro the MCH serial number into the Jira DB
 # summary:
@@ -96,7 +103,8 @@ function add_MCH {
        -H 'Content-Type: application/json' \
        "$JIRA_API/issue/")
    # Remember to change the regex when the issue number > 9999
-   export ISSUE=$(echo $response | grep -oP "key.?:.?\KICSLAB-\d{1,4}" | cut -d'-' -f2)
+   export ISSUE=$(echo $response | grep -oP "key.?:.?\KICSLAB-\d{1,4}")
+   rm tempjson
 
    return $ISSUE
 }
@@ -121,7 +129,7 @@ function add_Attachment {
         -X POST \
         -H "X-Atlassian-Token: no-check" \
         -F "file=@$log" \
-        $JIRA_API/issue/ICSLAB-$mch_sn/attachments)
+        $JIRA_API/issue/$mch_sn/attachments)
   echo $response | grep "errorMessages" >> /dev/null
   return $?
 }
