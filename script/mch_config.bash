@@ -615,7 +615,7 @@ for i in ${PORTS[*]}; do
     $wecho "Error while retrieving the MCH s/n" "$ERR_TAG" "40$port"
     exit 1
   fi
-  sn=$(grep -aoP "Board Identifier:.?\K\d{6}\-\d{4}" $CFG_TEMPFILE)
+  sn=$(grep -aoP -m 1 "Board Identifier:.?\K\d{6}\-\d{4}" $CFG_TEMPFILE)
   if [[ "x$sn" = "x" ]]; then
     $wecho "Error while retrieving the MCH s/n" "$ERR_TAG" "40$port"
     exit 1
