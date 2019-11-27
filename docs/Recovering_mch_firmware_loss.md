@@ -12,6 +12,7 @@ nat> reboot
 
 Press 'x' to abort firmware startup..........
 ....
+```
 
 * Find the available "free" ip address. ESS Office network information as below
 
@@ -96,9 +97,11 @@ nat0 interface configuration:
    IP Gateway   : 0.0.0.0
 Boot String     : <empty>
 --------------------------------
-
+```
 
 One can see the Boot String is <empty>
+
+```
 nat > bs
 Enter new boot string: 0xd0100008
 
