@@ -51,7 +51,6 @@ deploy: | path
 	${SCRIPT_SRC}/install_websocketd.bash
 	${SCRIPT_SRC}/install_webui.bash
 	sudo cp -r $(WEBUI_SRC)/* $(APACHE_DIR)/
-	sudo install -m 644 $(TFTP_IPADDR_TXT) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/bin/
 	sudo install -m 645 $(SCRIPT_SRC)/websocketd.service /etc/systemd/system/
 	sudo systemctl daemon-reload
 	sudo systemctl enable websocketd.service
