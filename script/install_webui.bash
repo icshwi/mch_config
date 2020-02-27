@@ -6,11 +6,17 @@ distro=$(cat /etc/os-release | grep -oh "^NAME=.*" | cut -d"=" -f2 | sed 's|\"||
 
 case $distro in
     Ubuntu|Debian)
-        pkg_manager="apt"
+        sudo $pkg_manager install apache2
+        sudo systemctl start apache2
+        sudo systemctl enable apache2
+    ;;
+    CentOS)
+        sudo yum install httpd
+        sudo systemctl start httpd
+        sudo systemctl enable httpd
     ;;
     *) echo "OS not supported, sorry!"; exit 1
     ;;
 esac
 
-sudo $pkg_manager install apache2
-
+echo "Apache web server succesfully installed!"
