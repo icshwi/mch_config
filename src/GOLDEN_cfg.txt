@@ -85,7 +85,7 @@ PCIe module configuration source:      load from FLASH
 
 Time Protocol/SNTP parameter:
 --------------
-Time server IP:                        194.58.204.20
+Time server IP:                        172.30.0.38
 'Check for Time' delay minutes:        0 min
 'Check for Time' delay hours:          0 h
 local time offset:                     0 h
