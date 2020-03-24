@@ -68,7 +68,7 @@ SLEEP=30
 # updated.
 CSEntry=0
 # CSEntry url
-CSentry_url="https://csentry-test.esss.lu.se/"
+CSentry_url="https://csentry.esss.lu.se/"
 
 # Flag to control the log system in the application
 # Valid options:
@@ -113,7 +113,7 @@ Options:
                   By default, the script is executed with options: 1,2,3,5
   -j|--jira      -> Enable to upload the results to Jira
   -p|--prefix    -> Source prefix for the tool. By default is "../".
-  -l|--log       -> Enable an human readable log
+  -l|--log       -> Enable a human readable log
   -w|--web       -> Enable web log (interface with the WEBUI)
   -x|--nomoxa    -> Enable access via telnet (when not using a MOXA Hub)
 Examples:
@@ -581,6 +581,9 @@ function var_definition {
 
   if [[ $ENABLE_JIRA -eq 1 ]]; then
     JIRA_LOG=$(mktemp -q --suffix=_jira)
+    if [[ $wecho == "echo" ]]; then
+      echo "Warning!!: Chose -j or -l to build the log which will be uploaded to Jira."
+    fi
   fi
 }
 
