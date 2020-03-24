@@ -666,3 +666,64 @@ done
 end=$(date +%s)
 
 $wecho "MCH configuration script done ($((end-start))s)" "$INFO_TAG" "ALL"
+
+if [[ $ENABLE_JIRA -eq 0 ]]; then exit 0;fi
+
+# ENABLE_JIRA allows to upload the results from the script to Jira.
+# Every registered MCH will have an associated "Story" ticket in Jira. In that
+# ticket, we'll store a compress file from every registered run.
+# That compressed file contains a file with the log output and every inidividual
+# expect log file as well.
+
+$wecho "Uploading the results to Jira..." "$INFO_TAG" "ALL"
+
+if [[ $mode -eq 1 ]]; then
+  fp=$(echo $PORTS | cut -d"-" -f1)
+  ports=$(seq $fp $ep)
+else
+  ports=${PORTS[*]}
+fi
+
+for i in ${PORTS[*]}; do
+  port=$(set_portN $i)
+  CFG_TEMPFILE=$(mktemp -q)
+
+  # First get the Board identifier and check if this board has already
+  # an associated ticket
+  run_script $CFGCHECK_SRC $port "bi" > $CFG_TEMPFILE
+  filelines=$(wc -l $CFG_TEMPFILE | cut -d " " -f1)
+  if [[ $filelines -le 3 ]]; then
+    $wecho "Error while retrieving the MCH s/n" "$ERR_TAG" "40$port"
+    exit 1
+  fi
+  sn=$(grep -aoP -m 1 "Board Identifier:.?\K\d{6}\-\d{4}" $CFG_TEMPFILE)
+  if [[ "x$sn" = "x" ]]; then
+    $wecho "Error while retrieving the MCH s/n" "$ERR_TAG" "40$port"
+    exit 1
+  fi
+
+  # Second step: take the files for that board
+  path="/tmp/mch_${sn}_testreport_$SC_LOGDATE"
+  mkdir -p $path
+  grep "@40$port" $JIRA_LOG > "$path/logfile.txt"
+  cp /tmp/mch_testreports/MCH_*_40${port}_$SC_LOGDATE.log $path
+  zip -r $path $path >> /dev/null
+
+  # Third: check if there's a ticket for that board
+  find_MCH $sn
+  isTicket=$?
+  if [[ $isTicket -eq 1 ]]; then
+    $wecho "Ticket not found for $sn" $DBG_TAG "40$port"
+    add_MCH $sn
+    $wecho "Ticket added for $sn ($ISSUE)" $DBG_TAG "40$port"
+  else
+    $wecho "Ticket found for $sn ($ISSUE)" $DBG_TAG "40$port"
+  fi
+
+  add_Attachment $ISSUE ${path}.zip
+  if [[ $? -eq 1 ]]; then
+    $wecho "Reports added to ticket: $ISSUE" $DBG_TAG "40$port"
+  else
+    $wecho "Error while adding an attachment to the ticket: $ISSUE" $ERR_TAG "40$port"
+  fi
+done
