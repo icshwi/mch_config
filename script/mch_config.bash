@@ -111,10 +111,11 @@ Options:
                   6 -> Clock configuration (with check)
                   7 -> Check all configurations (general and clock)
                   By default, the script is executed with options: 1,2,3,5
-  -j|--jira      -> Enable to upload the results to Jira
   -p|--prefix    -> Source prefix for the tool. By default is "../".
   -l|--log       -> Enable a human readable log
   -w|--web       -> Enable web log (interface with the WEBUI)
+  -j|--jira      -> Enable to upload the results to Jira. Use this option in the
+                    last position.
   -x|--nomoxa    -> Enable access via telnet (when not using a MOXA Hub)
 Examples:
 Run the script to update FW only in the port 4010:
@@ -582,7 +583,7 @@ function var_definition {
   if [[ $ENABLE_JIRA -eq 1 ]]; then
     JIRA_LOG=$(mktemp -q --suffix=_jira)
     if [[ $wecho == "echo" ]]; then
-      echo "Warning!!: Chose -j or -l to build the log which will be uploaded to Jira."
+      echo "Warning!!: Chose -w or -l to build the log which will be uploaded to Jira."
     fi
   fi
 }
