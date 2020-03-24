@@ -4,3 +4,4 @@
 .\#*
 .tftp_ip.txt
 .DS_Store
+*.pyc
