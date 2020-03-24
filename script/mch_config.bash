@@ -266,8 +266,8 @@ function register_mch {
     $wecho "Error in MCH clock configuration check." "$ERR_TAG" "40$port"
     exit 1
   fi
-  sn=$(grep -Po 'Board Identifier.*:.*\K(\d{6}-\d{4})' $CFG_TEMPFILE)
-  mac=$(grep -Po 'IEEE Address.*:.*\K((\d{2}-){5}\d{2})' $CFG_TEMPFILE | tr '-' ':')
+  sn=$(grep --text -Po 'Board Identifier.*:.*\K(\d{6}-\d{4})' $CFG_TEMPFILE)
+  mac=$(grep --text -Po 'IEEE Address.*:.*\K((\d{2}-){5}\d{2})' $CFG_TEMPFILE | tr '-' ':')
   $wecho "The MCH is identified by s/n=$sn and MAC=$mac" "$DBG_TAG" "40$port"
 
   local temp_log=$(mktemp -q --suffix=_pylog)
