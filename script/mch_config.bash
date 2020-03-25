@@ -22,7 +22,7 @@
 #
 #   date    : Monday, April 15 15:08:12 CEST 2019
 #
-#   version : 1.1
+#   version : 1.1.1
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME=${0##*/}
@@ -35,6 +35,13 @@ declare -gr SC_LOGDATE="$(date +%y%m%d%H%M)"
 # set -a
 # . ${SC_TOP}/.tftp_ip.txt
 # set +a
+
+# Detect if running in a VM of the INFRA group (use Python Venv)
+if [[ -d /opt/conda/envs/csentry/bin ]]; then
+  source /opt/conda/etc/profile.d/conda.sh
+  conda activate csentry
+fi
+
 
 # File with some function definitions to interface with Jira
 source ${SC_TOP}/jirahandler.bash
