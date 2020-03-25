@@ -223,7 +223,7 @@ $("#SendButton").on('click', function() {
       params += " -j"
     }
 
-    if ($("#checked").prop("checked")) {
+    if ($("#checkCSEntry").prop("checked")) {
       steps += "0,"
     }
 

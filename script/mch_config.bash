@@ -298,6 +298,7 @@ function register_mch {
     sleep 180
   elif [[ $ret -eq 1 ]]; then
     $wecho "The MCH was already resgitered @ CSEntry." "$INFO_TAG" "40$port"
+    $wecho "End MCH register @ CSEntry" "$INFO_TAG" "40$port"
     return 1
   fi
 
@@ -575,7 +576,7 @@ function var_definition {
   # Python Helper scripts
   # By now the only python script will be located in the same folder as the
   # rest of the scripts
-  MCH_Py_HDLR=./csentryHandler.py
+  MCH_Py_HDLR=${SRC_PREFIX}/script/csentryHandler.py
 
   INIT_TAG="^"
   END_TAG=";;"
