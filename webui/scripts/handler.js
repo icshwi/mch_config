@@ -17,7 +17,7 @@ Copyright (c) 2019           European Spallation Source ERIC
   author  : Felipe Torres González
   email   : torresfelipex1@gmail.com
   date    : 20190325
-  version : 0.0.6
+  version : 1.1
 
   Thanks to Anne Marie Muñoz who lent me all the help I needed to make this web.
 
@@ -221,6 +221,10 @@ $("#SendButton").on('click', function() {
 
     if ($("#checkJira").prop("checked")) {
       params += " -j"
+    }
+
+    if ($("#checkCSEntry").prop("checked")) {
+      steps += "0,"
     }
 
     if ($("#checkDHCP").prop("checked")) {

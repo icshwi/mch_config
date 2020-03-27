@@ -22,7 +22,7 @@
 #
 #   date    : Monday, April 15 15:08:12 CEST 2019
 #
-#   version : 0.1.0
+#   version : 1.1.1
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME=${0##*/}
@@ -32,9 +32,16 @@ declare -gr SC_LOGDATE="$(date +%y%m%d%H%M)"
 # The following Global variable is used in run_script directly
 #
 
-set -a
-. ${SC_TOP}/.tftp_ip.txt
-set +a
+# set -a
+# . ${SC_TOP}/.tftp_ip.txt
+# set +a
+
+# Detect if running in a VM of the INFRA group (use Python Venv)
+if [[ -d /opt/conda/envs/csentry/bin ]]; then
+  source /opt/conda/etc/profile.d/conda.sh
+  conda activate csentry
+fi
+
 
 # File with some function definitions to interface with Jira
 source ${SC_TOP}/jirahandler.bash
@@ -60,12 +67,21 @@ CFG_CHECK=0
 UPDATE_SLEEP=300
 SLEEP=30
 
+
+## CSentry related configuration
+#  -----------------------------
+# Flag to enable the register of the MCH(s) in CSentry before running the
+# tests. A timeout is set at the end of this step to let the DHCP server get
+# updated.
+CSEntry=0
+# CSEntry url
+CSentry_url="https://csentry.esss.lu.se/"
+
 # Flag to control the log system in the application
 # Valid options:
 # -> "WEB" : All messages will contain extra information for the web interface
 # -> "USER" : Only human readable information in the output messages
 # -> "" : Raw format
-LOG=""
 
 # Flag that indicates when a MOXA hub it's used for the connection to the MCH
 MOXA=1
@@ -93,6 +109,7 @@ Arguments:
 Options:
   -h|--help      -> Prints this help
   -s|--steps     -> Specify wich steps to run:
+                  0 -> Register MCH(s) in CSEntry
                   1 -> DHCP network configuration (default)
                   2 -> FW update (default)
                   3 -> Standard MCH configuration (default)
@@ -101,10 +118,11 @@ Options:
                   6 -> Clock configuration (with check)
                   7 -> Check all configurations (general and clock)
                   By default, the script is executed with options: 1,2,3,5
-  -j|--jira      -> Enable to upload the results to Jira
   -p|--prefix    -> Source prefix for the tool. By default is "../".
-  -l|--log       -> Enable an human readable log
+  -l|--log       -> Enable a human readable log
   -w|--web       -> Enable web log (interface with the WEBUI)
+  -j|--jira      -> Enable to upload the results to Jira. Use this option in the
+                    last position.
   -x|--nomoxa    -> Enable access via telnet (when not using a MOXA Hub)
 Examples:
 Run the script to update FW only in the port 4010:
@@ -220,6 +238,7 @@ function step_parser {
   arg_list=$(echo "$1" | tr "," "\n")
   for arg in ${arg_list[*]}; do
       case "$arg" in
+      0) CSENTRY=1;;
       1) DHCP_CFG=1;;
       2) FW_UPDATE=1;;
       3) MCH_CFG=1;;
@@ -230,6 +249,61 @@ function step_parser {
       *) print_error 5 "err" "@ALL"
     esac
   done
+}
+
+# Register the MAC of every MCH in the run in CSEntry.
+# ____________________________________________________
+# Arguments:
+# $1 -> MOXA port index (1 to 32)
+# Returns:
+# 0 -> The MCH was succesfully registered
+# 1 -> The MCH was previously registered
+function register_mch {
+  port=$(set_portN "$1")
+  $wecho "Init MCH register @ CSEntry" "$INFO_TAG" "40$port"
+  $wecho "API url=$CSentry_url" "$DBG_TAG" "404$port"
+
+  # MAC address & s/n are needed to registry a new Host in CSEntry
+  # Use the generic expect script to retrieve the info from the command
+  # "bi".
+  local CFG_TEMPFILE=$(mktemp -q --suffix=_bi)
+  $wecho "MCH board info tempfile: $CFG_TEMPFILE" "$DBG_TAG" "40$port"
+  run_script $CFGCHECK_SRC $port "bi" > $CFG_TEMPFILE
+  local filelines=$(wc -l $CFG_TEMPFILE | cut -d " " -f1)
+  if [[ $filelines -le 3 ]]; then
+    $wecho "Error in MCH clock configuration check." "$ERR_TAG" "40$port"
+    exit 1
+  fi
+  sn=$(grep --text -Po 'Board Identifier.*:.*\K(\d{6}-\d{4})' $CFG_TEMPFILE)
+  mac=$(grep --text -Po 'IEEE Address.*:.*\K((\d{2}-){5}\d{2})' $CFG_TEMPFILE | tr '-' ':')
+  $wecho "The MCH is identified by s/n=$sn and MAC=$mac" "$DBG_TAG" "40$port"
+
+  local temp_log=$(mktemp -q --suffix=_pylog)
+  python3 $MCH_Py_HDLR "$mac" "$sn" "$CSentry_url" > $temp_log
+  local ret=$?
+
+  # Send the output messages from the Python script to the debug logger
+  while IFS= read -r line
+  do
+    $wecho "$line" "$DBG_TAG" "40$port"
+  done < "$temp_log"
+
+  # The error code from the python script may be a negative number
+  if [[ $ret -gt 127 ]]; then
+    $wecho "Error in the MCH registry." "$ERR_TAG" "40$port"
+    exit 1
+  elif [[ $ret -eq 0 ]]; then
+    $wecho "The MCH has been succesfully resgitered @ CSEntry." "$INFO_TAG" "40$port"
+    $wecho "DHCP server takes ~3 minutes to update. Sleeping for 180 s..." "$INFO_TAG" "40$port"
+    sleep 180
+  elif [[ $ret -eq 1 ]]; then
+    $wecho "The MCH was already resgitered @ CSEntry." "$INFO_TAG" "40$port"
+    $wecho "End MCH register @ CSEntry" "$INFO_TAG" "40$port"
+    return 1
+  fi
+
+  $wecho "End MCH register @ CSEntry" "$INFO_TAG" "40$port"
+  return 0
 }
 
 # Check FW version and return if the current version matches the expected one
@@ -452,6 +526,7 @@ function clk_check {
 
 # Check step flags and run the scripts on a specific port
 function runner {
+  if [[ $CSENTRY   -eq 1 ]];  then register_mch "$1"; fi
   if [[ $DHCP_CFG  -eq 1 ]];  then dhcp_conf  "$1"; fi
   if [[ $FW_UPDATE -eq 1 ]];  then update_fw  "$1"; fi
   if [[ $MCH_CFG   -gt 0 ]];  then
@@ -498,6 +573,11 @@ function var_definition {
   CLK_SRC_5U=$EXPECT_PREFIX/clock_update_mini.exp
   CLK_SRC_9U=$EXPECT_PREFIX/clock_update_9u.exp
 
+  # Python Helper scripts
+  # By now the only python script will be located in the same folder as the
+  # rest of the scripts
+  MCH_Py_HDLR=${SRC_PREFIX}/script/csentryHandler.py
+
   INIT_TAG="^"
   END_TAG=";;"
   INFO_TAG="inf"
@@ -510,6 +590,9 @@ function var_definition {
 
   if [[ $ENABLE_JIRA -eq 1 ]]; then
     JIRA_LOG=$(mktemp -q --suffix=_jira)
+    if [[ $wecho == "echo" ]]; then
+      echo "Warning!!: Chose -w or -l to build the log which will be uploaded to Jira."
+    fi
   fi
 }
 
@@ -595,3 +678,64 @@ done
 end=$(date +%s)
 
 $wecho "MCH configuration script done ($((end-start))s)" "$INFO_TAG" "ALL"
+
+if [[ $ENABLE_JIRA -eq 0 ]]; then exit 0;fi
+
+# ENABLE_JIRA allows to upload the results from the script to Jira.
+# Every registered MCH will have an associated "Story" ticket in Jira. In that
+# ticket, we'll store a compress file from every registered run.
+# That compressed file contains a file with the log output and every inidividual
+# expect log file as well.
+
+$wecho "Uploading the results to Jira..." "$INFO_TAG" "ALL"
+
+if [[ $mode -eq 1 ]]; then
+  fp=$(echo $PORTS | cut -d"-" -f1)
+  ports=$(seq $fp $ep)
+else
+  ports=${PORTS[*]}
+fi
+
+for i in ${PORTS[*]}; do
+  port=$(set_portN $i)
+  CFG_TEMPFILE=$(mktemp -q)
+
+  # First get the Board identifier and check if this board has already
+  # an associated ticket
+  run_script $CFGCHECK_SRC $port "bi" > $CFG_TEMPFILE
+  filelines=$(wc -l $CFG_TEMPFILE | cut -d " " -f1)
+  if [[ $filelines -le 3 ]]; then
+    $wecho "Error while retrieving the MCH s/n" "$ERR_TAG" "40$port"
+    exit 1
+  fi
+  sn=$(grep -aoP -m 1 "Board Identifier:.?\K\d{6}\-\d{4}" $CFG_TEMPFILE)
+  if [[ "x$sn" = "x" ]]; then
+    $wecho "Error while retrieving the MCH s/n" "$ERR_TAG" "40$port"
+    exit 1
+  fi
+
+  # Second step: take the files for that board
+  path="/tmp/mch_${sn}_testreport_$SC_LOGDATE"
+  mkdir -p $path
+  grep "@40$port" $JIRA_LOG > "$path/logfile.txt"
+  cp /tmp/mch_testreports/MCH_*_40${port}_$SC_LOGDATE.log $path
+  zip -r $path $path >> /dev/null
+
+  # Third: check if there's a ticket for that board
+  find_MCH $sn
+  isTicket=$?
+  if [[ $isTicket -eq 1 ]]; then
+    $wecho "Ticket not found for $sn" $DBG_TAG "40$port"
+    add_MCH $sn
+    $wecho "Ticket added for $sn ($ISSUE)" $DBG_TAG "40$port"
+  else
+    $wecho "Ticket found for $sn ($ISSUE)" $DBG_TAG "40$port"
+  fi
+
+  add_Attachment $ISSUE ${path}.zip
+  if [[ $? -eq 1 ]]; then
+    $wecho "Reports added to ticket: $ISSUE" $DBG_TAG "40$port"
+  else
+    $wecho "Error while adding an attachment to the ticket: $ISSUE" $ERR_TAG "40$port"
+  fi
+done
