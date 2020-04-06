@@ -75,7 +75,7 @@ SLEEP=30
 # updated.
 CSEntry=0
 # CSEntry url
-CSentry_url="https://csentry.esss.lu.se/"
+CSentry_url="https://csentry-test.esss.lu.se/"
 
 # Flag to control the log system in the application
 # Valid options:
@@ -275,7 +275,7 @@ function register_mch {
     exit 1
   fi
   sn=$(grep --text -Po 'Board Identifier.*:.*\K(\d{6}-\d{4})' $CFG_TEMPFILE)
-  mac=$(grep --text -Po 'IEEE Address.*:.*\K((\d{2}-){5}\d{2})' $CFG_TEMPFILE | tr '-' ':')
+  mac=$(grep --text -Po 'IEEE Address.*:.*\K(([0-9a-f]-?){12})' $CFG_TEMPFILE | tr '-' ':')
   $wecho "The MCH is identified by s/n=$sn and MAC=$mac" "$DBG_TAG" "40$port"
 
   local temp_log=$(mktemp -q --suffix=_pylog)
