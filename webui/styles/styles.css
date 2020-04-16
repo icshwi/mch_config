@@ -202,11 +202,11 @@ label,input
 /* Tooltip text */
 .tooltip .tooltiptext {
   visibility: hidden;
-  width: 120px;
+  width: 150px;
   background-color: black;
   color: #fff;
   text-align: center;
-  padding: 5px 0;
+  padding: 5px 5px;
   border-radius: 6px;
 
   /* Position the tooltip text - see examples below! */

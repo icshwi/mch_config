@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """
@@ -18,13 +18,16 @@ address or a new one was created. And a negative value if any error ocurred.
 """
 
 __author__    = "Felipe Torres González"
+__email__     = "felipe.torresgonzalez@ess.eu"
+__author__    = "Ross Elliot"
+__email__     = "ross.elliot@ess.eu"
 __copyright__ = "Copyright 2020, European Spallation Source"
 __license__   = "GPL"
-__version__   = "1.0"
-__email__     = "felipe.torresgonzalez@ess.eu"
+__version__   = "1.1"
 __status__    = "Development"
 
 import sys
+import argparse
 
 from csentry import CSEntry
 
@@ -38,7 +41,7 @@ class CSEntryHandler:
       based on a specific MCH.
     """
 
-    def __init__(self, token, url='https://csentry.esss.lu.se/'):
+    def __init__(self, token, url):
         """Class constructor
 
         Arguments:
@@ -77,7 +80,7 @@ class CSEntryHandler:
                         return (interface['host'],interface['ip'])
         return tuple()
 
-    def registerNewHost(self, mac, sn, net="CSLab-GeneralLab"):
+    def registerNewHost(self, mac, sn, net):
         """Register a new host in CSEntry
 
         A new host device will be registered with the given data.
@@ -105,34 +108,84 @@ class CSEntryHandler:
             mac=mac
         )
         return response
+    def validateNetwork(self, network):
+        """Check if a network string is a valid CSEntry value
+
+        Arguments:
+
+        network (str): a string containing the network name that
+                      the MCH will be registered to.
+        Returns:
+            A boolean flag where 'False' indicates that the network
+            string is valid, and 'True' for invalid.
+
+        """
+        # Get list of available networks from CSEntry database
+        self.getNetworks()
+        # Check if provided network string is in the list from
+        # the database
+        for network in self.networks:
+            if net == network['vlan_name']:
+                return False
+
+        return True
+
+    def getNetworks(self):
+        """Get list of available networks (e.g. CSLabGeneralLab, etc.) from CSEntry
+        """
+
+        self.networks = self._con.get_networks()
+        # Print each Network so that we can pass back to the webui
+        if isWebUI:
+            for network in self.networks:
+                print('~' + network['vlan_name'])
+
 
 if __name__ == '__main__':
 
-    if len(sys.argv) < 3:
-        print("Usage: mchHandler.py <mac> <sn> [API URL]")
-        exit(-1)
+    # Setup parser for input arguments
+    parser = argparse.ArgumentParser(description='Helper script for the MHC config tool (Bash) to handle the access to the CSEntry API.')
+    parser.add_argument('--mac-address', metavar='m', required=True, help='MAC address of the MCH to be registered')
+    parser.add_argument('--serial-number', metavar='s', required=True, help='Serial number of the MCH to be registered')
+    parser.add_argument('--network', metavar='n', default='CSLab-GeneralLab', help='Network that the MCH will be registered on in CSEntry')
+    parser.add_argument('--network-query', metavar='q', type=bool, default=False, help='Query the CSEntry database for available networks')
+    parser.add_argument('--web-ui', metavar='w', type=bool, default=False, help='Flag to identify if we are being called from the web UI')
+    parser.add_argument('--url', metavar='u', default='https://csentry-test.esss.lu.se/', help='CSEntry API URL')
+    args = parser.parse_args()
 
-    # By now, the token should be written manually at deployment stage
-    # TODO: improve the handling of the token
+    # Assign internal variables to parsed values from input
+    url             = args.url
+    isWebUI         = args.web_ui
+    mac             = args.mac_address
+    net             = args.network
+    sn              = args.serial_number
+    runNetworkQuery = args.network_query
+
+    ## By now, the token should be written manually at deployment stage
+    ## TODO: improve the handling of the token
     token='FILL-ME!!!'
-
-    if len(sys.argv) > 3:
-        url=str(sys.argv[3])
-    else:
-        url='https://csentry-test.esss.lu.se/'
 
     try:
         handler = CSEntryHandler(token=token, url=url)
-        mac = sys.argv[1]
-        sn = "mch-{}".format(str(sys.argv[2]))
-        ret = handler.searchHOST(mac)
-        if ret == ():
-            print("The MAC is not registered")
-            device_descriptor = handler.registerNewHost(mac, sn)
-            print("The new Host is registered as mch-{} with the given IP: {}".format(sn,device_descriptor['interfaces'][0]['ip']))
+        if runNetworkQuery:
+            handler.getNetworks()
         else:
-            print ("The MCH was already registered @ CSEntry name={},IP={}".format(ret[0],ret[1]))
-            exit (1)
+            # Check if provided network string is valid,
+            # by checking against queried list from the database
+            ret = handler.validateNetwork(net)
+            if ret:
+                print ("Provided network string (%s) is not valid." % net)
+                exit (2)
+            else: # Continue to registration
+                sn = "mch-{}".format(str(sn))
+                ret = handler.searchHOST(mac)
+                if ret == ():
+                    print("The MAC is not registered")
+                    device_descriptor = handler.registerNewHost(mac, sn, net)
+                    print("The new Host is registered to the {} as {} with the given IP: {}".format(net,sn,device_descriptor['interfaces'][0]['ip']))
+                else:
+                    print ("The MCH was already registered @ CSEntry name={},IP={}".format(ret[0],ret[1]))
+                    exit (1)
     except Exception as e:
         print(e)
         exit(-2)

@@ -2,8 +2,6 @@ TOP:=$(CURDIR)
 
 include $(TOP)/CONFIG
 
-
-
 EXPECT_SRC	 := $(TOP)/expect
 SCRIPT_SRC	 := $(TOP)/script
 CONFIG_SRC	 := $(TOP)/src
@@ -17,12 +15,11 @@ EXPECT_SRC_FILES := $(wildcard $(EXPECT_SRC)/*.exp)
 EXPECT_SRC_FILES := $(EXPECT_SRC_FILES) $(EXPECT_SRC)/expect.config
 CONFIG_SRC_FILES := $(wildcard $(CONFIG_SRC)/*.txt)
 SCRIPT_SRC_FILES := $(SCRIPT_SRC)/wsmanager.bash $(SCRIPT_SRC)/mch_config.bash $(SCRIPT_SRC)/jirahandler.bash \
-                    $(SCRIPT_SRC)/newissue.json
+                    $(SCRIPT_SRC)/newissue.json $(SCRIPT_SRC)/csentryHandler.py
 
 APACHE_DIR	 := /var/www/html
 
 TFTP_IPADDR_TXT = $(SCRIPT_SRC)/.tftp_ip.txt
-
 
 ifeq ($(PREFIX),)
 	PREFIX := /usr/local
@@ -40,11 +37,8 @@ install: | path setip
 	sudo install -m 645 $(SCRIPT_SRC_FILES) $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)/$(SCRIPT_DESTDIR)
 	sudo cp -r $(WEBUI_SRC)/* $(APACHE_DIR)/
 
-
 uninstall:
 	sudo rm -rf $(DESTDIR)$(PREFIX)/share/$(SHARE_DESTDIR)
-
-
 
 # The following rules are related to the web interface
 deploy: | path

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-#  Copyright (c) 2019           European Spallation Source ERIC
+#  Copyright (c) 2019-2020      European Spallation Source ERIC
 #
 #  The program is free software: you can redistribute
 #  it and/or modify it under the terms of the GNU General Public License
@@ -16,9 +16,11 @@
 #  this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
 #
 #   author  : Felipe Torres González
+#             Ross Elliot
 #   email   : torresfelipex1@gmail.com
+#             ross.elliot@ess.eu
 #   date    : 20190321
-#   version : 0.0.1
+#   version : 0.0.2
 #   basedon : https://github.com/joewalnes/websocketd/wiki/Bash
 
 # Just read any input line from the websocket daemon and launch the script
@@ -46,7 +48,11 @@ do
     if [ "$first" == "mch_config" ]; then
         script='/usr/local/share/mch_config/script/mch_config.bash'
     else
-        echo "Option not recognized: $C"
+        if [ "$first" == "csentry_handler" ]; then
+            script='/usr/local/share/mch_config/script/csentryHandler.py'
+        else
+            echo "Option not recognized: $C"
+        fi
     fi
 
     if [ ! -z $script ]; then

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  Copyright (c) 2019           European Spallation Source ERIC
+  Copyright (c) 2019-2020      European Spallation Source ERIC
 
   The program is free software: you can redistribute
   it and/or modify it under the terms of the GNU General Public License
@@ -16,14 +16,17 @@
   this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
 
   author  : Felipe Torres González
+            Ross Elliot
   email   : torresfelipex1@gmail.com
+            ross.elliot@ess.eu
   date    : 20190426
-  version : 1.1
+  version : 1.2
 
   Thanks to Anne Marie Muñoz who lent me all the help I needed to make this web.
 !-->
 <html>
   <head>
+    <meta charset="utf-8">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <link rel="stylesheet" href="styles/styles.css">
     <title>MCH configuration tool</title>
@@ -52,6 +55,16 @@
       <tr>
         <td><label>Register in CSEntry</td>
         <td><input id="checkCSEntry" type="checkbox"></td>
+      </tr>
+      <tr class="hiddenRowNetwork" hidden>
+        <td><label class="tooltip" for="NetworkMenu">Network
+            <span class="tooltiptext">Network that the MCH is connected to,<br>i.e. CSLab-GeneralLab</span>
+        </td>
+        <td>
+          <select id="NetworkMenu">
+            <option value="CSLab-GeneralLab">CSLab-GeneralLab</option>
+          </select>
+        </td>
       </tr>
       <tr>
         <td><label>Enable DHCP</td>
@@ -273,8 +286,6 @@
     <summary><b>See log output</b></summary>
     <label id="LogOutput">
   </details>
-
-
 
   <!-- Script with the JS code to call the Bash script which will run the
        configuration of the MCHs -->
