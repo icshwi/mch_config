@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-#  Copyright (c) 2019           European Spallation Source ERIC
+#  Copyright (c) 2019-2020      European Spallation Source ERIC
 #
 #  The program is free software: you can redistribute
 #  it and/or modify it under the terms of the GNU General Public License
@@ -17,12 +17,14 @@
 #
 #   author  : Felipe Torres González
 #             Jeong Han Lee
+#             Ross Elliot
 #   email   : torresfelipex1@gmail.com
 #             jeonghan.lee@gmail.com
+#             ross.elliot@ess.eu
 #
 #   date    : Monday, April 15 15:08:12 CEST 2019
 #
-#   version : 1.1.1
+#   version : 1.1.2
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME=${0##*/}

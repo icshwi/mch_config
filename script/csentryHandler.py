@@ -18,10 +18,12 @@ address or a new one was created. And a negative value if any error ocurred.
 """
 
 __author__    = "Felipe Torres González"
+__email__     = "felipe.torresgonzalez@ess.eu"
+__author__    = "Ross Elliot"
+__email__     = "ross.elliot@ess.eu"
 __copyright__ = "Copyright 2020, European Spallation Source"
 __license__   = "GPL"
-__version__   = "1.0"
-__email__     = "felipe.torresgonzalez@ess.eu"
+__version__   = "1.1"
 __status__    = "Development"
 
 import sys

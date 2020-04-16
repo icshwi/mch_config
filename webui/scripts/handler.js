@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2019           European Spallation Source ERIC
+Copyright (c) 2019-2020      European Spallation Source ERIC
 
   The program is free software: you can redistribute
   it and/or modify it under the terms of the GNU General Public License
@@ -15,9 +15,11 @@ Copyright (c) 2019           European Spallation Source ERIC
   this program. If not, see https://www.gnu.org/licenses/gpl-2.0.txt
 
   author  : Felipe Torres González
+            Ross Elliot
   email   : torresfelipex1@gmail.com
+            ross.elliot@ess.eu
   date    : 20190325
-  version : 1.1
+  version : 1.2
 
   Thanks to Anne Marie Muñoz who lent me all the help I needed to make this web.
 
