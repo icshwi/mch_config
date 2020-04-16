@@ -76,6 +76,8 @@ SLEEP=30
 CSEntry=0
 # CSEntry url
 CSentry_url="https://csentry-test.esss.lu.se/"
+# CSEntry Network
+NETWORK="CSLab-GeneralLab"
 
 # Flag to control the log system in the application
 # Valid options:
@@ -124,6 +126,8 @@ Options:
   -j|--jira      -> Enable to upload the results to Jira. Use this option in the
                     last position.
   -x|--nomoxa    -> Enable access via telnet (when not using a MOXA Hub)
+  -n|--network   -> Specify the Network that the MCH will be registered on in
+                    CSEntry. Default is 'CSLab-GeneralLab'.
 Examples:
 Run the script to update FW only in the port 4010:
     mch_config.sh 10.0.5.173 10, 3U -s 1
@@ -261,7 +265,7 @@ function step_parser {
 function register_mch {
   port=$(set_portN "$1")
   $wecho "Init MCH register @ CSEntry" "$INFO_TAG" "40$port"
-  $wecho "API url=$CSentry_url" "$DBG_TAG" "404$port"
+  $wecho "API url=$CSentry_url" "$DBG_TAG" "40$port"
 
   # MAC address & s/n are needed to registry a new Host in CSEntry
   # Use the generic expect script to retrieve the info from the command
@@ -277,9 +281,9 @@ function register_mch {
   sn=$(grep --text -Po 'Board Identifier.*:.*\K(\d{6}-\d{4})' $CFG_TEMPFILE)
   mac=$(grep --text -Po 'IEEE Address.*:.*\K(([0-9a-f]-?){12})' $CFG_TEMPFILE | tr '-' ':')
   $wecho "The MCH is identified by s/n=$sn and MAC=$mac" "$DBG_TAG" "40$port"
-
+  $wecho "The MCH will be registered on the '$NETWORK' network."
   local temp_log=$(mktemp -q --suffix=_pylog)
-  python3 $MCH_Py_HDLR "$mac" "$sn" "$CSentry_url" > $temp_log
+  python3 $MCH_Py_HDLR --mac-address="$mac" --serial-number="$sn" --network="$NETWORK" --url="$CSentry_url" > $temp_log
   local ret=$?
 
   # Send the output messages from the Python script to the debug logger
@@ -293,13 +297,16 @@ function register_mch {
     $wecho "Error in the MCH registry." "$ERR_TAG" "40$port"
     exit 1
   elif [[ $ret -eq 0 ]]; then
-    $wecho "The MCH has been succesfully resgitered @ CSEntry." "$INFO_TAG" "40$port"
+    $wecho "The MCH has been succesfully registered @ CSEntry." "$INFO_TAG" "40$port"
     $wecho "DHCP server takes ~3 minutes to update. Sleeping for 180 s..." "$INFO_TAG" "40$port"
     sleep 180
   elif [[ $ret -eq 1 ]]; then
-    $wecho "The MCH was already resgitered @ CSEntry." "$INFO_TAG" "40$port"
+    $wecho "The MCH was already registered @ CSEntry." "$INFO_TAG" "40$port"
     $wecho "End MCH register @ CSEntry" "$INFO_TAG" "40$port"
     return 1
+  elif [[ $ret -eq 2 ]]; then
+    $wecho "The provided network string ("$NETWORK") is not valid." "$INFO_TAG" "40$port"
+    return 2
   fi
 
   $wecho "End MCH register @ CSEntry" "$INFO_TAG" "40$port"
@@ -633,6 +640,7 @@ while [ $# -gt 0 ]; do
     -w|--web) LOG="WEB";;
     -j|--jira) ENABLE_JIRA=1;shift;;
     -x|--nomoxa) MOXA=0;;
+    -n|--network) NETWORK="$2";shift;;
     *) $wecho "Unknown arg: $1"; help;;
   esac
   shift

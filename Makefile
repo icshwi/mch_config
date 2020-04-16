@@ -17,7 +17,7 @@ EXPECT_SRC_FILES := $(wildcard $(EXPECT_SRC)/*.exp)
 EXPECT_SRC_FILES := $(EXPECT_SRC_FILES) $(EXPECT_SRC)/expect.config
 CONFIG_SRC_FILES := $(wildcard $(CONFIG_SRC)/*.txt)
 SCRIPT_SRC_FILES := $(SCRIPT_SRC)/wsmanager.bash $(SCRIPT_SRC)/mch_config.bash $(SCRIPT_SRC)/jirahandler.bash \
-                    $(SCRIPT_SRC)/newissue.json
+                    $(SCRIPT_SRC)/newissue.json $(SCRIPT_SRC)/csentryHandler.py
 
 APACHE_DIR	 := /var/www/html
 

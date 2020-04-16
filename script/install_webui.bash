@@ -6,7 +6,7 @@ distro=$(cat /etc/os-release | grep -oh "^NAME=.*" | cut -d"=" -f2 | sed 's|\"||
 
 case $distro in
     Ubuntu|Debian)
-        sudo $pkg_manager install apache2
+        sudo apt install apache2
         sudo systemctl start apache2
         sudo systemctl enable apache2
     ;;

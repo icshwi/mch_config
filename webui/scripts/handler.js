@@ -25,14 +25,19 @@ Copyright (c) 2019           European Spallation Source ERIC
 */
 
 var ws = new WebSocket('ws://0.0.0.0:8080/');
+var networkMenu = document.getElementById("NetworkMenu");
 
 ws.onopen = function() {
   // The "send" button is disabled by default. If the connection is OK, it will
   // be enabled.
   $("#SendButton").attr('disabled', false);
+  networkMenu.options.length = 0; // Clear temporary options
+  // Call the CSEntry handler python script to query the available Network values from the database
+  // The values will be returned as messages, one-by-one, and parsed by the message handler (ws.onmessage)
+  ws.send('csentry_handler --network-query 1 --web-ui 1 --mac-address 1 --serial-number 1');
 };
 
-  ws.onclose = function() {
+ws.onclose = function() {
   $("#SendButton").attr('false', true);
 };
 
@@ -44,11 +49,23 @@ ws.onerror = function(evt) {
 ws.onmessage = function(event) {
   var message = event.data;
   var ts = new Date();
-  if (message[0] == "^")
-    parseMessage(message,ts);
-  else
-    $('#LogOutput').append("<b>Unrecognized messsage:</b>" + event.data + "\n");
-};
+  var msg = "";
+  switch (message[0]) {
+    case "^":
+      parseMessage(message,ts);
+      break;
+    case "~": // Special case for intercepting CSEntry network values returned by the websocket
+      msg = message.slice(1,message.length);
+      var defSel = false;
+      if (msg == "CSLab-GeneralLab") {
+          defSel = true;
+      }                                      // Option(<text>, <value>, <defaultSelect>, <selected>)
+      networkMenu.options[networkMenu.options.length] = new Option(msg, msg, defSel, defSel);
+      break;
+    default:
+      $('#LogOutput').append("<b>Unrecognized messsage:</b>" + event.data + "\n");
+  }
+}
 
 // Function to print a message for the user
 function showMessage(message,ts_raw) {
@@ -158,6 +175,11 @@ $(".RadioAllR").click(function() {
   }
 });
 
+$("#checkCSEntry").on('click', function() {
+  $(".hiddenRowNetwork").prop('hidden', !this.checked);
+  $(".hiddenRowNetwork").css('visibility', 'visible');
+})
+
 $("#AdvButton").on('click', function() {
   $("#AdvLabel").prop('hidden', !this.checked);
   $("#AdvLabel").css('visibility', 'visible');
@@ -225,6 +247,8 @@ $("#SendButton").on('click', function() {
 
     if ($("#checkCSEntry").prop("checked")) {
       steps += "0,"
+      params += " -n "
+      params += networkMenu.value;
     }
 
     if ($("#checkDHCP").prop("checked")) {

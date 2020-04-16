@@ -46,7 +46,11 @@ do
     if [ "$first" == "mch_config" ]; then
         script='/usr/local/share/mch_config/script/mch_config.bash'
     else
-        echo "Option not recognized: $C"
+        if [ "$first" == "csentry_handler" ]; then
+            script='/usr/local/share/mch_config/script/csentryHandler.py'
+        else
+            echo "Option not recognized: $C"
+        fi
     fi
 
     if [ ! -z $script ]; then

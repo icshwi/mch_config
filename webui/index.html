@@ -53,6 +53,16 @@
         <td><label>Register in CSEntry</td>
         <td><input id="checkCSEntry" type="checkbox"></td>
       </tr>
+      <tr class="hiddenRowNetwork" hidden>
+        <td><label class="tooltip" for="NetworkMenu">Network
+            <span class="tooltiptext">Network that the MCH is connected to,<br>i.e. CSLab-GeneralLab</span>
+        </td>
+        <td>
+          <select id="NetworkMenu">
+            <option value="CSLab-GeneralLab">CSLab-GeneralLab</option>
+          </select>
+        </td>
+      </tr>
       <tr>
         <td><label>Enable DHCP</td>
         <td><input id="checkDHCP" type="checkbox"></td>
@@ -273,8 +283,6 @@
     <summary><b>See log output</b></summary>
     <label id="LogOutput">
   </details>
-
-
 
   <!-- Script with the JS code to call the Bash script which will run the
        configuration of the MCHs -->

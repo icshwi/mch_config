@@ -12,7 +12,7 @@ arch=$(uname -m)
 case $distro in
     Ubuntu|Debian)
         pkg_ext=".deb"
-        distro_sep="-"
+        distro_sep="_"
         # Websocket developer is an AMD fanboy...
         arch=$(echo $arch | sed 's|x86_64|amd64|g')
     ;;
@@ -24,8 +24,9 @@ case $distro in
     ;;
 esac
 
-filename="${WEBSOCKET_SRC}/v${VERSION}/websocketd${distro_sep}${VERSION}${distro_sep}${arch}${pkg_ext}"
-wget $filename
+filename="websocketd-${VERSION}${distro_sep}${arch}${pkg_ext}"
+url=${WEBSOCKET_SRC}/v${VERSION}/${filename}
+wget $url
 
 case $distro in
     Ubuntu|Debian)
