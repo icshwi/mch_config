@@ -68,7 +68,7 @@ getip:
 	echo "$$ipaddr";
 
 setip:
-	@echo "TFTP_IP_ADDRS=$(TFTP_SEVER)" > $(TFTP_IPADDR_TXT)
+	@echo "TFTP_IP_ADDRS=$(TFTP_SERVER)" > $(TFTP_IPADDR_TXT)
 
 patch:
 	@sed -e "s|\(ws://\)\([0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\)\(.*\)|\1${WEBSOCKET}\3|g" -i $(WEBUI_SRC)/scripts/handler.js
@@ -77,4 +77,4 @@ patch:
 config:
 	@echo "Setting up environment variables for the Expect scripts"
 	@sed -E "s|(G_EXPECT_CFG_LOGFILEPATH )(.?)*$ |\1$(EXPECT_LOG_PATH)|g" -i $(CONFIG_SRC)/expect.config
-	@sed -E "s|(G_EXPECT_CFG_TFTPADDR )(.?)*$ |\1$(TFTP_SEVER)|g" -i $(CONFIG_SRC)/expect.config
+	@sed -E "s|(G_EXPECT_CFG_TFTPADDR )(.?)*$ |\1$(TFTP_SERVER)|g" -i $(CONFIG_SRC)/expect.config
