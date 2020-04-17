@@ -179,6 +179,12 @@ label,input
   cursor: pointer;
 }
 
+network,select
+{
+  width: 100%;
+  margin: 0px;
+}
+
 #AdvLabel
 {
   visibility: hidden;

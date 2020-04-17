@@ -28,6 +28,7 @@ Copyright (c) 2019-2020      European Spallation Source ERIC
 
 var ws = new WebSocket('ws://0.0.0.0:8080/');
 var networkMenu = document.getElementById("NetworkMenu");
+var groupMenu = document.getElementById("AnsibleGroups");
 
 ws.onopen = function() {
   // The "send" button is disabled by default. If the connection is OK, it will
@@ -37,6 +38,7 @@ ws.onopen = function() {
   // Call the CSEntry handler python script to query the available Network values from the database
   // The values will be returned as messages, one-by-one, and parsed by the message handler (ws.onmessage)
   ws.send('csentry_handler --network-query 1 --web-ui 1 --mac-address 1 --serial-number 1');
+  ws.send('csentry_handler --ansible-query 1 --web-ui 1 --mac-address 1 --serial-number 1');
 };
 
 ws.onclose = function() {
@@ -63,6 +65,10 @@ ws.onmessage = function(event) {
           defSel = true;
       }                                      // Option(<text>, <value>, <defaultSelect>, <selected>)
       networkMenu.options[networkMenu.options.length] = new Option(msg, msg, defSel, defSel);
+      break;
+    case "*": // Special case for intercepting CSEntry ansible group values returned by the websocket
+      msg = message.slice(1,message.length);
+      groupMenu.options[groupMenu.options.length] = new Option(msg, msg);
       break;
     default:
       $('#LogOutput').append("<b>Unrecognized messsage:</b>" + event.data + "\n");
@@ -251,6 +257,9 @@ $("#SendButton").on('click', function() {
       steps += "0,"
       params += " -n "
       params += networkMenu.value;
+      if (groupMenu.value != "")
+        params += " -g "
+        params += groupMenu.value;
     }
 
     if ($("#checkDHCP").prop("checked")) {

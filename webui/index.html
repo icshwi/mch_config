@@ -20,7 +20,7 @@
   email   : torresfelipex1@gmail.com
             ross.elliot@ess.eu
   date    : 20190426
-  version : 1.2
+  version : 1.3
 
   Thanks to Anne Marie Muñoz who lent me all the help I needed to make this web.
 !-->
@@ -58,11 +58,21 @@
       </tr>
       <tr class="hiddenRowNetwork" hidden>
         <td><label class="tooltip" for="NetworkMenu">Network
-            <span class="tooltiptext">Network that the MCH is connected to,<br>i.e. CSLab-GeneralLab</span>
+            <span class="tooltiptext">Network that the MCH is connected to, i.e. CSLab-GeneralLab</span>
         </td>
         <td>
           <select id="NetworkMenu">
             <option value="CSLab-GeneralLab">CSLab-GeneralLab</option>
+          </select>
+        </td>
+      </tr>
+      <tr class="hiddenRowNetwork" hidden>
+        <td><label class="tooltip" for="AnsibleGorups">Ansible groups
+            <span class="tooltiptext">Ansible groups that the MCH will be a member of, i.e. mch_config</span>
+        </td>
+        <td>
+          <select id="AnsibleGroups">
+            <option value="">(None)</option>
           </select>
         </td>
       </tr>

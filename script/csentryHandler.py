@@ -23,7 +23,7 @@ __author__    = "Ross Elliot"
 __email__     = "ross.elliot@ess.eu"
 __copyright__ = "Copyright 2020, European Spallation Source"
 __license__   = "GPL"
-__version__   = "1.1"
+__version__   = "1.2"
 __status__    = "Development"
 
 import sys
@@ -80,7 +80,7 @@ class CSEntryHandler:
                         return (interface['host'],interface['ip'])
         return tuple()
 
-    def registerNewHost(self, mac, sn, net):
+    def registerNewHost(self, mac, sn, net, grp):
         """Register a new host in CSEntry
 
         A new host device will be registered with the given data.
@@ -92,22 +92,34 @@ class CSEntryHandler:
         Arguments:
 
         mac (str): a string containing the MAC address. The expected format
-                is AA:BB:CC:DD:EE:FF. It is indiferent to use capital
-                letters or not.
+                is AA:BB:CC:DD:EE:FF. It is case-insensitive..
         sn (str): a string containing the serial number of the MCH. An example
                of serial number: 123456-1234
-        net (str) : a string containing the Network for the device.
+        net (str): a string containing the Network for the device.
+        grp (str): a string containing the Ansible group to assign the MCH to.
 
         Returns:
             A dict with the description of the registered Host
         """
-        response = self._con.create_host(
-            sn,
-            "MTCA-MCH",
-            network=net,
-            mac=mac
-        )
+
+        if (grp != ""):
+            response = self._con.create_host(
+                sn,
+                "MTCA-MCH",
+                network=net,
+                mac=mac,
+                ansible_groups=[grp]
+            )
+        else:
+            response = self._con.create_host(
+                sn,
+                "MTCA-MCH",
+                network=net,
+                mac=mac,
+            )
+
         return response
+
     def validateNetwork(self, network):
         """Check if a network string is a valid CSEntry value
 
@@ -124,8 +136,8 @@ class CSEntryHandler:
         self.getNetworks()
         # Check if provided network string is in the list from
         # the database
-        for network in self.networks:
-            if net == network['vlan_name']:
+        for net in self.networks:
+            if network == net['vlan_name']:
                 return False
 
         return True
@@ -140,7 +152,41 @@ class CSEntryHandler:
             for network in self.networks:
                 print('~' + network['vlan_name'])
 
+    def getGroups(self):
+        """Get list of available networks (e.g. CSLabGeneralLab, etc.) from CSEntry
+        """
 
+        self.groups = self._con.get_groups()
+        # Print each Network so that we can pass back to the webui
+        if isWebUI:
+            for group in self.groups:
+                print('*' + group['name'])
+
+    def validateGroup(self, group):
+        """Check if an Ansible group string is a valid CSEntry value
+
+        Arguments:
+
+        group (str): a string containing the Ansible group that the
+                     MCH will be a member of.
+        Returns:
+            A boolean flag where 'False' indicates that the group
+            string is valid, and 'True' for invalid.
+
+        """
+        # Empty string is valid
+        if (group == ""):
+            return False
+        else:
+            # Get list of available groups from CSEntry database
+            self.getGroups()
+            # Check if provided group string is in the list from
+            # the database
+            for grp in self.groups:
+                if group == grp['name']:
+                    return False
+
+        return True
 if __name__ == '__main__':
 
     # Setup parser for input arguments
@@ -148,7 +194,9 @@ if __name__ == '__main__':
     parser.add_argument('--mac-address', metavar='m', required=True, help='MAC address of the MCH to be registered')
     parser.add_argument('--serial-number', metavar='s', required=True, help='Serial number of the MCH to be registered')
     parser.add_argument('--network', metavar='n', default='CSLab-GeneralLab', help='Network that the MCH will be registered on in CSEntry')
+    parser.add_argument('--group', metavar='g', default='', help='Ansible group that the MCH will be a member of')
     parser.add_argument('--network-query', metavar='q', type=bool, default=False, help='Query the CSEntry database for available networks')
+    parser.add_argument('--ansible-query', metavar='a', type=bool, default=False, help='Query the CSEntry database for available ansible groups')
     parser.add_argument('--web-ui', metavar='w', type=bool, default=False, help='Flag to identify if we are being called from the web UI')
     parser.add_argument('--url', metavar='u', default='https://csentry-test.esss.lu.se/', help='CSEntry API URL')
     args = parser.parse_args()
@@ -158,8 +206,15 @@ if __name__ == '__main__':
     isWebUI         = args.web_ui
     mac             = args.mac_address
     net             = args.network
+    group           = args.group
     sn              = args.serial_number
     runNetworkQuery = args.network_query
+    runAnsibleQuery = args.ansible_query
+
+    # Check if an Ansible group is to be assigned
+    assignGroup = True
+    if (group == ""):
+        assignGroup = False
 
     ## By now, the token should be written manually at deployment stage
     ## TODO: improve the handling of the token
@@ -169,6 +224,8 @@ if __name__ == '__main__':
         handler = CSEntryHandler(token=token, url=url)
         if runNetworkQuery:
             handler.getNetworks()
+        elif runAnsibleQuery:
+            handler.getGroups()
         else:
             # Check if provided network string is valid,
             # by checking against queried list from the database
@@ -176,16 +233,26 @@ if __name__ == '__main__':
             if ret:
                 print ("Provided network string (%s) is not valid." % net)
                 exit (2)
-            else: # Continue to registration
-                sn = "mch-{}".format(str(sn))
-                ret = handler.searchHOST(mac)
-                if ret == ():
-                    print("The MAC is not registered")
-                    device_descriptor = handler.registerNewHost(mac, sn, net)
-                    print("The new Host is registered to the {} as {} with the given IP: {}".format(net,sn,device_descriptor['interfaces'][0]['ip']))
-                else:
-                    print ("The MCH was already registered @ CSEntry name={},IP={}".format(ret[0],ret[1]))
-                    exit (1)
+
+            groupStr = ""
+            if assignGroup:
+                ret = handler.validateGroup(group)
+                if ret:
+                    print ("Provided Ansible group (%s) is not valid." % group)
+                    exit (3)
+                groupStr = ", and assigned to Ansible group: {}".format(str(group))
+
+            # Continue to registration
+            sn = "mch-{}".format(str(sn))
+            ret = handler.searchHOST(mac)
+            if ret == ():
+                print("The MAC is not registered")
+                device_descriptor = handler.registerNewHost(mac, sn, net, group)
+                print("The new Host is registered to the {} as {} with the given IP: {}{}"
+                .format(net,sn,device_descriptor['interfaces'][0]['ip'],groupStr))
+            else:
+                print ("The MCH was already registered @ CSEntry name={},IP={}".format(ret[0],ret[1]))
+                exit (1)
     except Exception as e:
         print(e)
         exit(-2)

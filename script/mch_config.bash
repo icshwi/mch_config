@@ -24,7 +24,7 @@
 #
 #   date    : Monday, April 15 15:08:12 CEST 2019
 #
-#   version : 1.1.2
+#   version : 1.1.3
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME=${0##*/}
@@ -80,7 +80,7 @@ CSEntry=0
 CSentry_url="https://csentry-test.esss.lu.se/"
 # CSEntry Network
 NETWORK="CSLab-GeneralLab"
-
+GROUP=""
 # Flag to control the log system in the application
 # Valid options:
 # -> "WEB" : All messages will contain extra information for the web interface
@@ -130,6 +130,8 @@ Options:
   -x|--nomoxa    -> Enable access via telnet (when not using a MOXA Hub)
   -n|--network   -> Specify the Network that the MCH will be registered on in
                     CSEntry. Default is 'CSLab-GeneralLab'.
+  -g|--group     -> Specify the Ansible group that the MCH will be registered to in
+                    CSEntry. Default is empty.
 Examples:
 Run the script to update FW only in the port 4010:
     mch_config.sh 10.0.5.173 10, 3U -s 1
@@ -285,7 +287,12 @@ function register_mch {
   $wecho "The MCH is identified by s/n=$sn and MAC=$mac" "$DBG_TAG" "40$port"
   $wecho "The MCH will be registered on the '$NETWORK' network."
   local temp_log=$(mktemp -q --suffix=_pylog)
-  python3 $MCH_Py_HDLR --mac-address="$mac" --serial-number="$sn" --network="$NETWORK" --url="$CSentry_url" > $temp_log
+  if [[ ! $GROUP = "" ]]; then
+    $wecho "The Ansible group '$GROUP' will be assigned to the MCH in CSEntry."
+    python3 $MCH_Py_HDLR --mac-address="$mac" --serial-number="$sn" --network="$NETWORK" --group="${GROUP}" --url="$CSentry_url" > $temp_log
+  else
+    python3 $MCH_Py_HDLR --mac-address="$mac" --serial-number="$sn" --network="$NETWORK" --url="$CSentry_url" > $temp_log
+  fi
   local ret=$?
 
   # Send the output messages from the Python script to the debug logger
@@ -309,6 +316,9 @@ function register_mch {
   elif [[ $ret -eq 2 ]]; then
     $wecho "The provided network string ("$NETWORK") is not valid." "$INFO_TAG" "40$port"
     return 2
+  elif [[ $ret -eq 3 ]]; then
+    $wecho "The provided Ansible group ("$GROUP") is not valid." "$INFO_TAG" "40$port"
+    return 3
   fi
 
   $wecho "End MCH register @ CSEntry" "$INFO_TAG" "40$port"
@@ -643,6 +653,7 @@ while [ $# -gt 0 ]; do
     -j|--jira) ENABLE_JIRA=1;shift;;
     -x|--nomoxa) MOXA=0;;
     -n|--network) NETWORK="$2";shift;;
+    -g|--group) GROUP="$2";shift;;
     *) $wecho "Unknown arg: $1"; help;;
   esac
   shift
