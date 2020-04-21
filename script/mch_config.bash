@@ -650,7 +650,7 @@ while [ $# -gt 0 ]; do
     -p|--prefix) SRC_PREFIX="$2";shift;;
     -l|--log) LOG="USER";;
     -w|--web) LOG="WEB";;
-    -j|--jira) ENABLE_JIRA=1;shift;;
+    -j|--jira) ENABLE_JIRA=1;;
     -x|--nomoxa) MOXA=0;;
     -n|--network) NETWORK="$2";shift;;
     -g|--group) GROUP="$2";shift;;
