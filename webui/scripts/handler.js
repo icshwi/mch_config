@@ -183,6 +183,11 @@ $(".RadioAllR").click(function() {
   }
 });
 
+$("#checkJIRA").on('click', function() {
+  $(".hiddenRowJira").prop('hidden', !this.checked);
+  $(".hiddenRowJira").css('visibility', 'visible');
+})
+
 $("#checkCSEntry").on('click', function() {
   $(".hiddenRowNetwork").prop('hidden', !this.checked);
   $(".hiddenRowNetwork").css('visibility', 'visible');

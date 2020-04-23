@@ -50,6 +50,8 @@ source ${SC_TOP}/jirahandler.bash
 
 # Flag to enable some extra functionalities to add content to Jira
 ENABLE_JIRA=0
+# base64-encoded Jira credential token
+JIRA_CREDENTIAL="FILL-ME!"
 
 SCRIPT_INTERPRETER=expect
 
@@ -125,8 +127,9 @@ Options:
   -p|--prefix    -> Source prefix for the tool. By default is "../".
   -l|--log       -> Enable a human readable log
   -w|--web       -> Enable web log (interface with the WEBUI)
-  -j|--jira      -> Enable to upload the results to Jira. Use this option in the
-                    last position.
+  -j|--jira      -> Enable to upload the results to Jira.
+  -t|--ticket    -> Parent Jira ticket to link the new Jira ticket to.
+                    Link will be of type "part of".
   -x|--nomoxa    -> Enable access via telnet (when not using a MOXA Hub)
   -n|--network   -> Specify the Network that the MCH will be registered on in
                     CSEntry. Default is 'CSLab-GeneralLab'.
@@ -289,9 +292,9 @@ function register_mch {
   local temp_log=$(mktemp -q --suffix=_pylog)
   if [[ ! $GROUP = "" ]]; then
     $wecho "The Ansible group '$GROUP' will be assigned to the MCH in CSEntry."
-    python3 $MCH_Py_HDLR --mac-address="$mac" --serial-number="$sn" --network="$NETWORK" --group="${GROUP}" --url="$CSentry_url" > $temp_log
+    python3 $CSEntry_Py_HDLR --mac-address="$mac" --serial-number="$sn" --network="$NETWORK" --group="${GROUP}" --url="$CSentry_url" > $temp_log
   else
-    python3 $MCH_Py_HDLR --mac-address="$mac" --serial-number="$sn" --network="$NETWORK" --url="$CSentry_url" > $temp_log
+    python3 $CSEntry_Py_HDLR --mac-address="$mac" --serial-number="$sn" --network="$NETWORK" --url="$CSentry_url" > $temp_log
   fi
   local ret=$?
 
@@ -595,7 +598,8 @@ function var_definition {
   # Python Helper scripts
   # By now the only python script will be located in the same folder as the
   # rest of the scripts
-  MCH_Py_HDLR=${SRC_PREFIX}/script/csentryHandler.py
+  CSEntry_Py_HDLR=${SRC_PREFIX}/script/csentryHandler.py
+  Jira_Py_HDLR=${SRC_PREFIX}/script/jiraHandler.py
 
   INIT_TAG="^"
   END_TAG=";;"
@@ -651,6 +655,7 @@ while [ $# -gt 0 ]; do
     -l|--log) LOG="USER";;
     -w|--web) LOG="WEB";;
     -j|--jira) ENABLE_JIRA=1;;
+    -t|--ticket) PARENT_TICKET="$2";shift;;
     -x|--nomoxa) MOXA=0;;
     -n|--network) NETWORK="$2";shift;;
     -g|--group) GROUP="$2";shift;;
@@ -741,22 +746,56 @@ for i in ${PORTS[*]}; do
   grep "@40$port" $JIRA_LOG > "$path/logfile.txt"
   cp /tmp/mch_testreports/MCH_*_40${port}_$SC_LOGDATE.log $path
   zip -r $path $path >> /dev/null
+  $wecho "Created zip file of test reports: ${path}.zip" "$DBG_TAG" "$PORT_PREFIX""$port"
 
-  # Third: check if there's a ticket for that board
-  find_MCH $sn
-  isTicket=$?
-  if [[ $isTicket -eq 1 ]]; then
-    $wecho "Ticket not found for $sn" $DBG_TAG "40$port"
-    add_MCH $sn
-    $wecho "Ticket added for $sn ($ISSUE)" $DBG_TAG "40$port"
-  else
-    $wecho "Ticket found for $sn ($ISSUE)" $DBG_TAG "40$port"
+  # Call Python Jira handler to add MCH ticket.
+  #
+  # It will perform the following steps:
+  #   1. Check if Jira ticket already exists for the current MCH
+  #   2. Check if the optional Parent ticket is valid
+  #   3. Create a new Jira ticket for the current MCH (and link it
+  #      to the parent ticket, if provided
+  #   4. Attach the compressed log archive to the new ticket
+  #
+  # Using the following default values:
+  #   * --url     = https://jira.esss.lu.se
+  #   * --project = ICSLAB
+  #   * --tags    = MCHLog,ICS_Lab  
+  temp_jira_log=$(mktemp -q --suffix=__py_jiralog)
+  python3 "$Jira_Py_HDLR" --credential="$JIRA_CREDENTIAL" --serial-number="$sn" --parent-ticket="$PARENT_TICKET" --attachment="${path}.zip" 2>&1 >$temp_jira_log
+ 
+  # Get exit code
+  ret=$?
+  ISSUE=""  
+  # Send the output messages from the Python script to the debug logger
+  while IFS= read -r line
+  do
+    if [[ "$line" == *"+-+-ISSUE"* ]]; then
+        ISSUE=$(echo $line | sed -e 's/+-+-ISSUE=\(.*\)+-+-/\1/')
+    else
+        $wecho "$line" "$DBG_TAG" "$PORT_PREFIX""$port"
+    fi
+  done < "$temp_jira_log"
+  
+  if [[ $ret -gt 127 ]]; then
+    $wecho "Error uploading results to Jira." "$ERR_TAG" "$PORT_PREFIX""$port"
+  elif [[ $ret -eq 0 ]]; then
+    $wecho "Ticket added for "$sn" ("$ISSUE")" "$INFO_TAG" "$PORT_PREFIX""$port"
+    if [[ "$PARENT_TICKET" != "" ]]; then
+      $wecho "New ticket linked to parent ticket ("$PARENT_TICKET")" "$INFO_TAG" "$PORT_PREFIX""$port"
+    fi
+  elif [[ $ret -eq 1 ]]; then
+    $wecho "Ticket creation via the Jira API failed." "$ERR_TAG" "$PORT_PREFIX""$port"
+  elif [[ $ret -eq 2 ]]; then
+    $wecho "Provided parent Jira ticket ($PARENT_TICKET) does not exist." "$ERR_TAG" "$PORT_PREFIX""$port"
+  elif [[ $ret -eq 3 ]]; then 
+    $wecho "The attachment (${path}.zip) does not exist." "$ERR_TAG" "$PORT_PREFIX""$port"
+  elif [[ $ret -eq 4 ]]; then 
+    $wecho "Linking ticket ($ISSUE) to the parent ticket ($PARENT_TICKET) failed." "$ERR_TAG" "$PORT_PREFIX""$port"
+  elif [[ $ret -eq 5 ]]; then 
+    $wecho "Uploading attachment to ticket ($ISSUE) failed." "$ERR_TAG" "$PORT_PREFIX""$port"
+  elif [[ $ret -eq 6 ]]; then 
+    $wecho "Serial number "$sn" found in existing Jira ticket - ("$ISSUE")" "$INFO_TAG" "$PORT_PREFIX""$port"
   fi
 
-  add_Attachment $ISSUE ${path}.zip
-  if [[ $? -eq 1 ]]; then
-    $wecho "Reports added to ticket: $ISSUE" $DBG_TAG "40$port"
-  else
-    $wecho "Error while adding an attachment to the ticket: $ISSUE" $ERR_TAG "40$port"
-  fi
 done
