@@ -256,6 +256,8 @@ $("#SendButton").on('click', function() {
 
     if ($("#checkJira").prop("checked")) {
       params += " -j"
+      var parentTicket = $('#ParentTicket').val();
+      params += " -t " + parentTicket;
     }
 
     if ($("#checkCSEntry").prop("checked")) {
