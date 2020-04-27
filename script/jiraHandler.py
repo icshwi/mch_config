@@ -122,13 +122,14 @@ class JIRAHandler:
 
         return found
 
-    def addMCH(self, sn, parent, attachment):
+    def addMCH(self, sn, parent, attachment, ttype):
         """ Method to create a new Jira ticket for the MCH
 
             Arguments:
                 sn         (str) : Serial number of the MCH
                 parent     (str) : Parent Jira ticket (optional)
                 attachment (str) : Path to file to be attached to Jira ticket
+                ttype      (str) : Ticket type (Story/Task)
 
             Returns:
                 key    (str) : Identifier for the newly created Jira ticket (on success)
@@ -163,7 +164,7 @@ class JIRAHandler:
             # Required data fields
             data = {"fields": { "project": { "key": self.proj },
                                 "summary": "MCH " + sn + " test report",
-                                "issuetype": { "name": "Story" },
+                                "issuetype": { "name": ttype },
                                 "labels": ["ICS", "ICS_Lab", "MCH", "MCHLog", "Test"]
                               }
                    }
@@ -183,7 +184,7 @@ class JIRAHandler:
             if (attachment != ""):
                 if(self.addAttachment(key, attachment) == 0):
                     return 5, key
-            
+
             # If a parent ticket is created, add the link to the new ticket
             if (parent != ""):
                 if (self.addLink(key, parent) == 0):
@@ -277,11 +278,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Helper script for the MCH config tool (bash) to handle access to the Jira REST API.')
     parser.add_argument('--credential', metavar='c', required=True, help='base64 encoded credential for HTTP Basic authorisation with the Jira server')
     parser.add_argument('--serial-number', metavar='s', required=True, help='Serial number of the MCH')
-    parser.add_argument('--attachment', metavar='a', help='Path to file to be attached to the Jira ticket')
+    parser.add_argument('--attachment', metavar='a', default='', help='Path to file to be attached to the Jira ticket')
     parser.add_argument('--project', metavar='p', default='ICSLAB', help='Jira project containing the MCH registration tickets (default: ICSLAB)')
     parser.add_argument('--url', metavar='u', default='https://jira.esss.lu.se',  help='Jira server URL (default: https://jira.esss.lu.se)')
     parser.add_argument('--parent-ticket', metavar='o', default='', help='Parent Jira ticket that the new MCH ticket should be a part of')
     parser.add_argument('--tags', metavar='t', default='MCHLog,ICS_Lab', help='Comma-separated list of Jira tags to assign to the ticket (default: MCHLog,ICS_Lab)')
+    parser.add_argument('--type', metavar='y', choices=['Story', 'Task'], default='Story', help='Type of Jira ticket to create: ''Story'' or ''Task'' (default: Story)')
     args = parser.parse_args()
 
     # Assign internal variables parsed from input
@@ -292,11 +294,12 @@ if __name__ == '__main__':
     project      = args.project
     tags         = args.tags
     parentTicket = args.parent_ticket
+    ticketType   = args.type
 
     ret = 0
     try:
         handler = JIRAHandler(credential, url, project, tags)
-        ret,key = handler.addMCH(sn, parentTicket, attachment)
+        ret,key = handler.addMCH(sn, parentTicket, attachment, ticketType)
         if (key != ""):
             print("+-+-ISSUE=%s+-+-" % key)
     except Exception as e:

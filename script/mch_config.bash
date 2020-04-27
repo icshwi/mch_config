@@ -50,6 +50,8 @@ source ${SC_TOP}/jirahandler.bash
 
 # Flag to enable some extra functionalities to add content to Jira
 ENABLE_JIRA=0
+PARENT_TICKET=""    # Default Jira parent ticket (none)
+TICKET_TYPE="Story" # Default Jira ticket type
 # base64-encoded Jira credential token
 JIRA_CREDENTIAL="FILL-ME!"
 
@@ -130,6 +132,7 @@ Options:
   -j|--jira      -> Enable to upload the results to Jira.
   -t|--ticket    -> Parent Jira ticket to link the new Jira ticket to.
                     Link will be of type "part of".
+  -y|--type      -> Type of Jira ticket to create (Story or Task).
   -x|--nomoxa    -> Enable access via telnet (when not using a MOXA Hub)
   -n|--network   -> Specify the Network that the MCH will be registered on in
                     CSEntry. Default is 'CSLab-GeneralLab'.
@@ -656,6 +659,7 @@ while [ $# -gt 0 ]; do
     -w|--web) LOG="WEB";;
     -j|--jira) ENABLE_JIRA=1;;
     -t|--ticket) PARENT_TICKET="$2";shift;;
+    -y|--type) TICKET_TYPE="$2";shift;;
     -x|--nomoxa) MOXA=0;;
     -n|--network) NETWORK="$2";shift;;
     -g|--group) GROUP="$2";shift;;
@@ -762,7 +766,7 @@ for i in ${PORTS[*]}; do
   #   * --project = ICSLAB
   #   * --tags    = MCHLog,ICS_Lab  
   temp_jira_log=$(mktemp -q --suffix=__py_jiralog)
-  python3 "$Jira_Py_HDLR" --credential="$JIRA_CREDENTIAL" --serial-number="$sn" --parent-ticket="$PARENT_TICKET" --attachment="${path}.zip" 2>&1 >$temp_jira_log
+  python3 "$Jira_Py_HDLR" --credential="$JIRA_CREDENTIAL" --serial-number="$sn" --parent-ticket="$PARENT_TICKET" --attachment="${path}.zip" --type="$TICKET_TYPE" 2>&1 >$temp_jira_log
  
   # Get exit code
   ret=$?

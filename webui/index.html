@@ -53,6 +53,17 @@
         <td><input id="checkJira" type="checkbox"></td>
       </tr>
       <tr class="hiddenRowJira" hidden>
+        <td><label class="tooltip" for="TicketType">Ticket type
+            <span class="tooltiptext">Jira ticket type (Story/Task)</span>
+        </td>
+        <td>
+          <select id="TicketType">
+            <option value="Story">Story</option>
+            <option value="Task">Task</option>
+          </select>
+        </td>
+      </tr>
+      <tr class="hiddenRowJira" hidden>
         <td><label class="tooltip" for="ParentTicket">Parent ticket
             <span class="tooltiptext">Parent Jira ticket that the new ticket will be linked to</span>
         </td>
