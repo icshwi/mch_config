@@ -35,6 +35,7 @@ ws.onopen = function() {
   // be enabled.
   $("#SendButton").attr('disabled', false);
   networkMenu.options.length = 0; // Clear temporary options
+  groupMenu.options.length = 0; // Clear temporary options
   // Call the CSEntry handler python script to query the available Network values from the database
   // The values will be returned as messages, one-by-one, and parsed by the message handler (ws.onmessage)
   ws.send('csentry_handler --network-query 1 --web-ui 1 --mac-address 1 --serial-number 1');
@@ -266,9 +267,26 @@ $("#SendButton").on('click', function() {
       steps += "0,"
       params += " -n "
       params += networkMenu.value;
-      if (groupMenu.value != "")
+      if (groupMenu.value != "") {
         params += " -g "
-        params += groupMenu.value;
+        /* Get the value of the AnsibleGroups select input
+           It can contain multiple values... */
+        var groupVals = $("#AnsibleGroups").val();
+        /* If it contains more than one value */
+        if (groupVals.length > 1) {
+          /* Loop through all values in array, creating
+             a string of values, separated by ','    */
+          for (var i=0; i<groupVals.length; i++) {
+            if (i == (groupVals.length - 1)) {
+               params += groupVals[i]
+            } else {
+               params += groupVals[i] + ","
+            }
+          }
+        } else { // Single value
+          params += groupMenu.value;
+        }
+      }
     }
 
     if ($("#checkDHCP").prop("checked")) {

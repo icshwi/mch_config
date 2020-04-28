@@ -136,8 +136,10 @@ Options:
   -x|--nomoxa    -> Enable access via telnet (when not using a MOXA Hub)
   -n|--network   -> Specify the Network that the MCH will be registered on in
                     CSEntry. Default is 'CSLab-GeneralLab'.
-  -g|--group     -> Specify the Ansible group that the MCH will be registered to in
-                    CSEntry. Default is empty.
+  -g|--group     -> Specify the Ansible group(s) that the MCH will be registered
+                    to in CSEntry. Multiple groups can be specified as a list
+                    separated by the '&' character, i.e. Group1&Group2.
+                    Default is empty.
 Examples:
 Run the script to update FW only in the port 4010:
     mch_config.sh 10.0.5.173 10, 3U -s 1
@@ -291,10 +293,10 @@ function register_mch {
   sn=$(grep --text -Po 'Board Identifier.*:.*\K(\d{6}-\d{4})' $CFG_TEMPFILE)
   mac=$(grep --text -Po 'IEEE Address.*:.*\K(([0-9a-f]-?){12})' $CFG_TEMPFILE | tr '-' ':')
   $wecho "The MCH is identified by s/n=$sn and MAC=$mac" "$DBG_TAG" "40$port"
-  $wecho "The MCH will be registered on the '$NETWORK' network."
+  $wecho "The MCH will be registered on the '$NETWORK' network." "$DBG_TAG" "40$port"
   local temp_log=$(mktemp -q --suffix=_pylog)
   if [[ ! $GROUP = "" ]]; then
-    $wecho "The Ansible group '$GROUP' will be assigned to the MCH in CSEntry."
+    $wecho "The Ansible group(s) '$GROUP' will be assigned to the MCH in CSEntry." "$DBG_TAG" "40$port"
     python3 $CSEntry_Py_HDLR --mac-address="$mac" --serial-number="$sn" --network="$NETWORK" --group="${GROUP}" --url="$CSentry_url" > $temp_log
   else
     python3 $CSEntry_Py_HDLR --mac-address="$mac" --serial-number="$sn" --network="$NETWORK" --url="$CSentry_url" > $temp_log
@@ -764,13 +766,13 @@ for i in ${PORTS[*]}; do
   # Using the following default values:
   #   * --url     = https://jira.esss.lu.se
   #   * --project = ICSLAB
-  #   * --tags    = MCHLog,ICS_Lab  
+  #   * --tags    = MCHLog,ICS_Lab
   temp_jira_log=$(mktemp -q --suffix=__py_jiralog)
   python3 "$Jira_Py_HDLR" --credential="$JIRA_CREDENTIAL" --serial-number="$sn" --parent-ticket="$PARENT_TICKET" --attachment="${path}.zip" --type="$TICKET_TYPE" 2>&1 >$temp_jira_log
- 
+
   # Get exit code
   ret=$?
-  ISSUE=""  
+  ISSUE=""
   # Send the output messages from the Python script to the debug logger
   while IFS= read -r line
   do
@@ -780,7 +782,7 @@ for i in ${PORTS[*]}; do
         $wecho "$line" "$DBG_TAG" "$PORT_PREFIX""$port"
     fi
   done < "$temp_jira_log"
-  
+
   if [[ $ret -gt 127 ]]; then
     $wecho "Error uploading results to Jira." "$ERR_TAG" "$PORT_PREFIX""$port"
   elif [[ $ret -eq 0 ]]; then
@@ -792,13 +794,13 @@ for i in ${PORTS[*]}; do
     $wecho "Ticket creation via the Jira API failed." "$ERR_TAG" "$PORT_PREFIX""$port"
   elif [[ $ret -eq 2 ]]; then
     $wecho "Provided parent Jira ticket ($PARENT_TICKET) does not exist." "$ERR_TAG" "$PORT_PREFIX""$port"
-  elif [[ $ret -eq 3 ]]; then 
+  elif [[ $ret -eq 3 ]]; then
     $wecho "The attachment (${path}.zip) does not exist." "$ERR_TAG" "$PORT_PREFIX""$port"
-  elif [[ $ret -eq 4 ]]; then 
+  elif [[ $ret -eq 4 ]]; then
     $wecho "Linking ticket ($ISSUE) to the parent ticket ($PARENT_TICKET) failed." "$ERR_TAG" "$PORT_PREFIX""$port"
-  elif [[ $ret -eq 5 ]]; then 
+  elif [[ $ret -eq 5 ]]; then
     $wecho "Uploading attachment to ticket ($ISSUE) failed." "$ERR_TAG" "$PORT_PREFIX""$port"
-  elif [[ $ret -eq 6 ]]; then 
+  elif [[ $ret -eq 6 ]]; then
     $wecho "Serial number "$sn" found in existing Jira ticket - ("$ISSUE")" "$INFO_TAG" "$PORT_PREFIX""$port"
   fi
 
