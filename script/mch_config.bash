@@ -292,8 +292,13 @@ function register_mch {
   fi
   sn=$(grep --text -Po 'Board Identifier.*:.*\K(\d{6}-\d{4})' $CFG_TEMPFILE)
   mac=$(grep --text -Po 'IEEE Address.*:.*\K(([0-9a-f]-?){12})' $CFG_TEMPFILE | tr '-' ':')
-  $wecho "The MCH is identified by s/n=$sn and MAC=$mac" "$DBG_TAG" "40$port"
-  $wecho "The MCH will be registered on the '$NETWORK' network." "$DBG_TAG" "40$port"
+  if [[ ! $sn = ""  && ! $mac = "" ]]; then
+    $wecho "The MCH is identified by s/n=$sn and MAC=$mac" "$DBG_TAG" "40$port"
+    $wecho "The MCH will be registered on the '$NETWORK' network." "$DBG_TAG" "40$port"
+  else
+    $wecho "Error determining MCH serial number and MAC. Check that the MCH is powered on and - if using a MOXA - connected to the correct port." "$ERR_TAG" "40$port"
+    exit 1
+  fi
   local temp_log=$(mktemp -q --suffix=_pylog)
   if [[ ! $GROUP = "" ]]; then
     $wecho "The Ansible group(s) '$GROUP' will be assigned to the MCH in CSEntry." "$DBG_TAG" "40$port"
