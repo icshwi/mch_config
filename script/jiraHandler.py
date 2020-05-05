@@ -66,6 +66,34 @@ class JIRAHandler:
             "Authorization": 'Basic ' + cred
         }
 
+    def verifyCredential(self):
+        """ Perform a simple query to verify if the Jira credential is valid.
+
+            Returns:
+                res      (int)   : Success/Fail of attachment request
+                                   -> 1 (success)
+                                   -> 0 (fail)
+        """
+
+        if ((self.cred == "") | (self.cred == "FILL-ME!")):
+            print("No Jira credential provided. Cannot authorise Jira API")
+            ret = 0
+        else:
+            # Form URL
+            credURL = self.url + "/search?jql=project=" + self.proj
+
+            # Form request
+            response = requests.request('GET', credURL, headers=self.headers)
+
+            ret = 1
+            # Parse response
+            if (response.ok == False):
+                if (response.status_code == 500):
+                    print("Provided user credential is not authorised to access the Jira API")
+                    ret = 0
+
+        return ret
+
     def findMCH(self, sn):
         """ Search the Jira project for an existing MCH entry
 
@@ -139,10 +167,13 @@ class JIRAHandler:
         # First, check if a Jira ticket already exists
         key = self.findMCH(sn)
 
+        # Store return value
+        ret = 0
+
         # Check if the MCH was already registered, by checking if a key was returned
         if (key != ""):
             print("Found SN %s in %s" % (sn, key))
-            return 6, key
+            ret = 6
         else: # Not found - create new ticket
             print("Ticket not found for %s" % sn)
 
@@ -151,12 +182,6 @@ class JIRAHandler:
                 if (self.findTicket(parent) == False):
                     print("Parent ticket (%s) does not exist" % parent)
                     return 2, key
-
-            # Check existence of attachment
-            if (attachment != ""):
-                if (os.path.isfile(attachment) != True):
-                    print("Provided filepath for attachment does not exist:\n\t%s" % attachment)
-                    return 3, key
 
             # Form add URL
             addURL = self.url + "/issue/"
@@ -168,6 +193,7 @@ class JIRAHandler:
                                 "labels": ["ICS", "ICS_Lab", "MCH", "MCHLog", "Test"]
                               }
                    }
+
             # Send POST request to Jira API, and get response
             response = requests.post(addURL, data=json.dumps(data), headers=self.headers)
 
@@ -180,18 +206,18 @@ class JIRAHandler:
             else: # Ticket creation failed
                 return 1, key
 
-            # Attach log archive
-            if (attachment != ""):
-                if(self.addAttachment(key, attachment) == 0):
-                    return 5, key
+        # Attach log archive
+        if (attachment != ""):
+            if(self.addAttachment(key, attachment) == 0):
+                ret = 5
 
-            # If a parent ticket is created, add the link to the new ticket
-            if (parent != ""):
-                if (self.addLink(key, parent) == 0):
-                    return 4, key
+        # If a parent ticket is created, add the link to the new ticket
+        if (parent != ""):
+            if (self.addLink(key, parent) == 0):
+                ret = 4
 
         # Return the Jira ticket identifier
-        return 0, key
+        return ret, key
 
     def addAttachment(self, key, filename):
         """ Method to add a new attachment to an existing Jira ticket
@@ -241,6 +267,18 @@ class JIRAHandler:
                 res = response
 
         # Return
+        return res
+
+    def verifyAttachment(self, filename):
+        """ Verify the filepath to the attachment exists in the system """
+
+        res = 1
+        if (filename != ""):
+            # Verify that the provided path exists on the system
+            if (os.path.isfile(filename) != True):
+                print("Provided filepath for attachment does not exist:\n\t%s" % filename)
+                res = 0
+
         return res
 
     def addLink(self, key, parent):
@@ -299,6 +337,12 @@ if __name__ == '__main__':
     ret = 0
     try:
         handler = JIRAHandler(credential, url, project, tags)
+        res = handler.verifyCredential()
+        if (res == 0):
+            exit(7)
+        res = handler.verifyAttachment(attachment)
+        if (res == 0):
+            exit(3)
         ret,key = handler.addMCH(sn, parentTicket, attachment, ticketType)
         if (key != ""):
             print("+-+-ISSUE=%s+-+-" % key)

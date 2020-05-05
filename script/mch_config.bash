@@ -73,7 +73,6 @@ CFG_CHECK=0
 UPDATE_SLEEP=300
 SLEEP=30
 
-
 ## CSentry related configuration
 #  -----------------------------
 # Flag to enable the register of the MCH(s) in CSentry before running the
@@ -435,14 +434,14 @@ function update_fw {
 
 function dhcp_conf {
   local port=$(set_portN "$1")
-  $wecho "Init DCHP configuration" "$INFO_TAG" "40$port"
+  $wecho "Init DHCP configuration" "$INFO_TAG" "40$port"
   run_script $DHCPCFG_SRC $port &>> /dev/null
   if [[ $? -ne 0 ]]; then
     $wecho "Error in the DHCP configuration." "$ERR_TAG" "40$port"
     exit 1
   fi
 
-  $wecho "End DCHP configuration" "$INFO_TAG" "40$port"
+  $wecho "End DHCP configuration" "$INFO_TAG" "40$port"
   sleep $SLEEP
 }
 
@@ -807,6 +806,8 @@ for i in ${PORTS[*]}; do
     $wecho "Uploading attachment to ticket ($ISSUE) failed." "$ERR_TAG" "$PORT_PREFIX""$port"
   elif [[ $ret -eq 6 ]]; then
     $wecho "Serial number "$sn" found in existing Jira ticket - ("$ISSUE")" "$INFO_TAG" "$PORT_PREFIX""$port"
+  elif [[ $ret -eq 7 ]]; then
+    $wecho "Unable to authorise the Jira API using provided credential." "$ERR_TAG" "$PORT_PREFIX""$port"
   fi
 
 done
