@@ -35,6 +35,7 @@ ws.onopen = function() {
   // be enabled.
   $("#SendButton").attr('disabled', false);
   networkMenu.options.length = 0; // Clear temporary options
+  groupMenu.options.length = 0; // Clear temporary options
   // Call the CSEntry handler python script to query the available Network values from the database
   // The values will be returned as messages, one-by-one, and parsed by the message handler (ws.onmessage)
   ws.send('csentry_handler --network-query 1 --web-ui 1 --mac-address 1 --serial-number 1');
@@ -183,6 +184,11 @@ $(".RadioAllR").click(function() {
   }
 });
 
+$("#checkJira").on('click', function() {
+  $(".hiddenRowJira").prop('hidden', !this.checked);
+  $(".hiddenRowJira").css('visibility', 'visible');
+})
+
 $("#checkCSEntry").on('click', function() {
   $(".hiddenRowNetwork").prop('hidden', !this.checked);
   $(".hiddenRowNetwork").css('visibility', 'visible');
@@ -247,34 +253,80 @@ $("#SendButton").on('click', function() {
     var configNA = "";
     var params   = "-w -p /usr/local/share/mch_config";
     var steps = "-s "
+    var stepsDel = ""
+    var runStep0 = false;
+    var runStep1 = false;
     var customSteps = false;
 
     if ($("#checkJira").prop("checked")) {
       params += " -j"
+      if ($('#ParentTicket').val() != "") {
+        params += " -t " + $('#ParentTicket').val();
+      }
+      params += " -y " + $('#TicketType').val();
+    }
+    /*
+     * Check if we are using custom steps first, so we can use
+     * avoid duplicating steps
+     */
+    if ($("#AdvButton").prop("checked")) {
+        if ($("#stepsLabel").val() != "") {
+            stepsDel += $("#stepsLabel").val();
+            customSteps = true;
+        }
+    }
+    else {
+        stepsDel += "2,3";
+        customSteps = false;
+    }
+
+    /*
+     * If we have custom steps, check if the steps list contains
+     * 0,1
+     */
+    if (customSteps) {
+        if(stepsDel.indexOf("0") >= 0) {
+            runStep0 = true;
+        }
+        if(stepsDel.indexOf("1") >= 0) {
+            runStep1 = true;
+        }
     }
 
     if ($("#checkCSEntry").prop("checked")) {
-      steps += "0,"
+      if(!runStep0) {
+        steps += "0,"
+      }
       params += " -n "
       params += networkMenu.value;
-      if (groupMenu.value != "")
+      if (groupMenu.value != "") {
         params += " -g "
-        params += groupMenu.value;
-    }
-
-    if ($("#checkDHCP").prop("checked")) {
-      steps += "1,"
-    }
-    if ($("#AdvButton").prop("checked")) {
-      if ($("#stepsLabel").val() != "") {
-        steps += $("#stepsLabel").val();
-        customSteps = true;
+        /* Get the value of the AnsibleGroups select input
+           It can contain multiple values... */
+        var groupVals = $("#AnsibleGroups").val();
+        /* If it contains more than one value */
+        if (groupVals.length > 1) {
+          /* Loop through all values in array, creating
+             a string of values, separated by ','    */
+          for (var i=0; i<groupVals.length; i++) {
+            if (i == (groupVals.length - 1)) {
+               params += groupVals[i]
+            } else {
+               params += groupVals[i] + ","
+            }
+          }
+        } else { // Single value
+          params += groupMenu.value;
+        }
       }
     }
-    else {
-      steps += "2,3";
-      customSteps = false;
+
+    if ($("#checkDHCP").prop("checked") ) {
+        if(!runStep1) { steps += "1," }
     }
+
+    // Add steps from above, if required
+    steps += stepsDel
 
     var customCmd = $("#customCmd").prop("checked");
 

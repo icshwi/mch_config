@@ -108,7 +108,7 @@ class CSEntryHandler:
                 "MTCA-MCH",
                 network=net,
                 mac=mac,
-                ansible_groups=[grp]
+                ansible_groups=grp
             )
         else:
             response = self._con.create_host(
@@ -194,7 +194,7 @@ if __name__ == '__main__':
     parser.add_argument('--mac-address', metavar='m', required=True, help='MAC address of the MCH to be registered')
     parser.add_argument('--serial-number', metavar='s', required=True, help='Serial number of the MCH to be registered')
     parser.add_argument('--network', metavar='n', default='CSLab-GeneralLab', help='Network that the MCH will be registered on in CSEntry')
-    parser.add_argument('--group', metavar='g', default='', help='Ansible group that the MCH will be a member of')
+    parser.add_argument('--group', metavar='g', default='', help='Ansible group(s) that the MCH will be a member of. Provide multiple groups as a comma-separated-list, i.e. ''Group1,Group2''')
     parser.add_argument('--network-query', metavar='q', type=bool, default=False, help='Query the CSEntry database for available networks')
     parser.add_argument('--ansible-query', metavar='a', type=bool, default=False, help='Query the CSEntry database for available ansible groups')
     parser.add_argument('--web-ui', metavar='w', type=bool, default=False, help='Flag to identify if we are being called from the web UI')
@@ -213,8 +213,10 @@ if __name__ == '__main__':
 
     # Check if an Ansible group is to be assigned
     assignGroup = True
+    groups = group.split(',')
     if (group == ""):
         assignGroup = False
+        groups = ""
 
     ## By now, the token should be written manually at deployment stage
     ## TODO: improve the handling of the token
@@ -236,18 +238,19 @@ if __name__ == '__main__':
 
             groupStr = ""
             if assignGroup:
-                ret = handler.validateGroup(group)
+                for grp in groups:
+                    ret = handler.validateGroup(grp)
                 if ret:
-                    print ("Provided Ansible group (%s) is not valid." % group)
+                    print ("Provided Ansible group(s) (%s) is not valid." % group)
                     exit (3)
-                groupStr = ", and assigned to Ansible group: {}".format(str(group))
+                groupStr = ", and assigned to Ansible group(s): {}".format(str(group))
 
             # Continue to registration
             sn = "mch-{}".format(str(sn))
             ret = handler.searchHOST(mac)
             if ret == ():
                 print("The MAC is not registered")
-                device_descriptor = handler.registerNewHost(mac, sn, net, group)
+                device_descriptor = handler.registerNewHost(mac, sn, net, groups)
                 print("The new Host is registered to the {} as {} with the given IP: {}{}"
                 .format(net,sn,device_descriptor['interfaces'][0]['ip'],groupStr))
             else:

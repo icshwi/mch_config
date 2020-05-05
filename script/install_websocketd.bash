@@ -24,7 +24,7 @@ case $distro in
     ;;
 esac
 
-filename="websocketd-${VERSION}${distro_sep}${arch}${pkg_ext}"
+filename="websocketd${distro_sep}${VERSION}${distro_sep}${arch}${pkg_ext}"
 url=${WEBSOCKET_SRC}/v${VERSION}/${filename}
 wget $url
 

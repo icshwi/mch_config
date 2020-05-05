@@ -52,6 +52,23 @@
         <td><label>Enable Jira reports</td>
         <td><input id="checkJira" type="checkbox"></td>
       </tr>
+      <tr class="hiddenRowJira" hidden>
+        <td><label class="tooltip" for="TicketType">Ticket type
+            <span class="tooltiptext">Jira ticket type (Story/Task)</span>
+        </td>
+        <td>
+          <select id="TicketType">
+            <option value="Story">Story</option>
+            <option value="Task">Task</option>
+          </select>
+        </td>
+      </tr>
+      <tr class="hiddenRowJira" hidden>
+        <td><label class="tooltip" for="ParentTicket">Parent ticket
+            <span class="tooltiptext">Parent Jira ticket that the new ticket will be linked to</span>
+        </td>
+        <td><input class="label" type="text" id="ParentTicket"></td>
+      </tr>
       <tr>
         <td><label>Register in CSEntry</td>
         <td><input id="checkCSEntry" type="checkbox"></td>
@@ -68,10 +85,11 @@
       </tr>
       <tr class="hiddenRowNetwork" hidden>
         <td><label class="tooltip" for="AnsibleGorups">Ansible groups
-            <span class="tooltiptext">Ansible groups that the MCH will be a member of, i.e. mch_config</span>
+            <span class="tooltiptext">Ansible groups that the MCH will be a member of, i.e. mch_config.<br>
+            Hold down the control/command key to select multiple groups.</span>
         </td>
         <td>
-          <select id="AnsibleGroups">
+          <select id="AnsibleGroups" multiple>
             <option value="">(None)</option>
           </select>
         </td>
