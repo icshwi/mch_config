@@ -253,6 +253,9 @@ $("#SendButton").on('click', function() {
     var configNA = "";
     var params   = "-w -p /usr/local/share/mch_config";
     var steps = "-s "
+    var stepsDel = ""
+    var runStep0 = false;
+    var runStep1 = false;
     var customSteps = false;
 
     if ($("#checkJira").prop("checked")) {
@@ -262,9 +265,38 @@ $("#SendButton").on('click', function() {
       }
       params += " -y " + $('#TicketType').val();
     }
+    /*
+     * Check if we are using custom steps first, so we can use
+     * avoid duplicating steps
+     */
+    if ($("#AdvButton").prop("checked")) {
+        if ($("#stepsLabel").val() != "") {
+            stepsDel += $("#stepsLabel").val();
+            customSteps = true;
+        }
+    }
+    else {
+        stepsDel += "2,3";
+        customSteps = false;
+    }
+
+    /*
+     * If we have custom steps, check if the steps list contains
+     * 0,1
+     */
+    if (customSteps) {
+        if(stepsDel.indexOf("0") >= 0) {
+            runStep0 = true;
+        }
+        if(stepsDel.indexOf("1") >= 0) {
+            runStep1 = true;
+        }
+    }
 
     if ($("#checkCSEntry").prop("checked")) {
-      steps += "0,"
+      if(!runStep0) {
+        steps += "0,"
+      }
       params += " -n "
       params += networkMenu.value;
       if (groupMenu.value != "") {
@@ -289,19 +321,12 @@ $("#SendButton").on('click', function() {
       }
     }
 
-    if ($("#checkDHCP").prop("checked")) {
-      steps += "1,"
+    if ($("#checkDHCP").prop("checked") ) {
+        if(!runStep1) { steps += "1," }
     }
-    if ($("#AdvButton").prop("checked")) {
-      if ($("#stepsLabel").val() != "") {
-        steps += $("#stepsLabel").val();
-        customSteps = true;
-      }
-    }
-    else {
-      steps += "2,3";
-      customSteps = false;
-    }
+
+    // Add steps from above, if required
+    steps += stepsDel
 
     var customCmd = $("#customCmd").prop("checked");
 
