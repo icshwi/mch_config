@@ -44,10 +44,6 @@ if [[ -d /opt/conda/envs/csentry/bin ]]; then
   conda activate csentry
 fi
 
-
-# File with some function definitions to interface with Jira
-source ${SC_TOP}/jirahandler.bash
-
 # Flag to enable some extra functionalities to add content to Jira
 ENABLE_JIRA=0
 PARENT_TICKET=""    # Default Jira parent ticket (none)
