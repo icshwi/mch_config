@@ -54,7 +54,8 @@ JIRA_CREDENTIAL="FILL-ME!"
 SCRIPT_INTERPRETER=expect
 
 # Current MCH firmware
-CURRENT_VERSION=(2 20 4)
+CURRENT_VERSION=""
+DESIRED_VERSION=(2 20 4)
 
 # Port numbers in the MOXA are 40XX
 PORT_PREFIX=40
@@ -67,6 +68,7 @@ CLK_CFG=0
 CFG_CHECK=0
 
 UPDATE_SLEEP=300
+SLEEP_LONG=100
 SLEEP=30
 
 ## CSentry related configuration
@@ -333,6 +335,36 @@ function register_mch {
   return 0
 }
 
+# Get the currently installed firmare version from the MCH
+# ___________________________________________________________________________
+# Arguments:
+# $1 -> MOXA port index (1 to 32)
+# Returns
+# 0 -> if successful
+# 1 -> if failure
+function get_fw_ver {
+  port=$(set_portN "$1")
+
+  $wecho "Reading current firmware version from hardware" "$INFO_TAG" "40$port"
+
+  local FW_TEMPFILE=$(mktemp -q --suffix=_fw)
+  $wecho "FW tempfile: $FW_TEMPFILE" "$DBG_TAG" "40$port"
+  run_script $FWCHECK_SRC $port > $FW_TEMPFILE
+  # No error is raised when calling expect. Return code in $? is not valid.
+  # Then we can check for the number of lines of the temporal file.
+  # When no connection is established, this file contains only 3 lines.
+  local filelines=$(wc -l $FW_TEMPFILE | cut -d " " -f1)
+  if [[ $filelines -le 3 ]]; then
+    $wecho "Error in FW check." "$ERR_TAG" "40$port"
+    exit 1
+  fi
+
+  fw_version=$(grep "MCH FW" $FW_TEMPFILE | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}")
+  $wecho "Current FW version:$fw_version" "$DBG_TAG" "40$port"
+  CURRENT_VERSION=$fw_version
+  return 0
+}
+
 # Check FW version and return if the current version matches the expected one
 # ___________________________________________________________________________
 # Arguments:
@@ -344,21 +376,9 @@ function check_fw {
   port=$(set_portN "$1")
   $wecho "Init FW version checking" "$INFO_TAG" "40$port"
 
-  local FW_TEMPFILE=$(mktemp -q --suffix=_fw)
-  $wecho "FW tempfile: $FW_TEMPFILE" "$DBG_TAG" "40$port"
-  run_script $FWCHECK_SRC $port > $FW_TEMPFILE
-  # No error is raisen in that kind of calls. We cannot trust in $?. Then we can
-  # check for the number of lines of the temporal file. When no connection is
-  # stablish, this file contains only 3 lines.
-  local filelines=$(wc -l $FW_TEMPFILE | cut -d " " -f1)
-  if [[ $filelines -le 3 ]]; then
-    $wecho "Error in FW check." "$ERR_TAG" "40$port"
-    exit 1
-  fi
-
-  fw_version=$(grep "MCH FW" $FW_TEMPFILE | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}")
+  fw_version=$CURRENT_VERSION
   $wecho "Current FW version:$fw_version" "$DBG_TAG" "40$port"
-  local current_ver=$(echo ${CURRENT_VERSION[*]} | tr ' ' '.')
+  local current_ver=$(echo ${DESIRED_VERSION[*]} | tr ' ' '.')
   $wecho "Expected FW version:$current_ver" "$DBG_TAG" "40$port"
   rm -f $FW_TEMPFILE
 
@@ -374,9 +394,9 @@ function check_fw {
 
   for i in $(seq 0 2); do
     local VAR="x$i"
-    if [[ ${!VAR} -lt ${CURRENT_VERSION[$i]} ]]; then
+    if [[ ${!VAR} -lt ${DESIRED_VERSION[$i]} ]]; then
       UPDATE=1; break;
-    elif [[ ${!VAR} -gt ${CURRENT_VERSION[$i]} ]]; then
+    elif [[ ${!VAR} -gt ${DESIRED_VERSION[$i]} ]]; then
       UPDATE=0; break;
     fi
   done
@@ -431,14 +451,16 @@ function update_fw {
 function dhcp_conf {
   local port=$(set_portN "$1")
   $wecho "Init DHCP configuration" "$INFO_TAG" "40$port"
-  run_script $DHCPCFG_SRC $port &>> /dev/null
+
+  run_script $DHCPCFG_SRC $port $CURRENT_VERSION&>> /dev/null
   if [[ $? -ne 0 ]]; then
     $wecho "Error in the DHCP configuration." "$ERR_TAG" "40$port"
     exit 1
   fi
 
   $wecho "End DHCP configuration" "$INFO_TAG" "40$port"
-  sleep $SLEEP
+  $wecho "Rebooting MCH after DHCP configuration. Will take ~100 seconds..." "$INFO_TAG" "40$port"
+  sleep $SLEEP_LONG
 }
 
 # Write the standard configuration
@@ -449,14 +471,16 @@ function dhcp_conf {
 function mch_conf {
   local port=$(set_portN "$1")
   $wecho "Init MCH general configuration" "$INFO_TAG" "40$port"
-  run_script $MCHCFG_SRC $port &>> /dev/null
+
+  run_script $MCHCFG_SRC $port $CURRENT_VERSION &>> /dev/null
   if [[ $? -ne 0 ]]; then
     $wecho "Error in the MCH general configuration." "$ERR_TAG" "40$port"
     exit 1
   fi
 
   $wecho "End MCH general configuration" "$INFO_TAG" "40$port"
-  sleep $SLEEP
+  $wecho "Rebooting MCH after MCH general configuration. Will take ~100 seconds..." "$INFO_TAG" "40$port"
+  sleep $SLEEP_LONG
 }
 
 # Write the clock configuration
@@ -473,7 +497,8 @@ function clk_conf {
     exit 1
   fi
   $wecho "End MCH clock configuration" "$INFO_TAG" "40$port"
-  sleep $SLEEP
+  $wecho "Rebooting MCH after clock configuration. Will take ~100 seconds..." "$INFO_TAG" "40$port"
+  sleep $SLEEP_LONG
 }
 
 # Check the general configuration
@@ -498,7 +523,11 @@ function cfg_check {
   sed "1,8d" -i $CFG_TEMPFILE
   # Remove last lines from configuration (hostname and DHCP)
   tac $CFG_TEMPFILE | sed "1,4d" | tac > $CFG_TEMPFILE2
-  diff --strip-trailing-cr --ignore-blank-lines $GENERIC_CFG $CFG_TEMPFILE2 > $DIFF_TEMPFILE
+  local CFG_GOLDEN_REF=$GENERIC_CFG
+  if [[ $CURRENT_VERSION == "2.21.2" ]]; then
+    CFG_GOLDEN_REF=$GENERIC_CFG_2_21
+  fi
+  diff --strip-trailing-cr --ignore-blank-lines $CFG_GOLDEN_REF $CFG_TEMPFILE2 > $DIFF_TEMPFILE
   if [[ $? = 0 ]]; then
     $wecho "Configuration file is identical" "$INFO_TAG" "40$port"
     rm $CFG_TEMPFILE
@@ -553,6 +582,8 @@ function clk_check {
 
 # Check step flags and run the scripts on a specific port
 function runner {
+  # Always check current fw version of MCH
+  get_fw_ver "$1"
   if [[ $CSENTRY   -eq 1 ]];  then register_mch "$1"; fi
   if [[ $DHCP_CFG  -eq 1 ]];  then dhcp_conf  "$1"; fi
   if [[ $FW_UPDATE -eq 1 ]];  then update_fw  "$1"; fi
@@ -590,7 +621,7 @@ function var_definition {
   GOLDEN_CFG_9U=$CFG_PREFIX/nat_mch_fw2.20.4_9u_cfg.txt
   GOLDEN_CFG_5U=$CFG_PREFIX/nat_mch_fw2.20.4_mini_cfg.txt
   GENERIC_CFG=$CFG_PREFIX/GOLDEN_cfg.txt
-
+  GENERIC_CFG_2_21=$CFG_PREFIX/GOLDEN_cfg_2_21.txt
   # Script to set DHCP configuration
   DHCPCFG_SRC=$EXPECT_PREFIX/dhcp.exp
 
