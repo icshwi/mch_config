@@ -59,6 +59,11 @@ set port [lindex $argv 1]
 #
 set DATE [lindex $argv 2]
 #
+# FW version
+#
+set FWVER [lindex $argv 3]
+
+#
 # MCH Configuration Commands File
 #
 
@@ -175,6 +180,9 @@ dialog "Enable RMCP access (y/n) (RET=\*): " ""
 dialog "Enable telnet access (y/n) (RET=\*): " ""
 dialog "Enable WEB access (y/n) (RET=\*): " ""
 dialog "Enable ssh access (y/n) (RET=\*): " ""
+if { $FWVER == "v2.21.2" } {
+    dialog "Enable xvc access (y/n) (RET=\*): " ""
+}
 dialog "Enter IP address source Mgmt (dec) (RET=\*): " "2"
 dialog "Enter session activity timeout (dec, minutes) (RET=\*): " ""
 dialog "Enter session activity timeout (dec, seconds) (RET=\*): " ""
