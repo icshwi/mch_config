@@ -67,7 +67,7 @@ PCIe parameter:
 PCIe Virtual Switch configuration
 change via web-interface
  VS # | Host   | NT-Host | Members
-  0     AMC02_4  none      AMC01_4 AMC01_8 AMC02_4 AMC02_8 AMC03_4 AMC03_8 AMC04_4 AMC04_8 AMC05_4 AMC05_8 AMC06_4 AMC06_8 
+  0     AMC01_4  none      AMC01_4 AMC01_8 AMC02_4 AMC02_8 AMC03_4 AMC03_8 AMC04_4 AMC04_8 AMC05_4 AMC05_8 AMC06_4 AMC06_8 
   1     
   2     
   3     
