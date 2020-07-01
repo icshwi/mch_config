@@ -206,8 +206,8 @@ dialog "Enable RMCP access (y/n) (RET=\*): " "y"
 dialog "Enable telnet access (y/n) (RET=\*): " "y"
 dialog "Enable WEB access (y/n) (RET=\*): " "y"
 dialog "Enable ssh access (y/n) (RET=\*): " "n"
-if { $FWVER == "v2.21.2"} {
-    dialog "Enable xvc access (y/n) (RET=\*): " ""
+if { $FWVER == "2.21.2"} {
+    dialog "Enable xvc access (y/n) (RET=\*): " "n"
 }
 dialog "Enter IP address source Mgmt (dec) (RET=\*): " "2"
 dialog "Enter session activity timeout (dec, minutes) (RET=\*): " "0"
