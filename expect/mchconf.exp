@@ -320,6 +320,7 @@ dialog "$mchcfgprompt" "q"
 sleep 2;
 
 #[11] modify DHCP configuration
+dialog "$prompt" "mchcfg"
 dialog "$mchcfgprompt" "11"
 dialog "Enter host name: " "$mch_hostname"
 # [ q] quit and save configuration
