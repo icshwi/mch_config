@@ -527,7 +527,7 @@ function cfg_check {
   if [[ $CURRENT_VERSION == "2.21.2" ]]; then
     CFG_GOLDEN_REF=$GENERIC_CFG_2_21
   fi
-  diff --strip-trailing-cr --ignore-blank-lines $CFG_GOLDEN_REF $CFG_TEMPFILE2 > $DIFF_TEMPFILE
+  diff -a --strip-trailing-cr --ignore-blank-lines $CFG_GOLDEN_REF $CFG_TEMPFILE2 > $DIFF_TEMPFILE
   if [[ $? = 0 ]]; then
     $wecho "Configuration file is identical" "$INFO_TAG" "40$port"
     rm $CFG_TEMPFILE
@@ -557,7 +557,7 @@ function clk_check {
     $wecho "Error in MCH clock configuration check." "$ERR_TAG" "40$port"
     exit 1
   fi
-  ip=$(grep -Po 'ip address.*:.\K(\d{1,3}\.?){1,4}' $CFG_TEMPFILE)
+  ip=$(grep -Pao 'ip address.*:.\K(\d{1,3}\.?){1,4}' $CFG_TEMPFILE)
   $wecho "Retrieving the MCH configuration file ($ip)..." "$DBG_TAG" "40$port"
   ping -c 1 $ip &>> /dev/null
   if [[ $? != 0 ]]; then
@@ -567,7 +567,7 @@ function clk_check {
   curl -u root:nat "http://$ip/goform/web_cfg_backup_show_menu" &>> /dev/null
   curl -u root:nat -o $CFG_TEMPFILE "http://$ip/nat_mch_startup_cfg.txt" &>> /dev/null
   local GOLDEN_CFG="GOLDEN_CFG_$FORMFACTOR"
-  diff --strip-trailing-cr --ignore-blank-lines ${!GOLDEN_CFG} $CFG_TEMPFILE > $DIFF_TEMPFILE
+  diff -a --strip-trailing-cr --ignore-blank-lines ${!GOLDEN_CFG} $CFG_TEMPFILE > $DIFF_TEMPFILE
   if [[ $? = 0 ]]; then
     $wecho "Clock configuration file is identical" "$INFO_TAG" "40$port"
     rm $CFG_TEMPFILE
