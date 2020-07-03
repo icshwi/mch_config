@@ -359,7 +359,7 @@ function get_fw_ver {
     exit 1
   fi
 
-  fw_version=$(grep "MCH FW" $FW_TEMPFILE | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}")
+  fw_version=$(grep -a "MCH FW" $FW_TEMPFILE | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}")
   $wecho "Current FW version:$fw_version" "$DBG_TAG" "40$port"
   CURRENT_VERSION=$fw_version
   return 0
@@ -470,9 +470,11 @@ function dhcp_conf {
 
 function mch_conf {
   local port=$(set_portN "$1")
+  local CFG_TEMPFILE=$(mktemp -q --suffix=_mchcfg)
   $wecho "Init MCH general configuration" "$INFO_TAG" "40$port"
 
-  run_script $MCHCFG_SRC $port $CURRENT_VERSION &>> /dev/null
+  $wecho "CFG tempfile: $CFG_TEMPFILE" "$DBG_TAG" "40$port"
+  run_script $MCHCFG_SRC $port $CURRENT_VERSION > $CFG_TEMPFILE
   if [[ $? -ne 0 ]]; then
     $wecho "Error in the MCH general configuration." "$ERR_TAG" "40$port"
     exit 1
@@ -520,7 +522,12 @@ function cfg_check {
     exit 1
   fi
   # Remove the useless head of the file
-  sed "1,8d" -i $CFG_TEMPFILE
+  # When running via MOXA, remove 8 lines...
+  if [[ $MOXA -eq 1 ]]; then
+    sed "1,8d" -i $CFG_TEMPFILE
+  else # Via telnet, remove 17 lines...
+    sed "1,17d" -i $CFG_TEMPFILE
+  fi
   # Remove last lines from configuration (hostname and DHCP)
   tac $CFG_TEMPFILE | sed "1,4d" | tac > $CFG_TEMPFILE2
   local CFG_GOLDEN_REF=$GENERIC_CFG
