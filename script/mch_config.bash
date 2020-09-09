@@ -57,6 +57,11 @@ SCRIPT_INTERPRETER=expect
 CURRENT_VERSION=""
 DESIRED_VERSION=(2 20 4)
 
+# MCH serial number
+for i in {1..16}; do
+  SERIAL_NUM[$i]=""
+done
+
 # Port numbers in the MOXA are 40XX
 PORT_PREFIX=40
 
@@ -287,7 +292,8 @@ function register_mch {
     $wecho "Error in MCH clock configuration check." "$ERR_TAG" "40$port"
     exit 1
   fi
-  sn=$(grep --text -Po 'Board Identifier.*:.*\K(\d{6}-\d{4})' $CFG_TEMPFILE)
+  local sn=${SERIAL_NUM[$1]}
+  #sn=$(grep --text -Po 'Board Identifier.*:.*\K(\d{6}-\d{4})' $CFG_TEMPFILE)
   mac=$(grep --text -Po 'IEEE Address.*:.*\K(([0-9a-f]-?){12})' $CFG_TEMPFILE | tr '-' ':')
   if [[ ! $sn = ""  && ! $mac = "" ]]; then
     $wecho "The MCH is identified by s/n=$sn and MAC=$mac" "$DBG_TAG" "40$port"
@@ -360,8 +366,32 @@ function get_fw_ver {
   fi
 
   fw_version=$(grep -a "MCH FW" $FW_TEMPFILE | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{1,2}")
-  $wecho "Current FW version:$fw_version" "$DBG_TAG" "40$port"
-  CURRENT_VERSION=$fw_version
+  $wecho "Current FW version: $fw_version" "$DBG_TAG" "40$port"
+  CURRENT_VERSION[$1]=$fw_version
+  return 0
+}
+
+function get_sn {
+  port=$(set_portN "$1")
+  CFG_TEMPFILE=$(mktemp -q)
+
+  $wecho "Reading serial number from hardware" "$INFO_TAG" "40$port"
+  run_script $CFGCHECK_SRC $port "bi" > $CFG_TEMPFILE
+  filelines=$(wc -l $CFG_TEMPFILE | cut -d " " -f1)
+  if [[ $filelines -le 3 ]]; then
+    $wecho "Error while retrieving the MCH s/n" "$ERR_TAG" "40$port"
+    exit 1
+  fi
+  sn=$(grep -aoP -m 1 "Board Identifier:.?\K\d{6}\-\d{4}" $CFG_TEMPFILE)
+  if [[ "x$sn" = "x" ]]; then
+    $wecho "Error while retrieving the MCH s/n" "$ERR_TAG" "40$port"
+    exit 1
+  fi
+  $wecho "Serial number: $sn" "$INFO_TAG" "40$port"
+  SERIAL_NUM[$1]=$sn
+
+  echo $sn > /tmp/mch_40${port}_sn
+
   return 0
 }
 
@@ -376,7 +406,7 @@ function check_fw {
   port=$(set_portN "$1")
   $wecho "Init FW version checking" "$INFO_TAG" "40$port"
 
-  fw_version=$CURRENT_VERSION
+  fw_version=${CURRENT_VERSION[$1]}
   $wecho "Current FW version:$fw_version" "$DBG_TAG" "40$port"
   local current_ver=$(echo ${DESIRED_VERSION[*]} | tr ' ' '.')
   $wecho "Expected FW version:$current_ver" "$DBG_TAG" "40$port"
@@ -450,9 +480,10 @@ function update_fw {
 
 function dhcp_conf {
   local port=$(set_portN "$1")
+  local CURR_VER=$(echo ${CURRENT_VERSION[$1]} | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}")
   $wecho "Init DHCP configuration" "$INFO_TAG" "40$port"
 
-  run_script $DHCPCFG_SRC $port $CURRENT_VERSION&>> /dev/null
+  run_script $DHCPCFG_SRC $port $CURR_VER&>> /dev/null
   if [[ $? -ne 0 ]]; then
     $wecho "Error in the DHCP configuration." "$ERR_TAG" "40$port"
     exit 1
@@ -471,10 +502,11 @@ function dhcp_conf {
 function mch_conf {
   local port=$(set_portN "$1")
   local CFG_TEMPFILE=$(mktemp -q --suffix=_mchcfg)
+  local CURR_VER=$(echo ${CURRENT_VERSION[$1]} | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}")
   $wecho "Init MCH general configuration" "$INFO_TAG" "40$port"
 
   $wecho "CFG tempfile: $CFG_TEMPFILE" "$DBG_TAG" "40$port"
-  run_script $MCHCFG_SRC $port $CURRENT_VERSION > $CFG_TEMPFILE
+  run_script $MCHCFG_SRC $port $CURR_VER > $CFG_TEMPFILE
   if [[ $? -ne 0 ]]; then
     $wecho "Error in the MCH general configuration." "$ERR_TAG" "40$port"
     exit 1
@@ -531,7 +563,8 @@ function cfg_check {
   # Remove last lines from configuration (hostname and DHCP)
   tac $CFG_TEMPFILE | sed "1,4d" | tac > $CFG_TEMPFILE2
   local CFG_GOLDEN_REF=$GENERIC_CFG
-  if [[ $CURRENT_VERSION == "2.21.2" ]]; then
+  local CURR_VER=$(echo ${CURRENT_VERSION[$1]} | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}")
+  if [[ $CURR_VER == "2.21" ]]; then
     CFG_GOLDEN_REF=$GENERIC_CFG_2_21
   fi
   diff -a --strip-trailing-cr --ignore-blank-lines $CFG_GOLDEN_REF $CFG_TEMPFILE2 > $DIFF_TEMPFILE
@@ -589,8 +622,9 @@ function clk_check {
 
 # Check step flags and run the scripts on a specific port
 function runner {
-  # Always check current fw version of MCH
+  # Always get current fw version and serial number of MCH
   get_fw_ver "$1"
+  get_sn "$1"
   if [[ $CSENTRY   -eq 1 ]];  then register_mch "$1"; fi
   if [[ $DHCP_CFG  -eq 1 ]];  then dhcp_conf  "$1"; fi
   if [[ $FW_UPDATE -eq 1 ]];  then update_fw  "$1"; fi
@@ -738,7 +772,6 @@ else
     pids[${k}]=$!
     k=$(($k+1))
   done
-
 fi
 
 # Wait for all PIDs
@@ -768,21 +801,9 @@ fi
 
 for i in ${PORTS[*]}; do
   port=$(set_portN $i)
-  CFG_TEMPFILE=$(mktemp -q)
 
-  # First get the Board identifier and check if this board has already
-  # an associated ticket
-  run_script $CFGCHECK_SRC $port "bi" > $CFG_TEMPFILE
-  filelines=$(wc -l $CFG_TEMPFILE | cut -d " " -f1)
-  if [[ $filelines -le 3 ]]; then
-    $wecho "Error while retrieving the MCH s/n" "$ERR_TAG" "40$port"
-    exit 1
-  fi
-  sn=$(grep -aoP -m 1 "Board Identifier:.?\K\d{6}\-\d{4}" $CFG_TEMPFILE)
-  if [[ "x$sn" = "x" ]]; then
-    $wecho "Error while retrieving the MCH s/n" "$ERR_TAG" "40$port"
-    exit 1
-  fi
+  # First, read serial number from tmp file
+  sn=$(cat /tmp/mch_40${port}_sn)
 
   # Second step: take the files for that board
   path="/tmp/mch_${sn}_testreport_$SC_LOGDATE"
