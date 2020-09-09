@@ -180,7 +180,7 @@ dialog "Enable RMCP access (y/n) (RET=\*): " ""
 dialog "Enable telnet access (y/n) (RET=\*): " ""
 dialog "Enable WEB access (y/n) (RET=\*): " ""
 dialog "Enable ssh access (y/n) (RET=\*): " ""
-if { $FWVER == "2.21.2" } {
+if { $FWVER == "2.21" } {
     dialog "Enable xvc access (y/n) (RET=\*): " ""
 }
 dialog "Enter IP address source Mgmt (dec) (RET=\*): " "2"
