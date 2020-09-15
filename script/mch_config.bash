@@ -427,7 +427,7 @@ function check_fw {
     if [[ ${!VAR} -lt ${DESIRED_VERSION[$i]} ]]; then
       UPDATE=1; break;
     elif [[ ${!VAR} -gt ${DESIRED_VERSION[$i]} ]]; then
-      UPDATE=0; break;
+      UPDATE=1; break;
     fi
   done
 
