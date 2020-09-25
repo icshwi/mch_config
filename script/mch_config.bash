@@ -458,6 +458,7 @@ function update_fw {
     sleep $UPDATE_SLEEP
     $wecho "Updated FW version" "$INFO_TAG" "40$port"
     $wecho "Checking FW version after update" "$INFO_TAG" "40$port"
+    get_fw_ver "$1"
     check_fw "$1"
     UPDATED=$?
     if [[ $UPDATED -eq 1 ]]; then
