@@ -88,9 +88,8 @@ class JIRAHandler:
             ret = 1
             # Parse response
             if (response.ok == False):
-                if (response.status_code == 500):
-                    print("Provided user credential is not authorised to access the Jira API")
-                    ret = 0
+                print("Provided user credential is not authorised to access the Jira API")
+                ret = 0
 
         return ret
 
