@@ -215,7 +215,7 @@ dialog "Enter session activity timeout (dec, seconds) (RET=\*): " "60"
 dialog "Enter default fan level (dec, percent) (RET=\*): " "30"
 dialog "Enable watch dog timer                     (y/n) (RET=\*): " "n"
 dialog "Enable alternative cooling scheme          (y/n) (RET=\*): " "n"
-dialog "Telnet inactivity timeout (0: disabled or seconds) (RET=\*): " "30"
+dialog "Telnet inactivity timeout (0: disabled or seconds) (RET=\*): " "60"
 dialog "Enable PM relaxed assignment               (y/n) (RET=\*): " "n"
 # [ q] quit and save configuration
 dialog "$mchcfgprompt" "q"
