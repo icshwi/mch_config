@@ -75,6 +75,7 @@ CFG_CHECK=0
 UPDATE_SLEEP=300
 SLEEP_LONG=100
 SLEEP=30
+SLEEP_SHORT=5
 
 ## CSentry related configuration
 #  -----------------------------
@@ -474,6 +475,31 @@ function update_fw {
   $wecho "End FW version update" "$INFO_TAG" "40$port"
 }
 
+
+# Configure the MCH to increase the telnet timout (default is
+# only 5 seconds, and can cause unwanted failures due to
+# unexpected session terminations)
+# ____________________________________________________________
+# Arguments:
+# $1 -> MOXA port index (1 to 16)
+
+function telnet_timeout_conf {
+  local port=$(set_portN "$1")
+  local CURR_VER=$(echo ${CURRENT_VERSION[$1]} | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}")
+  local REBOOT="no"
+
+  $wecho "Init telnet session timeout configuration" "$INFO_TAG" "40$port"
+
+  run_script $DHCPCFG_SRC $port $CURR_VER $REBOOT&>> /dev/null
+  if [[ $? -ne 0 ]]; then
+    $wecho "Error in the telnet session timeout configuration." "$ERR_TAG" "40$port"
+    exit 1
+  fi
+
+  $wecho "End telnet session timout configuration" "$INFO_TAG" "40$port"
+  sleep $SLEEP_SHORT
+}
+
 # Configure the MCH to accept an IP address from a DHCP server
 # ____________________________________________________________
 # Arguments:
@@ -482,9 +508,11 @@ function update_fw {
 function dhcp_conf {
   local port=$(set_portN "$1")
   local CURR_VER=$(echo ${CURRENT_VERSION[$1]} | egrep -oh "[0-9]{1,2}\.[0-9]{1,2}")
+  local REBOOT="yes"
+
   $wecho "Init DHCP configuration" "$INFO_TAG" "40$port"
 
-  run_script $DHCPCFG_SRC $port $CURR_VER&>> /dev/null
+  run_script $DHCPCFG_SRC $port $CURR_VER $REBOOT&>> /dev/null
   if [[ $? -ne 0 ]]; then
     $wecho "Error in the DHCP configuration." "$ERR_TAG" "40$port"
     exit 1
@@ -625,6 +653,9 @@ function clk_check {
 function runner {
   # Always get current fw version and serial number of MCH
   get_fw_ver "$1"
+  # Increase telnet timeout from the start, to prevent unwanted
+  # failures
+  telnet_timeout_conf "$1"
   get_sn "$1"
   if [[ $CSENTRY   -eq 1 ]];  then register_mch "$1"; fi
   if [[ $DHCP_CFG  -eq 1 ]];  then dhcp_conf  "$1"; fi

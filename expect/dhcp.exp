@@ -62,6 +62,10 @@ set DATE [lindex $argv 2]
 # FW version
 #
 set FWVER [lindex $argv 3]
+#
+# Reboot required?
+#
+set REBOOT [lindex $argv 4]
 
 #
 # MCH Configuration Commands File
@@ -189,15 +193,15 @@ dialog "Enter session activity timeout (dec, seconds) (RET=\*): " ""
 dialog "Enter default fan level (dec, percent) (RET=\*): " ""
 dialog "Enable watch dog timer                     (y/n) (RET=\*): " ""
 dialog "Enable alternative cooling scheme          (y/n) (RET=\*): " ""
-dialog "Telnet inactivity timeout (0: disabled or seconds) (RET=\*): " "5"
+dialog "Telnet inactivity timeout (0: disabled or seconds) (RET=\*): " "60"
 dialog "Enable PM relaxed assignment               (y/n) (RET=\*): " ""
 dialog "$mchcfgprompt" "q"
 sleep 5;
 
-
-dialog "$prompt" "reboot"
-
-sleep 20
+if { $REBOOT == "yes" } {
+    dialog "$prompt" "reboot"
+    sleep 20
+}
 
 set tpid [exp_pid -i $spawn_id]
 exec kill -9 $tpid
