@@ -198,7 +198,7 @@ if __name__ == '__main__':
     parser.add_argument('--network-query', metavar='q', type=bool, default=False, help='Query the CSEntry database for available networks')
     parser.add_argument('--ansible-query', metavar='a', type=bool, default=False, help='Query the CSEntry database for available ansible groups')
     parser.add_argument('--web-ui', metavar='w', type=bool, default=False, help='Flag to identify if we are being called from the web UI')
-    parser.add_argument('--url', metavar='u', default='https://csentry-test.esss.lu.se/', help='CSEntry API URL')
+    parser.add_argument('--url', metavar='u', default='https://csentry.esss.lu.se/', help='CSEntry API URL')
     args = parser.parse_args()
 
     # Assign internal variables to parsed values from input

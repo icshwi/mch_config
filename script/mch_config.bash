@@ -84,7 +84,7 @@ SLEEP_SHORT=5
 # updated.
 CSEntry=0
 # CSEntry url
-CSentry_url="https://csentry-test.esss.lu.se/"
+CSentry_url="https://csentry.esss.lu.se/"
 # CSEntry Network
 NETWORK="CSLab-GeneralLab"
 GROUP=""
