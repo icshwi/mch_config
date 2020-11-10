@@ -12,7 +12,7 @@ default fan level:                     30 percent
 MCH configuration flags:
   Enable watch dog timer:              no
   Enable alternative cooling scheme:   no
-  Telnet inact timeout :               30s
+  Telnet inact timeout :               300s
   Set PM Assignment strategy:          strict
 
 Shelf manager parameter:
