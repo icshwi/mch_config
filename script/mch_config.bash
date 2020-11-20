@@ -22,9 +22,9 @@
 #             jeonghan.lee@gmail.com
 #             ross.elliot@ess.eu
 #
-#   date    : Monday, April 15 15:08:12 CEST 2019
+#   date    : Friday, November 20 14:45:00 CEST 2020
 #
-#   version : 1.1.3
+#   version : 3.0.2
 
 declare -gr SC_SCRIPT="$(realpath "$0")"
 declare -gr SC_SCRIPTNAME=${0##*/}
@@ -97,6 +97,9 @@ GROUP=""
 # Flag that indicates when a MOXA hub it's used for the connection to the MCH
 MOXA=1
 
+# Allows choosing different configurations for the backplane
+CLK_CONF_MOD=""
+
 function brief_help {
   cat << EOF
 $(basename $0) MOXA_IP <port range> <form factor> [options]
@@ -143,6 +146,9 @@ Options:
                     to in CSEntry. Multiple groups can be specified as a list
                     separated by the '&' character, i.e. Group1&Group2.
                     Default is empty.
+  -c|--clkext    -> Key to modify the backplane configuration when running the
+                    step 5 or 6. Current supported modifiers:
+                    cpuamc1 -> (3U) CPU AMC in slot 1
 Examples:
 Run the script to update FW only in the port 4010:
     mch_config.sh 10.0.5.173 10, 3U -s 1
@@ -159,12 +165,13 @@ EOF
 # Arguments:
 # $1 -> Port number (just last 2 digits).
 # $2 -> Source script (Expect) to run
+# $3 -> Customizable argument
 function run_script {
     local src_script="$1";
     local portN="$2";
     # This extra parameter allows sending a command directly to expect. Useful
     # whenever you need to get the output from a simple command.
-    local custom="$3"
+    local custom="$FORMFACTOR_$3"
     local lport="$PORT_PREFIX$portN"
 
     # Set default telnet port when not using a MOXA
@@ -550,13 +557,17 @@ function mch_conf {
 # _____________________________
 # Arguments:
 # $1 -> MOXA port index (1 to 16)
+# $2 -> modifier to select a custom configuration
 function clk_conf {
   local port=$(set_portN "$1")
   $wecho "Init MCH clock configuration" "$INFO_TAG" "40$port"
-  local CLK_SRC="CLK_SRC_$FORMFACTOR"
-  run_script ${!CLK_SRC} $port &>> /dev/null
+  local mod=$CLK_CONF_MOD
+  if [[ "x$mod" == "x" ]]; then
+    mod="generic"
+  fi
+  run_script $CLK_SRC $port $mod &>> /dev/null
   if [[ $? -ne 0 ]]; then
-    $wecho "Error in MCH clock configuration." "$ERR_TAG" "40$port"
+    $wecho "Error in MCH clock configuration" "$ERR_TAG" "40$port"
     exit 1
   fi
   $wecho "End MCH clock configuration" "$INFO_TAG" "40$port"
@@ -700,9 +711,7 @@ function var_definition {
 
   # Scripts that load the clock configuration
   #declare -A CLK_SRC
-  CLK_SRC_3U=$EXPECT_PREFIX/clock_update_3u.exp
-  CLK_SRC_5U=$EXPECT_PREFIX/clock_update_mini.exp
-  CLK_SRC_9U=$EXPECT_PREFIX/clock_update_9u.exp
+  CLK_SRC=$EXPECT_PREFIX/clock_update.exp
 
   # Python Helper scripts
   # By now the only python script will be located in the same folder as the
@@ -769,6 +778,7 @@ while [ $# -gt 0 ]; do
     -x|--nomoxa) MOXA=0;;
     -n|--network) NETWORK="$2";shift;;
     -g|--group) GROUP="$2";shift;;
+    -c|--clkext) CLK_CONF_MOD="$2";shift;;
     *) $wecho "Unknown arg: $1"; help;;
   esac
   shift

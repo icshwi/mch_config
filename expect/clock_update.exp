@@ -19,15 +19,12 @@
 #   email   : jeonghan.lee@gmail.com
 #   author  : Felipe Torres González
 #   email   : torresfelipex1@gmail.com
-#   date    : Monday, March 11 10:42:07 CET 2019
-#   version : 0.0.3
+#   date    : Friday, November  20 12:52:00 CET 2020
+#   version : 0.0.4
 
 # Let's centralize general options into a file :-)
 set script_path [ file dirname [ file normalize [ info script ] ] ]
 source $script_path/expect.config
-
-set conf_path_filename "latest_mch_conf_mini_cfg.txt"
-
 
 set prompt "nat> ";
 set mchcfgprompt "Enter configuration mode (RET=\*): ";
@@ -41,7 +38,6 @@ set debugcmds {
     sdrrep_dbg
     sel_dbg
 }
-
 # MCH is slow not to understand the machine send command
 # So, we have to put some delay between characters.
 #
@@ -61,6 +57,11 @@ set port [lindex $argv 1]
 # Date to append to the log file
 #
 set DATE [lindex $argv 2]
+#
+# Selection of the source file
+#
+set clkcfg [lindex $argv 3]
+
 
 if { [string trimleft $port] == "" } {
     set port "23"
@@ -68,6 +69,10 @@ if { [string trimleft $port] == "" } {
     puts ">> We are going to use the telent default one : $port"
 }
 
+
+set conf_path_filename "latest_mch_conf_${clkcfg}_cfg.txt"
+
+puts "Source file set as : $conf_path_filename"
 
 file mkdir $G_EXPECT_CFG_LOGFILEPATH
 log_file $G_EXPECT_CFG_LOGFILEPATH/MCH_CLOCKUPDATE_CONF_$ip\_$port\_$DATE.log
@@ -114,6 +119,7 @@ expect  {
     }
 }
 
+
 foreach cmd $debugcmds {
     dialog "$prompt" "$cmd"
     dialog "$debugprompt" "0x0"
@@ -129,8 +135,8 @@ sleep 5;
 expect "$prompt"
 send -- "\r"
 
-dialog "$prompt" "reboot"
 
+dialog "$prompt" "reboot"
 
 sleep 20
 
