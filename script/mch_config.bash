@@ -31,6 +31,8 @@ declare -gr SC_SCRIPTNAME=${0##*/}
 declare -gr SC_TOP="${SC_SCRIPT%/*}"
 declare -gr SC_LOGDATE="$(date +%y%m%d%H%M)"
 
+declare -gr SC_EXPECT_LOG_PATH=$(cat ../expect/expect.config | grep -oP "G_EXPECT_CFG_LOGFILEPATH \K(.*)")
+
 # The following Global variable is used in run_script directly
 #
 
@@ -98,7 +100,7 @@ GROUP=""
 MOXA=1
 
 # Allows choosing different configurations for the backplane
-CLK_CONF_MOD=""
+CLK_CONF_MOD="generic"
 
 function brief_help {
   cat << EOF
@@ -562,14 +564,29 @@ function clk_conf {
   local port=$(set_portN "$1")
   $wecho "Init MCH clock configuration" "$INFO_TAG" "40$port"
   local mod=$CLK_CONF_MOD
+  local formfactor=$(echo "$FORMFACTOR" | tr '[:upper:]' '[:lower:]')
   if [[ "x$mod" == "x" ]]; then
-    mod="generic"
+    mod="${formfactor}_generic"
+  else
+    mod="${formfactor}_$mod"
   fi
+
+  $wecho "Backplane configuration file to be applied: $mod" "$DBG_TAG" "40$port"
+
   run_script $CLK_SRC $port $mod &>> /dev/null
   if [[ $? -ne 0 ]]; then
     $wecho "Error in MCH clock configuration" "$ERR_TAG" "40$port"
     exit 1
   fi
+
+  cat ${SC_EXPECT_LOG_PATH}MCH_CLOCKUPDATE_CONF_${MOXAIP}_40${port}_${SC_LOGDATE}.log | grep "TFTP: tftp error code 1: File not found"
+  local tftp_error=$?
+  if [[ $tftp_error -eq 0 ]]; then
+    $wecho "Error in MCH clock configuration" "$ERR_TAG" "40$port"
+    $wecho "The clock configuration file wasn't found in the TFTP server" "$DBG_TAG" "40$port"
+    exit 1
+  fi
+
   $wecho "End MCH clock configuration" "$INFO_TAG" "40$port"
   $wecho "Rebooting MCH after clock configuration. Will take ~100 seconds..." "$INFO_TAG" "40$port"
   sleep $SLEEP_LONG
@@ -645,9 +662,12 @@ function clk_check {
     return 1
   fi
   curl -u root:nat "http://$ip/goform/web_cfg_backup_show_menu" &>> /dev/null
-  curl -u root:nat -o $CFG_TEMPFILE "http://$ip/nat_mch_startup_cfg.txt" &>> /dev/null
-  local GOLDEN_CFG="GOLDEN_CFG_$FORMFACTOR"
-  diff -a --strip-trailing-cr --ignore-blank-lines ${!GOLDEN_CFG} $CFG_TEMPFILE > $DIFF_TEMPFILE
+  curl -u root:nat -o ${CFG_TEMPFILE}_temp "http://$ip/nat_mch_startup_cfg.txt" &>> /dev/null
+  local formfactor=$(echo "$FORMFACTOR" | tr '[:upper:]' '[:lower:]')
+  local GOLDEN_CFG="${CLOCK_GOLDEN_CFG}_${formfactor}_${CLK_CONF_MOD}_cfg.txt"
+  # The last character is garbage that will cause problems when using diff
+  cat ${CFG_TEMPFILE}_temp | head -n -1 > ${CFG_TEMPFILE}
+  diff -a --strip-trailing-cr -B -Z $GOLDEN_CFG ${CFG_TEMPFILE} > $DIFF_TEMPFILE
   if [[ $? = 0 ]]; then
     $wecho "Clock configuration file is identical" "$INFO_TAG" "40$port"
     rm $CFG_TEMPFILE
@@ -663,10 +683,10 @@ function clk_check {
 # Check step flags and run the scripts on a specific port
 function runner {
   # Always get current fw version and serial number of MCH
-  get_fw_ver "$1"
+  #get_fw_ver "$1"
   # Increase telnet timeout from the start, to prevent unwanted
   # failures
-  telnet_timeout_conf "$1"
+  #telnet_timeout_conf "$1"
   get_sn "$1"
   if [[ $CSENTRY   -eq 1 ]];  then register_mch "$1"; fi
   if [[ $DHCP_CFG  -eq 1 ]];  then dhcp_conf  "$1"; fi
@@ -701,9 +721,7 @@ function var_definition {
   CFGCHECK_SRC=$EXPECT_PREFIX/generic.exp
 
   #declare -A GOLDEN_CFG
-  GOLDEN_CFG_3U=$CFG_PREFIX/nat_mch_fw2.20.4_3u_cfg.txt
-  GOLDEN_CFG_9U=$CFG_PREFIX/nat_mch_fw2.20.4_9u_cfg.txt
-  GOLDEN_CFG_5U=$CFG_PREFIX/nat_mch_fw2.20.4_mini_cfg.txt
+  CLOCK_GOLDEN_CFG=$CFG_PREFIX/nat_mch_fw2.20.4
   GENERIC_CFG=$CFG_PREFIX/GOLDEN_cfg.txt
   GENERIC_CFG_2_21=$CFG_PREFIX/GOLDEN_cfg_2_21.txt
   # Script to set DHCP configuration
