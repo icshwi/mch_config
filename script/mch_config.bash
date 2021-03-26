@@ -683,10 +683,10 @@ function clk_check {
 # Check step flags and run the scripts on a specific port
 function runner {
   # Always get current fw version and serial number of MCH
-  #get_fw_ver "$1"
+  get_fw_ver "$1"
   # Increase telnet timeout from the start, to prevent unwanted
   # failures
-  #telnet_timeout_conf "$1"
+  telnet_timeout_conf "$1"
   get_sn "$1"
   if [[ $CSENTRY   -eq 1 ]];  then register_mch "$1"; fi
   if [[ $DHCP_CFG  -eq 1 ]];  then dhcp_conf  "$1"; fi
