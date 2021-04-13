@@ -704,17 +704,17 @@ clk_pcb_min  =  2
 #  Friday, March  1 15:37:19 CET 2019, hanlee@esss.se
 #  --------------------------------------------------------------------------------
 
-clk_phys_out =  1,  28
-clk_phys_out =  2,  28
-clk_phys_out =  3,  28
-clk_phys_out =  4,  28
-clk_phys_out =  5,  28
-clk_phys_out =  6,  28
-clk_phys_out =  7,  28
-clk_phys_out =  8,  28
-clk_phys_out =  9,  28
-clk_phys_out = 10,  28
-clk_phys_out = 11,  28
+clk_phys_out =  1,  12
+clk_phys_out =  2,  12
+clk_phys_out =  3,  12
+clk_phys_out =  4,  12
+clk_phys_out =  5,  12
+clk_phys_out =  6,  12
+clk_phys_out =  7,  12
+clk_phys_out =  8,  12
+clk_phys_out =  9,  12
+clk_phys_out = 10,  12
+clk_phys_out = 11,  12
 clk_phys_out = 12,  0
 clk_phys_out = 13,  0
 clk_phys_out = 14,  0
